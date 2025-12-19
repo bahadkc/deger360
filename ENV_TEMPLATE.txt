@@ -1,0 +1,38 @@
+# ==============================================
+# .env.local DOSYASI ŞABLONU
+# ==============================================
+# 
+# Bu içeriği kopyalayıp .env.local dosyasına yapıştırın
+# Kendi Supabase bilgilerinizle değiştirin
+#
+# ==============================================
+
+NEXT_PUBLIC_SUPABASE_URL=https://BURAYA_PROJECT_URL_YAPIŞTIRIN
+NEXT_PUBLIC_SUPABASE_ANON_KEY=BURAYA_ANON_PUBLIC_KEY_YAPIŞTIRIN
+SUPABASE_SERVICE_ROLE_KEY=BURAYA_SERVICE_ROLE_KEY_YAPIŞTIRIN
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# ==============================================
+# ÖNEMLİ NOTLAR:
+# ==============================================
+# 
+# 1. TIRNAK İŞARETİ KULLANMAYIN!
+#    ❌ YANLIŞ: NEXT_PUBLIC_SUPABASE_URL="https://..."
+#    ✅ DOĞRU: NEXT_PUBLIC_SUPABASE_URL=https://...
+#
+# 2. BOŞLUK BIRAKMAYIN!
+#    ❌ YANLIŞ: NEXT_PUBLIC_SUPABASE_URL = https://...
+#    ✅ DOĞRU: NEXT_PUBLIC_SUPABASE_URL=https://...
+#
+# 3. KEY'LER ÇOK UZUN OLACAK (200+ karakter)
+#    - Anon key: eyJ ile başlar
+#    - Service role key: eyJ ile başlar
+#    - Tam kopyaladığınızdan emin olun!
+#
+# 4. Supabase Dashboard'dan key'leri alın:
+#    https://supabase.com/dashboard
+#    → Projenizi açın
+#    → Settings > API
+#    → Kopyalayın ve yapıştırın
+#
+# ==============================================

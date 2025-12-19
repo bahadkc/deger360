@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Prevent scrollbar from overlapping header */
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0077B6;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #023E8A;
+}
+
+/* Portal sayfalarında ana site header/footer'ını gizle */
+body:has([data-portal-page]) > header,
+body:has([data-portal-page]) > footer,
+body:has([data-portal-page]) [class*="sticky"],
+body:has([data-portal-page]) [class*="StickyMobileCTA"] {
+  display: none !important;
+}
+
+body:has([data-portal-page]) > main {
+  padding-top: 0 !important;
+}
+
+/* Portal sayfalarında sticky mobile CTA'yı gizle */
+body:has([data-portal-page]) ~ * [class*="fixed"][class*="bottom-0"] {
+  display: none !important;
+}
+

@@ -1,0 +1,151 @@
+'use client';
+
+import { Star, Quote } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useInView } from 'framer-motion';
+import { useRef, useState } from 'react';
+
+const testimonials = [
+  {
+    name: 'Ahmet Yılmaz',
+    location: 'İstanbul',
+    rating: 5,
+    text: 'Kaza sonrası ne yapacağımı bilmiyordum. Değer360 ekibi tüm süreci yönetti ve 42.000 TL tazminat aldım. Çok memnun kaldım!',
+    car: 'Renault Megane',
+  },
+  {
+    name: 'Ayşe Demir',
+    location: 'Ankara',
+    rating: 5,
+    text: 'Ön ödeme istememeleri ve süreci tamamen onların yönetmesi harika. 3 ay içinde 38.000 TL aldım. Kesinlikle tavsiye ederim.',
+    car: 'Volkswagen Golf',
+  },
+  {
+    name: 'Mehmet Kaya',
+    location: 'İzmir',
+    rating: 5,
+    text: 'Profesyonel ekip, her adımda bilgilendirme yaptılar. Sonuçta 50.000 TL tazminat aldım. Teşekkürler Değer360!',
+    car: 'Toyota Corolla',
+  },
+  {
+    name: 'Fatma Şahin',
+    location: 'Bursa',
+    rating: 5,
+    text: 'Dosyam Nerede? özelliği sayesinde sürecin her aşamasını takip edebildim. 45.000 TL tazminat aldım, çok memnunum.',
+    car: 'Fiat Egea',
+  },
+  {
+    name: 'Ali Öztürk',
+    location: 'Antalya',
+    rating: 5,
+    text: 'Şeffaf süreç ve profesyonel yaklaşım sayesinde kısa sürede sonuç aldım. 40.000 TL tazminat aldım, teşekkürler!',
+    car: 'Hyundai i20',
+  },
+  {
+    name: 'Zeynep Arslan',
+    location: 'Adana',
+    rating: 5,
+    text: 'Tüm evrakları onlar topladı, ben hiç uğraşmadım. 4 ay içinde 48.000 TL tazminat aldım. Harika bir hizmet!',
+    car: 'Opel Astra',
+  },
+  {
+    name: 'Can Yıldız',
+    location: 'Gaziantep',
+    rating: 5,
+    text: 'Ön ödeme almamaları ve başarı garantisi vermeleri çok güven verici. 43.000 TL tazminat aldım, çok memnunum.',
+    car: 'Peugeot 301',
+  },
+  {
+    name: 'Elif Kılıç',
+    location: 'Kocaeli',
+    rating: 5,
+    text: 'Her adımda bilgilendirildim, hiçbir şeyi kaçırmadım. 5 ay içinde 52.000 TL tazminat aldım. Kesinlikle tavsiye ederim!',
+    car: 'Skoda Octavia',
+  },
+];
+
+export function TestimonialsSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Duplicate testimonials for seamless loop
+  const duplicatedTestimonials = [...testimonials, ...testimonials, ...testimonials];
+
+  return (
+    <section ref={ref} className="py-20 bg-white overflow-hidden">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
+            Müşterilerimiz Ne Diyor?
+          </h2>
+          <p className="text-lg text-neutral-800">
+            Gerçek müşteri yorumları
+          </p>
+        </motion.div>
+
+        <div className="relative overflow-hidden">
+          <div 
+            className="flex gap-6"
+            style={{
+              width: 'max-content',
+              animation: 'scroll 60s linear infinite',
+            }}
+          >
+            {duplicatedTestimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                whileHover={{ 
+                  scale: 1.05,
+                  zIndex: 10,
+                  transition: { duration: 0.15 }
+                }}
+                className={`bg-neutral-50 p-6 rounded-xl w-[350px] flex-shrink-0 transition-shadow duration-200 relative ${
+                  hoveredIndex === index 
+                      ? 'shadow-xl' 
+                      : 'shadow-md hover:shadow-lg'
+                }`}
+              >
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="w-5 h-5 text-yellow-500 fill-yellow-500"
+                    />
+                  ))}
+                </div>
+                <Quote className="w-8 h-8 text-primary-orange/30 mb-4" />
+                <p className="text-neutral-800 mb-4 italic leading-relaxed">
+                  "{testimonial.text}"
+                </p>
+                <div className="border-t pt-4">
+                  <p className="font-bold text-dark-blue">{testimonial.name}</p>
+                  <p className="text-sm text-neutral-600">{testimonial.location}</p>
+                  <p className="text-xs text-neutral-500 mt-1">{testimonial.car}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <style jsx>{`
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(calc(-33.333%));
+              }
+            }
+          `}</style>
+        </div>
+      </div>
+    </section>
+  );
+}
