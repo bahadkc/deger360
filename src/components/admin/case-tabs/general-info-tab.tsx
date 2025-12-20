@@ -22,9 +22,28 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
     phone: caseData.customers?.phone || '',
     email: caseData.customers?.email || '',
     address: caseData.customers?.address || '',
+    tc_kimlik: caseData.customers?.tc_kimlik || '',
     iban: caseData.customers?.iban || '',
     payment_person_name: caseData.customers?.payment_person_name || '',
+    dosya_takip_numarasi: caseData.customers?.dosya_takip_numarasi || '',
   });
+
+  // Password field
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+  });
+  const [passwordWasUpdated, setPasswordWasUpdated] = useState(false);
+  const [updatedPassword, setUpdatedPassword] = useState<string>(''); // Store the updated password to display
+
+  // Calculate current password format for display/placeholder
+  const getCurrentPasswordFormat = () => {
+    if (vehicleData.vehicle_plate && customerData.full_name) {
+      const cleanPlate = vehicleData.vehicle_plate.replace(/\s/g, '').toLowerCase();
+      const surname = customerData.full_name.split(' ').pop()?.toLowerCase() || '';
+      return `${cleanPlate}.${surname}`;
+    }
+    return '';
+  };
 
   // Vehicle fields
   const [vehicleData, setVehicleData] = useState({
@@ -51,14 +70,33 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
   // Update state when caseData changes
   useEffect(() => {
     if (caseData) {
+      const customerId = caseData.customers?.id || caseData.customer_id || '';
+      
       setCustomerData({
         full_name: caseData.customers?.full_name || '',
         phone: caseData.customers?.phone || '',
         email: caseData.customers?.email || '',
         address: caseData.customers?.address || '',
+        tc_kimlik: caseData.customers?.tc_kimlik || '',
         iban: caseData.customers?.iban || '',
         payment_person_name: caseData.customers?.payment_person_name || '',
+        dosya_takip_numarasi: caseData.customers?.dosya_takip_numarasi || '',
       });
+      
+      // Load updated password from localStorage if exists
+      if (customerId && typeof window !== 'undefined') {
+        const storedPassword = localStorage.getItem(`updated_password_${customerId}`);
+        if (storedPassword) {
+          setUpdatedPassword(storedPassword);
+          setPasswordWasUpdated(true);
+        } else {
+          setPasswordWasUpdated(false);
+          setUpdatedPassword('');
+        }
+      } else {
+        setPasswordWasUpdated(false);
+        setUpdatedPassword('');
+      }
       setVehicleData({
         vehicle_plate: caseData.vehicle_plate || '',
         vehicle_brand_model: caseData.vehicle_brand_model || '',
@@ -98,6 +136,23 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         throw new Error('Customer ID not found');
       }
 
+      // Ensure dosya takip numarası is not empty - generate if needed
+      let dosyaTakipNo = customerData.dosya_takip_numarasi?.trim();
+      if (!dosyaTakipNo) {
+        // Generate new tracking number if empty
+        const { data: existingCustomers } = await supabase
+          .from('customers')
+          .select('dosya_takip_numarasi')
+          .not('dosya_takip_numarasi', 'is', null);
+
+        const existingNumbers = (existingCustomers || [])
+          .map((c) => parseInt(c.dosya_takip_numarasi || '0'))
+          .filter((n) => !isNaN(n) && n >= 216738);
+
+        dosyaTakipNo =
+          existingNumbers.length === 0 ? '216739' : (Math.max(...existingNumbers) + 1).toString();
+      }
+
       const { error: customerError } = await supabase
         .from('customers')
         .update({
@@ -105,41 +160,134 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
           phone: customerData.phone,
           email: customerData.email,
           address: customerData.address,
+          tc_kimlik: customerData.tc_kimlik,
           iban: customerData.iban,
           payment_person_name: customerData.payment_person_name,
+          dosya_takip_numarasi: dosyaTakipNo,
         })
         .eq('id', customerId);
 
       if (customerError) throw customerError;
+
+      // Update local state with generated number if it was empty
+      if (!customerData.dosya_takip_numarasi?.trim()) {
+        setCustomerData({ ...customerData, dosya_takip_numarasi: dosyaTakipNo });
+      }
+
+      // Update password if provided (and not empty)
+      let passwordUpdateSuccess = true;
+      let passwordUpdateError = null;
+      
+      if (passwordData.newPassword && passwordData.newPassword.trim().length >= 6) {
+        try {
+          // Get auth user ID from user_auth table
+          const { data: userAuth, error: userAuthError } = await supabase
+            .from('user_auth')
+            .select('id')
+            .eq('customer_id', customerId)
+            .single();
+
+          if (userAuthError || !userAuth) {
+            passwordUpdateSuccess = false;
+            passwordUpdateError = 'Kullanıcı kimlik doğrulama bilgisi bulunamadı';
+          } else {
+            // Update password via API
+            const response = await fetch('/api/update-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: userAuth.id,
+                newPassword: passwordData.newPassword.trim(),
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+              passwordUpdateSuccess = false;
+              passwordUpdateError = data.error || 'Şifre güncellenirken bir hata oluştu';
+              console.error('Password update error:', data.error);
+              setPasswordWasUpdated(false);
+              setUpdatedPassword('');
+            } else {
+              // Password updated successfully - save the new password for display and clear the input field
+              const newPasswordValue = passwordData.newPassword.trim();
+              const customerId = caseData.customers?.id || caseData.customer_id || '';
+              
+              setUpdatedPassword(newPasswordValue);
+              setPasswordData({ newPassword: '' });
+              setPasswordWasUpdated(true);
+              
+              // Save to localStorage so it persists after page refresh
+              if (customerId && typeof window !== 'undefined') {
+                localStorage.setItem(`updated_password_${customerId}`, newPasswordValue);
+              }
+            }
+          }
+        } catch (error: any) {
+          passwordUpdateSuccess = false;
+          passwordUpdateError = error.message || 'Şifre güncellenirken bir hata oluştu';
+          console.error('Error updating password:', error);
+        }
+      } else if (passwordData.newPassword && passwordData.newPassword.trim().length > 0 && passwordData.newPassword.trim().length < 6) {
+        // If password is provided but too short, show warning but don't block save
+        passwordUpdateSuccess = false;
+        passwordUpdateError = 'Şifre en az 6 karakter olmalıdır';
+      }
+
+      // If password update failed, show error but continue with other updates
+      if (!passwordUpdateSuccess && passwordUpdateError) {
+        console.warn('Password update failed:', passwordUpdateError);
+        // Don't throw - continue with other updates, but we'll show a warning
+      }
 
       // Calculate financial values
       const expectedNet = calculateExpectedNet();
       const totalPayment = calculateTotalPayment();
 
       // Update case
+      const caseUpdateData: any = {
+        vehicle_plate: vehicleData.vehicle_plate,
+        vehicle_brand_model: vehicleData.vehicle_brand_model,
+        accident_date: vehicleData.accident_date,
+        value_loss_amount: parseFloat(financialData.value_loss_amount?.toString() || '0'),
+        fault_rate: parseInt(financialData.fault_rate?.toString() || '0'),
+        estimated_compensation: expectedNet,
+        total_payment_amount: totalPayment,
+        status: fileData.status,
+        assigned_lawyer: fileData.assigned_lawyer,
+      };
+
+      // Only include notary_and_file_expenses if column exists (check via try-catch or make optional)
+      // For now, we'll skip it since it might not exist in all databases
+      
       const { error: caseError } = await supabase
         .from('cases')
-        .update({
-          vehicle_plate: vehicleData.vehicle_plate,
-          vehicle_brand_model: vehicleData.vehicle_brand_model,
-          accident_date: vehicleData.accident_date,
-          value_loss_amount: parseFloat(financialData.value_loss_amount?.toString() || '0'),
-          fault_rate: parseInt(financialData.fault_rate?.toString() || '0'),
-          notary_and_file_expenses: parseFloat(financialData.notary_and_file_expenses?.toString() || '0'),
-          estimated_compensation: expectedNet,
-          total_payment_amount: totalPayment,
-          status: fileData.status,
-          assigned_lawyer: fileData.assigned_lawyer,
-        })
+        .update(caseUpdateData)
         .eq('id', caseData.id);
 
       if (caseError) throw caseError;
 
       setIsEditing(false);
+      // After save, load the updated password (or current format) into input for next edit
+      const currentPassword = updatedPassword || getCurrentPasswordFormat();
+      setPasswordData({ newPassword: currentPassword });
+      
+      // Show success message
+      if (passwordData.newPassword && passwordData.newPassword.trim().length >= 6) {
+        if (passwordUpdateSuccess) {
+          alert('Bilgiler başarıyla kaydedildi. Şifre güncellendi.');
+        } else {
+          alert(`Bilgiler kaydedildi ancak şifre güncellenemedi: ${passwordUpdateError || 'Bilinmeyen hata'}`);
+        }
+      } else {
+        alert('Bilgiler başarıyla kaydedildi');
+      }
+      
       onUpdate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving data:', error);
-      alert('Kaydetme sırasında bir hata oluştu');
+      alert(`Kaydetme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
     } finally {
       setSaving(false);
     }
@@ -151,7 +299,15 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       <div className="flex justify-end gap-2">
         {isEditing ? (
           <>
-            <Button variant="outline" onClick={() => setIsEditing(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditing(false);
+                // Restore to updated password or format when canceling
+                const currentPassword = updatedPassword || getCurrentPasswordFormat();
+                setPasswordData({ newPassword: currentPassword });
+              }}
+            >
               İptal
             </Button>
             <Button onClick={handleSave} disabled={saving}>
@@ -160,7 +316,14 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             </Button>
           </>
         ) : (
-          <Button onClick={() => setIsEditing(true)}>
+          <Button
+            onClick={() => {
+              setIsEditing(true);
+              // Load current active password (updated password if exists, otherwise format) into input field
+              const currentPassword = updatedPassword || getCurrentPasswordFormat();
+              setPasswordData({ newPassword: currentPassword });
+            }}
+          >
             <Edit2 className="w-4 h-4 mr-2" />
             Düzenle
           </Button>
@@ -194,6 +357,16 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.email}
               onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
               disabled={!isEditing}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">TC Kimlik No</label>
+            <Input
+              value={customerData.tc_kimlik}
+              onChange={(e) => setCustomerData({ ...customerData, tc_kimlik: e.target.value })}
+              disabled={!isEditing}
+              placeholder="11 haneli TC kimlik numarası"
+              maxLength={11}
             />
           </div>
           <div>
@@ -392,29 +565,66 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Dosya Takip Numarası
             </label>
-            <div className="px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
-              <div className="font-mono text-xl font-bold text-primary-blue">
-                {caseData.customers?.dosya_takip_numarasi || '-'}
+            {isEditing ? (
+              <div>
+                <Input
+                  value={customerData.dosya_takip_numarasi}
+                  onChange={(e) =>
+                    setCustomerData({ ...customerData, dosya_takip_numarasi: e.target.value })
+                  }
+                  placeholder="Dosya takip numarası (boş bırakılırsa otomatik oluşturulur)"
+                  className="font-mono"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  Boş bırakılırsa kaydetme sırasında otomatik olarak yeni numara oluşturulur.
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                <div className="font-mono text-xl font-bold text-primary-blue">
+                  {customerData.dosya_takip_numarasi || '-'}
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Şifre
             </label>
-            <div className="px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
-              <div className="font-mono text-xl font-bold text-primary-blue">
-                {(() => {
-                  // Calculate password: araçplakası.soyisim
-                  if (vehicleData.vehicle_plate && customerData.full_name) {
-                    const cleanPlate = vehicleData.vehicle_plate.replace(/\s/g, '').toLowerCase();
-                    const surname = customerData.full_name.split(' ').pop()?.toLowerCase() || '';
-                    return `${cleanPlate}.${surname}`;
-                  }
-                  return '-';
-                })()}
+            {isEditing ? (
+              <div>
+                <Input
+                  type="text"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ newPassword: e.target.value })}
+                  placeholder="Şifre girin"
+                  className="font-mono"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  Şifreyi düzenleyebilir, silebilir veya üzerine yazabilirsiniz. Boş bırakılırsa mevcut şifre korunur. En az 6 karakter olmalıdır.
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                <div className="font-mono text-sm font-bold text-primary-blue">
+                  {passwordWasUpdated && updatedPassword ? (
+                    <div>
+                      <span className="text-green-600">✓ Şifre güncellendi: </span>
+                      <span className="text-neutral-800">{updatedPassword}</span>
+                    </div>
+                  ) : (
+                    <span className="text-neutral-600">
+                      {getCurrentPasswordFormat() || 'Şifre görüntülenemiyor'}
+                    </span>
+                  )}
+                </div>
+                {passwordWasUpdated && updatedPassword && (
+                  <p className="text-xs text-green-600 mt-1">
+                    Bu şifre Supabase ve portal girişinde aktif.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">

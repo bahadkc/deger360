@@ -106,7 +106,7 @@ export default function MusterilerPage() {
 
       {/* Customer List */}
       <div className="flex-1 overflow-y-auto p-6">
-        <CustomerList customers={filteredCustomers} />
+        <CustomerList customers={filteredCustomers} onDelete={loadCustomers} />
       </div>
 
       {/* Add Customer Modal */}

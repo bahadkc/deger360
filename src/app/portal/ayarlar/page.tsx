@@ -2,7 +2,9 @@
 
 import { PortalLayout } from '@/components/portal/portal-layout';
 import { Card } from '@/components/ui/card';
-import { User, Car, Bell, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { User, Car, Bell, MessageCircle, Lock, Save, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentUserCases } from '@/lib/supabase/auth';
@@ -11,6 +13,13 @@ export default function AyarlarPage() {
   const [loading, setLoading] = useState(true);
   const [customerData, setCustomerData] = useState<any>(null);
   const [caseData, setCaseData] = useState<any>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     loadAccountData();
@@ -60,6 +69,68 @@ export default function AyarlarPage() {
       supabase.removeChannel(caseChannel);
     };
   }, [customerData?.id, caseData?.id]);
+
+  const handlePasswordChange = async () => {
+    if (!passwordData.newPassword || passwordData.newPassword.length < 6) {
+      alert('Şifre en az 6 karakter olmalıdır');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('Yeni şifreler eşleşmiyor');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('User error:', userError);
+        throw new Error(`Kullanıcı bilgisi alınamadı: ${userError.message}`);
+      }
+
+      if (!user) {
+        throw new Error('Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
+      }
+
+      // Update password via API
+      const response = await fetch('/api/update-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('API error response:', data);
+        throw new Error(data.error || `Şifre güncellenirken bir hata oluştu (${response.status})`);
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Şifre güncellenirken bir hata oluştu');
+      }
+
+      alert('Şifreniz başarıyla güncellendi');
+      setIsChangingPassword(false);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      const errorMessage = error.message || 'Şifre güncellenirken bir hata oluştu';
+      alert(errorMessage);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   const loadAccountData = async () => {
     try {
@@ -141,6 +212,15 @@ export default function AyarlarPage() {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-neutral-600 mb-2">TC Kimlik No</label>
+              <input
+                type="text"
+                value={customerData?.tc_kimlik || '-'}
+                readOnly
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg bg-neutral-50 text-neutral-800"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-neutral-600 mb-2">Adres</label>
               <input
                 type="text"
@@ -213,8 +293,91 @@ export default function AyarlarPage() {
           </div>
         </Card>
 
+        {/* Password Change */}
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <div className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-primary-blue" />
+              <h2 className="text-lg md:text-xl font-bold text-neutral-800">Şifre Değiştir</h2>
+            </div>
+            {!isChangingPassword && (
+              <Button
+                onClick={() => setIsChangingPassword(true)}
+                className="text-sm md:text-base"
+              >
+                Şifre Değiştir
+              </Button>
+            )}
+          </div>
+          {isChangingPassword && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Yeni Şifre
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) =>
+                    setPasswordData({ ...passwordData, newPassword: e.target.value })
+                  }
+                  placeholder="Yeni şifrenizi girin"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Şifre Tekrar
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                  }
+                  placeholder="Şifrenizi tekrar girin"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsChangingPassword(false);
+                    setPasswordData({
+                      currentPassword: '',
+                      newPassword: '',
+                      confirmPassword: '',
+                    });
+                  }}
+                  className="flex-1 sm:flex-none"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  İptal
+                </Button>
+                <Button
+                  onClick={handlePasswordChange}
+                  disabled={
+                    changingPassword ||
+                    !passwordData.newPassword ||
+                    passwordData.newPassword !== passwordData.confirmPassword ||
+                    passwordData.newPassword.length < 6
+                  }
+                  className="flex-1 sm:flex-none"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {changingPassword ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
+                </Button>
+              </div>
+              <p className="text-xs text-neutral-500">
+                Şifre en az 6 karakter olmalıdır.
+              </p>
+            </div>
+          )}
+        </Card>
+
         {/* Info Card */}
-        <Card className="p-6 bg-blue-50 border-blue-200">
+        <Card className="p-4 md:p-6 bg-blue-50 border-blue-200">
           <div className="flex items-start gap-3">
             <Bell className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>

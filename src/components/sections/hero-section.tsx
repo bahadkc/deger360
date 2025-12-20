@@ -30,12 +30,9 @@ export function HeroSection() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('heroFormData', JSON.stringify(data));
     }
-    // Scroll to full form
+    // Redirect to teklif page
     setTimeout(() => {
-      document.getElementById('contact-form')?.scrollIntoView({ 
-        behavior: 'smooth' 
-      });
-      setIsCalculating(false);
+      window.location.href = '/teklif';
     }, 500);
   };
 

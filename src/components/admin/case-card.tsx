@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { CaseData } from './admin-board';
 import { Card } from '@/components/ui/card';
+import { Bell } from 'lucide-react';
 
 interface CaseCardProps {
   caseData: CaseData;
@@ -48,14 +49,35 @@ export function CaseCard({ caseData, onDragStart }: CaseCardProps) {
 
   const sectionInfo = getSectionInfo(caseData.board_stage);
 
+  // Check if customer is new (created within last 24 hours) AND in basvuru_alindi stage
+  const isNewCustomer = () => {
+    if (caseData.board_stage !== 'basvuru_alindi') return false;
+    if (!caseData.created_at) return false;
+    const createdAt = new Date(caseData.created_at);
+    const now = new Date();
+    const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+    return hoursDiff <= 24;
+  };
+
+  const isNew = isNewCustomer();
+
   return (
     <Link href={`/admin/musteriler/${caseData.id}`} onClick={handleLinkClick}>
       <Card
-        className="p-3 cursor-pointer hover:shadow-md transition-all bg-white border border-neutral-200 hover:border-primary-blue"
+        className={`p-3 cursor-pointer hover:shadow-md transition-all bg-white border ${
+          isNew ? 'border-orange-300 border-2' : 'border-neutral-200'
+        } hover:border-primary-blue relative`}
         draggable
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
+        {isNew && (
+          <div className="absolute top-2 right-2">
+            <div className="bg-orange-500 rounded-full p-1.5 shadow-lg animate-pulse">
+              <Bell className="w-3 h-3 text-white" />
+            </div>
+          </div>
+        )}
         <div className="space-y-2">
           {/* Current Section */}
           <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
