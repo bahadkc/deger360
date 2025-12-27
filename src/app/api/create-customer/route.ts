@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
 
     const existingNumbers = (existingCustomers || [])
       .map((c) => parseInt(c.dosya_takip_numarasi || '0'))
-      .filter((n) => !isNaN(n) && n >= 216738);
+      .filter((n) => !isNaN(n) && n >= 546178);
 
     const dosyaTakipNo =
-      existingNumbers.length === 0 ? '216739' : (Math.max(...existingNumbers) + 1).toString();
+      existingNumbers.length === 0 ? '546179' : (Math.max(...existingNumbers) + 1).toString();
 
     // Generate password
     const surname = customerData.full_name.split(' ').pop() || '';

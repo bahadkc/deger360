@@ -4,27 +4,35 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     
-    // Burada email gönderimi, CRM entegrasyonu vb. yapabilirsiniz
-    console.log('Form submission:', data);
+    // Get base URL from request
+    const url = new URL(request.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
     
-    // Örnek: Email gönderimi (Resend, SendGrid, vb. kullanabilirsiniz)
-    // await sendEmail({
-    //   to: 'info@sirketiniz.com',
-    //   subject: 'Yeni Değer Kaybı Başvurusu',
-    //   html: `
-    //     <h2>Yeni Başvuru</h2>
-    //     <p><strong>Ad Soyad:</strong> ${data.adSoyad}</p>
-    //     <p><strong>Telefon:</strong> ${data.telefon}</p>
-    //     <p><strong>Araç:</strong> ${data.aracMarkaModel}</p>
-    //     <p><strong>Hasar Tutarı:</strong> ${data.hasarTutari} TL</p>
-    //   `
-    // });
+    // Forward to create-lead endpoint to create customer in Supabase
+    const createLeadResponse = await fetch(`${baseUrl}/api/create-lead`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        adSoyad: data.adSoyad,
+        telefon: data.telefon,
+        aracMarkaModel: data.aracMarkaModel,
+        hasarTutari: data.hasarTutari,
+        email: data.email, // Include email if provided
+      }),
+    });
+
+    if (!createLeadResponse.ok) {
+      const errorData = await createLeadResponse.json();
+      throw new Error(errorData.error || 'Lead oluşturulamadı');
+    }
+
+    const result = await createLeadResponse.json();
     
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
+    return NextResponse.json({ success: true, ...result }, { status: 200 });
+  } catch (error: any) {
     console.error('API Error:', error);
     return NextResponse.json(
-      { error: 'Bir hata oluştu' },
+      { error: error.message || 'Bir hata oluştu' },
       { status: 500 }
     );
   }

@@ -21,52 +21,38 @@ export const CHECKLIST_SECTIONS: ChecklistSection[] = [
     title: 'Başvuru Alındı',
     emoji: '📝',
     boardStage: 'basvuru_alindi',
-    taskKeys: ['musteri_arac_bilgileri'],
+    taskKeys: ['ilk_gorusme_yapildi', 'musteri_arac_bilgileri'],
   },
   {
     id: 2,
-    title: 'İlk Görüşme',
-    emoji: '👋',
-    boardStage: 'ilk_gorusme',
-    taskKeys: ['ilk_gorusme_yapildi'],
+    title: 'Evrak Toplama ve Bilir Kişi',
+    emoji: '📋',
+    boardStage: 'evrak_ekspertiz',
+    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'bilir_kisi_raporu_alindi'],
   },
   {
     id: 3,
-    title: 'Evrak Toplama',
-    emoji: '📋',
-    boardStage: 'evrak_ekspertiz',
-    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi'],
-  },
-  {
-    id: 4,
-    title: 'Tamir ve Ekspertiz',
-    emoji: '🔧',
-    boardStage: 'evrak_ekspertiz',
-    taskKeys: ['tamir_yapildi', 'tamir_faturasi', 'eksper_atandi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'ekspertiz_raporu'],
-  },
-  {
-    id: 5,
     title: 'Sigorta Başvurusu',
     emoji: '📮',
     boardStage: 'sigorta_basvurusu',
-    taskKeys: ['tum_belgeler_toplandi', 'dosya_hazirlandi', 'sigorta_basvurusu_yapildi', 'belgeler_gonderildi', 'basvuru_inceleme_basladi'],
+    taskKeys: ['evraklar_talep_edildi', 'sigorta_basvurusu_yapildi', 'basvuru_inceleme_basladi'],
   },
   {
-    id: 6,
+    id: 4,
     title: 'Müzakere',
     emoji: '🤝',
     boardStage: 'muzakere',
-    taskKeys: ['sigorta_kabul_cevabi', 'anlasma_sureci_basladi', 'sigorta_anlasildi', 'odeme_bekleniyor'],
+    taskKeys: ['sigorta_kabul_cevabi', 'odeme_bekleniyor'],
   },
   {
-    id: 7,
+    id: 5,
     title: 'Ödeme',
     emoji: '💰',
     boardStage: 'odeme',
     taskKeys: ['musteriye_odeme_yapildi', 'musteri_bilgilendirildi'],
   },
   {
-    id: 8,
+    id: 6,
     title: 'Tamamlandı',
     emoji: '✅',
     boardStage: 'tamamlandi',
@@ -75,29 +61,35 @@ export const CHECKLIST_SECTIONS: ChecklistSection[] = [
 ];
 
 export const CHECKLIST_ITEMS: ChecklistItem[] = [
-  { key: 'musteri_arac_bilgileri', title: 'Müşteri ve araç bilgileri toplandı' },
+  // Başvuru Alındı
   { key: 'ilk_gorusme_yapildi', title: 'İlk görüşme yapıldı' },
+  { key: 'musteri_arac_bilgileri', title: 'Müşteri ve araç bilgileri toplandı' },
+  
+  // Evrak Toplama
   { key: 'kaza_tespit_tutanagi', title: 'Kaza tespit tutanağı alındı' },
   { key: 'arac_fotograflari', title: 'Araç fotoğrafları alındı' },
   { key: 'ruhsat_fotokopisi', title: 'Ruhsat fotokopisi alındı' },
   { key: 'kimlik_fotokopisi', title: 'Kimlik fotokopisi alındı' },
-  { key: 'tamir_yapildi', title: 'Tamir yapıldı' },
-  { key: 'tamir_faturasi', title: 'Tamir faturası alındı' },
-  { key: 'eksper_atandi', title: 'Eksper atandı' },
-  { key: 'arac_incelendi', title: 'Araç incelendi' },
-  { key: 'deger_kaybi_hesaplandi', title: 'Değer kaybı hesaplandı' },
-  { key: 'ekspertiz_raporu', title: 'Ekspertiz raporu alındı' },
-  { key: 'tum_belgeler_toplandi', title: 'Tüm belgeler toplandı' },
-  { key: 'dosya_hazirlandi', title: 'Dosya hazırlandı' },
+  
+  // Bilir Kişi Raporu
+  { key: 'arac_incelendi', title: 'Araç İncelendi' },
+  { key: 'deger_kaybi_hesaplandi', title: 'Değer Kaybı Hesaplandı' },
+  { key: 'bilir_kisi_raporu_alindi', title: 'Bilir Kişi Raporu alındı' },
+  
+  // Sigorta Başvurusu
+  { key: 'evraklar_talep_edildi', title: 'Evraklar talep edildi' },
   { key: 'sigorta_basvurusu_yapildi', title: 'Karşı tarafın sigortasına başvuru yapıldı' },
-  { key: 'belgeler_gonderildi', title: 'Belgeler gönderildi' },
   { key: 'basvuru_inceleme_basladi', title: 'Başvuru alındı, inceleme başladı' },
+  
+  // Müzakere
   { key: 'sigorta_kabul_cevabi', title: 'Sigortadan kabul cevabı geldi' },
-  { key: 'anlasma_sureci_basladi', title: 'Sigorta şirketi ile anlaşma süreci başladı' },
-  { key: 'sigorta_anlasildi', title: 'Sigorta şirketi ile anlaşıldı' },
   { key: 'odeme_bekleniyor', title: 'Ödeme bekleniyor' },
+  
+  // Ödeme
   { key: 'musteriye_odeme_yapildi', title: 'Müşteriye ödeme yapıldı' },
   { key: 'musteri_bilgilendirildi', title: 'Müşteri bilgilendirildi' },
+  
+  // Tamamlandı
   { key: 'dava_tamamlandi', title: 'Dava tamamlandı' },
 ];
 
@@ -121,4 +113,33 @@ export function getCurrentSection(
   }
   // Tüm sectionlar tamamlandıysa son section'ı döndür
   return CHECKLIST_SECTIONS[CHECKLIST_SECTIONS.length - 1];
+}
+
+// Tüm checklist item'ları tamamlanmış mı kontrol et
+export function isAllChecklistCompleted(
+  checklistItems: Array<{ task_key: string; completed: boolean }>
+): boolean {
+  // Tüm CHECKLIST_ITEMS'ın completed olup olmadığını kontrol et
+  const allTaskKeys = CHECKLIST_ITEMS.map((item) => item.key);
+  const completedTaskKeys = checklistItems
+    .filter((item) => item.completed)
+    .map((item) => item.task_key);
+  
+  // Tüm task key'ler completed olmalı
+  return allTaskKeys.every((key) => completedTaskKeys.includes(key));
+}
+
+// Bir case'in tamamlanmış olup olmadığını kontrol et
+// Tamamlanmış = board_stage === 'tamamlandi' VEYA tüm checklist tamamlanmış
+export function isCaseCompleted(
+  boardStage: string | null,
+  checklistItems: Array<{ task_key: string; completed: boolean }>
+): boolean {
+  // Eğer board_stage 'tamamlandi' ise tamamlanmış
+  if (boardStage === 'tamamlandi') {
+    return true;
+  }
+  
+  // Veya tüm checklist tamamlanmışsa tamamlanmış
+  return isAllChecklistCompleted(checklistItems);
 }

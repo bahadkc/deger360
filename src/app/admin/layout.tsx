@@ -4,9 +4,9 @@ import { ReactNode, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Users, FileText, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, LogOut, UserPlus, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isAdmin, getCurrentAdmin } from '@/lib/supabase/admin-auth';
+import { isAdmin, getCurrentAdmin, isSuperAdmin } from '@/lib/supabase/admin-auth';
 import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [adminUser, setAdminUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -38,6 +39,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       if (adminStatus) {
         const admin = await getCurrentAdmin();
         setAdminUser(admin);
+        
+        // Check if user is superadmin
+        const superAdmin = await isSuperAdmin();
+        setIsSuperAdminUser(superAdmin);
       }
     } catch (error) {
       console.error('Error checking admin access:', error);
@@ -71,7 +76,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/musteriler', label: 'Müşteriler', icon: Users },
     { href: '/admin/raporlar', label: 'Raporlar', icon: FileText },
-    { href: '/admin/ayarlar', label: 'Ayarlar', icon: Settings },
+  ];
+
+  // Superadmin only items
+  const superAdminNavItems = [
+    { href: '/admin/admin-olustur', label: 'Admin Oluştur', icon: UserPlus },
   ];
 
   return (
@@ -125,6 +134,50 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            
+            {/* Adminler - Superadmin Only, above divider */}
+            {isSuperAdminUser && (
+              <>
+                <Link
+                  href="/admin/adminler"
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                    pathname === '/admin/adminler'
+                      ? 'bg-primary-blue text-white'
+                      : 'text-neutral-700 hover:bg-neutral-100'
+                  )}
+                >
+                  <Shield className="w-5 h-5" />
+                  <span className="font-medium">Adminler</span>
+                </Link>
+              </>
+            )}
+            
+            {/* Superadmin Only Items */}
+            {isSuperAdminUser && (
+              <>
+                <div className="my-4 border-t border-neutral-200"></div>
+                {superAdminNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                        isActive
+                          ? 'bg-primary-blue text-white'
+                          : 'text-neutral-700 hover:bg-neutral-100'
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </nav>
         </aside>
 

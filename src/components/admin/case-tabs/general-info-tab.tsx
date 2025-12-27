@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Save, Edit2 } from 'lucide-react';
+import { Save, Edit2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { getAllAdmins, isSuperAdmin, canEdit, canAssignAdmins } from '@/lib/supabase/admin-auth';
 
 interface GeneralInfoTabProps {
   caseData: any;
@@ -26,6 +27,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
     iban: caseData.customers?.iban || '',
     payment_person_name: caseData.customers?.payment_person_name || '',
     dosya_takip_numarasi: caseData.customers?.dosya_takip_numarasi || '',
+    insurance_company: caseData.customers?.insurance_company || '',
   });
 
   // Password field
@@ -67,6 +69,131 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
     created_at: caseData.created_at || '',
   });
 
+  // Admin assignment fields
+  const [assignedAdmins, setAssignedAdmins] = useState<string[]>([]);
+  const [allAdmins, setAllAdmins] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [canEditData, setCanEditData] = useState(false);
+  const [canAssignAdminsData, setCanAssignAdminsData] = useState(false);
+
+  // Load admins and check permissions
+  useEffect(() => {
+    const loadAdmins = async () => {
+      try {
+        const admins = await getAllAdmins();
+        setAllAdmins(admins);
+        
+        const superAdmin = await isSuperAdmin();
+        setIsSuperAdminUser(superAdmin);
+        
+        const editPermission = await canEdit();
+        setCanEditData(editPermission);
+        
+        const assignPermission = await canAssignAdmins();
+        setCanAssignAdminsData(assignPermission);
+      } catch (error) {
+        console.error('Error loading admins:', error);
+      }
+    };
+
+    // Initial load
+    loadAdmins();
+
+    // Listen for custom event when admin is created
+    const handleAdminCreated = () => {
+      console.log('Admin created event received, reloading admin list...');
+      loadAdmins();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('adminCreated', handleAdminCreated);
+    }
+
+    // Real-time subscription for user_auth table (to update admin list when new admin is created)
+    const channel = supabase
+      .channel('user_auth_changes_for_admins')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_auth',
+        },
+        (payload) => {
+          // Check if the new record is an admin role
+          if (payload.new && ['superadmin', 'admin', 'lawyer', 'acente'].includes(payload.new.role)) {
+            console.log('New admin created via real-time, reloading admin list...');
+            loadAdmins();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_auth',
+        },
+        (payload) => {
+          // Check if role changed to/from admin role
+          if (payload.new && ['superadmin', 'admin', 'lawyer', 'acente'].includes(payload.new.role)) {
+            console.log('Admin updated via real-time, reloading admin list...');
+            loadAdmins();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('adminCreated', handleAdminCreated);
+      }
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isAdminDropdownOpen && !target.closest('.admin-dropdown-container')) {
+        setIsAdminDropdownOpen(false);
+      }
+    };
+
+    if (isAdminDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isAdminDropdownOpen]);
+
+  // Load assigned admins for this case
+  useEffect(() => {
+    const loadAssignedAdmins = async () => {
+      if (!caseData?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('case_admins')
+          .select('admin_id')
+          .eq('case_id', caseData.id);
+
+        if (error) {
+          console.error('Error loading assigned admins:', error);
+          return;
+        }
+
+        setAssignedAdmins((data || []).map((item) => item.admin_id));
+      } catch (error) {
+        console.error('Error loading assigned admins:', error);
+      }
+    };
+    loadAssignedAdmins();
+  }, [caseData?.id]);
+
   // Update state when caseData changes
   useEffect(() => {
     if (caseData) {
@@ -81,6 +208,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         iban: caseData.customers?.iban || '',
         payment_person_name: caseData.customers?.payment_person_name || '',
         dosya_takip_numarasi: caseData.customers?.dosya_takip_numarasi || '',
+        insurance_company: caseData.customers?.insurance_company || '',
       });
       
       // Load updated password from localStorage if exists
@@ -128,6 +256,12 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
   };
 
   const handleSave = async () => {
+    // Prevent save if user cannot edit (e.g., acente)
+    if (!canEditData) {
+      alert('Bu işlem için yetkiniz bulunmamaktadır.');
+      return;
+    }
+    
     setSaving(true);
     try {
       // Update customer
@@ -135,6 +269,11 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       if (!customerId) {
         throw new Error('Customer ID not found');
       }
+
+      // Check if email changed
+      const oldEmail = caseData.customers?.email;
+      const newEmail = customerData.email;
+      const emailChanged = oldEmail !== newEmail;
 
       // Ensure dosya takip numarası is not empty - generate if needed
       let dosyaTakipNo = customerData.dosya_takip_numarasi?.trim();
@@ -147,10 +286,10 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
 
         const existingNumbers = (existingCustomers || [])
           .map((c) => parseInt(c.dosya_takip_numarasi || '0'))
-          .filter((n) => !isNaN(n) && n >= 216738);
+          .filter((n) => !isNaN(n) && n >= 546178);
 
         dosyaTakipNo =
-          existingNumbers.length === 0 ? '216739' : (Math.max(...existingNumbers) + 1).toString();
+          existingNumbers.length === 0 ? '546179' : (Math.max(...existingNumbers) + 1).toString();
       }
 
       const { error: customerError } = await supabase
@@ -164,10 +303,47 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
           iban: customerData.iban,
           payment_person_name: customerData.payment_person_name,
           dosya_takip_numarasi: dosyaTakipNo,
+          insurance_company: customerData.insurance_company,
         })
         .eq('id', customerId);
 
       if (customerError) throw customerError;
+
+      // Update email in Supabase Auth if email changed
+      if (emailChanged && newEmail) {
+        try {
+          // Get auth user ID from user_auth table
+          const { data: userAuth, error: userAuthError } = await supabase
+            .from('user_auth')
+            .select('id')
+            .eq('customer_id', customerId)
+            .single();
+
+          if (!userAuthError && userAuth?.id) {
+            // Update email via API
+            const response = await fetch('/api/update-user-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: userAuth.id,
+                newEmail: newEmail.trim(),
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+              console.warn('Email update in auth failed:', data.error);
+              // Don't throw error, customer update was successful
+            } else {
+              console.log('Email updated successfully in auth');
+            }
+          }
+        } catch (error: any) {
+          console.warn('Error updating email in auth:', error);
+          // Don't throw error, customer update was successful
+        }
+      }
 
       // Update local state with generated number if it was empty
       if (!customerData.dosya_takip_numarasi?.trim()) {
@@ -258,15 +434,69 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         assigned_lawyer: fileData.assigned_lawyer,
       };
 
-      // Only include notary_and_file_expenses if column exists (check via try-catch or make optional)
-      // For now, we'll skip it since it might not exist in all databases
+      // Try to include notary_and_file_expenses if column exists
+      // If column doesn't exist, it will be skipped gracefully
+      try {
+        const notaryExpenses = parseFloat(financialData.notary_and_file_expenses?.toString() || '0');
+        caseUpdateData.notary_and_file_expenses = notaryExpenses;
+      } catch (error) {
+        console.warn('notary_and_file_expenses column may not exist, skipping...');
+      }
       
       const { error: caseError } = await supabase
         .from('cases')
         .update(caseUpdateData)
         .eq('id', caseData.id);
 
-      if (caseError) throw caseError;
+      if (caseError) {
+        // If error is about missing column, try again without it
+        if (caseError.message?.includes('notary_and_file_expenses')) {
+          console.warn('notary_and_file_expenses column not found, retrying without it...');
+          const { notary_and_file_expenses, ...caseUpdateDataWithoutNotary } = caseUpdateData;
+          const { error: retryError } = await supabase
+            .from('cases')
+            .update(caseUpdateDataWithoutNotary)
+            .eq('id', caseData.id);
+          
+          if (retryError) throw retryError;
+        } else {
+          throw caseError;
+        }
+      }
+
+      // Save admin assignments (only if superadmin)
+      if (canAssignAdminsData) {
+        try {
+          // Delete existing assignments
+          const { error: deleteError } = await supabase
+            .from('case_admins')
+            .delete()
+            .eq('case_id', caseData.id);
+
+          if (deleteError) {
+            console.error('Error deleting existing admin assignments:', deleteError);
+          }
+
+          // Insert new assignments
+          if (assignedAdmins.length > 0) {
+            const assignments = assignedAdmins.map((adminId) => ({
+              case_id: caseData.id,
+              admin_id: adminId,
+            }));
+
+            const { error: insertError } = await supabase
+              .from('case_admins')
+              .insert(assignments);
+
+            if (insertError) {
+              console.error('Error inserting admin assignments:', insertError);
+            }
+          }
+        } catch (error) {
+          console.error('Error saving admin assignments:', error);
+          // Don't throw - admin assignment errors shouldn't block other saves
+        }
+      }
 
       setIsEditing(false);
       // After save, load the updated password (or current format) into input for next edit
@@ -296,39 +526,41 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
   return (
     <div className="space-y-6">
       {/* Action Buttons */}
-      <div className="flex justify-end gap-2">
-        {isEditing ? (
-          <>
+      {canEditData && (
+        <div className="flex justify-end gap-2">
+          {isEditing ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(false);
+                  // Restore to updated password or format when canceling
+                  const currentPassword = updatedPassword || getCurrentPasswordFormat();
+                  setPasswordData({ newPassword: currentPassword });
+                }}
+              >
+                İptal
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? 'Kaydediliyor...' : 'Kaydet'}
+              </Button>
+            </>
+          ) : (
             <Button
-              variant="outline"
               onClick={() => {
-                setIsEditing(false);
-                // Restore to updated password or format when canceling
+                setIsEditing(true);
+                // Load current active password (updated password if exists, otherwise format) into input field
                 const currentPassword = updatedPassword || getCurrentPasswordFormat();
                 setPasswordData({ newPassword: currentPassword });
               }}
             >
-              İptal
+              <Edit2 className="w-4 h-4 mr-2" />
+              Düzenle
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Kaydediliyor...' : 'Kaydet'}
-            </Button>
-          </>
-        ) : (
-          <Button
-            onClick={() => {
-              setIsEditing(true);
-              // Load current active password (updated password if exists, otherwise format) into input field
-              const currentPassword = updatedPassword || getCurrentPasswordFormat();
-              setPasswordData({ newPassword: currentPassword });
-            }}
-          >
-            <Edit2 className="w-4 h-4 mr-2" />
-            Düzenle
-          </Button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Müşteri Bilgileri */}
       <Card className="p-6">
@@ -339,7 +571,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={customerData.full_name}
               onChange={(e) => setCustomerData({ ...customerData, full_name: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -347,7 +580,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={customerData.phone}
               onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -356,7 +590,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               type="email"
               value={customerData.email}
               onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -364,7 +599,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={customerData.tc_kimlik}
               onChange={(e) => setCustomerData({ ...customerData, tc_kimlik: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               placeholder="11 haneli TC kimlik numarası"
               maxLength={11}
             />
@@ -374,7 +610,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={customerData.address}
               onChange={(e) => setCustomerData({ ...customerData, address: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -382,7 +619,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={customerData.iban}
               onChange={(e) => setCustomerData({ ...customerData, iban: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               placeholder="TR00 0000 0000 0000 0000 0000 00"
             />
           </div>
@@ -395,7 +633,22 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               onChange={(e) =>
                 setCustomerData({ ...customerData, payment_person_name: e.target.value })
               }
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Sigorta Şirketi
+            </label>
+            <Input
+              value={customerData.insurance_company}
+              onChange={(e) =>
+                setCustomerData({ ...customerData, insurance_company: e.target.value })
+              }
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
+              placeholder="Örn: Allianz Sigorta, Anadolu Sigorta"
             />
           </div>
         </div>
@@ -410,7 +663,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={vehicleData.vehicle_plate}
               onChange={(e) => setVehicleData({ ...vehicleData, vehicle_plate: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -420,7 +674,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               onChange={(e) =>
                 setVehicleData({ ...vehicleData, vehicle_brand_model: e.target.value })
               }
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -429,7 +684,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               type="date"
               value={vehicleData.accident_date}
               onChange={(e) => setVehicleData({ ...vehicleData, accident_date: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
             />
           </div>
         </div>
@@ -450,7 +706,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               onChange={(e) =>
                 setFinancialData({ ...financialData, value_loss_amount: e.target.value })
               }
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               className="w-full"
             />
           </div>
@@ -464,7 +721,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               onChange={(e) =>
                 setFinancialData({ ...financialData, fault_rate: e.target.value })
               }
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               className="w-full"
             />
           </div>
@@ -480,7 +738,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               onChange={(e) =>
                 setFinancialData({ ...financialData, notary_and_file_expenses: e.target.value })
               }
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               className="w-full"
             />
           </div>
@@ -526,7 +785,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <select
               value={fileData.status}
               onChange={(e) => setFileData({ ...fileData, status: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg"
             >
               <option value="active">Aktif</option>
@@ -550,12 +810,118 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Input
               value={fileData.assigned_lawyer}
               onChange={(e) => setFileData({ ...fileData, assigned_lawyer: e.target.value })}
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
               placeholder="Av. Ad Soyad"
             />
           </div>
         </div>
       </Card>
+
+      {/* Admin Atama (Sadece Superadmin) */}
+      {canAssignAdminsData && (
+        <Card className="p-4 md:p-6">
+          <h3 className="text-base md:text-lg font-bold text-neutral-800 mb-3 md:mb-4">👥 Admin Atama</h3>
+          <div className="space-y-3 md:space-y-4">
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-neutral-700 mb-1 md:mb-2">
+                Bu müşteriye atanan adminler
+              </label>
+              <div className="relative admin-dropdown-container">
+                <button
+                  type="button"
+                  onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                  disabled={!isEditing || !canEditData}
+              readOnly={!canEditData}
+                  className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg border-2 transition-colors text-left flex items-center justify-between text-sm md:text-base ${
+                    !isEditing
+                      ? 'bg-neutral-50 border-neutral-200 cursor-not-allowed'
+                      : 'bg-white border-neutral-200 hover:border-primary-blue cursor-pointer'
+                  }`}
+                >
+                  <span className="text-xs md:text-sm text-neutral-700 truncate pr-2">
+                    {assignedAdmins.length === 0
+                      ? 'Admin seçin (birden fazla seçebilirsiniz)'
+                      : `${assignedAdmins.length} admin seçildi`}
+                  </span>
+                  {isEditing && (
+                    <span className="flex-shrink-0">{isAdminDropdownOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</span>
+                  )}
+                </button>
+                {isEditing && isAdminDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border-2 border-neutral-200 rounded-lg shadow-lg max-h-60 overflow-y-auto admin-dropdown-container">
+                    {allAdmins.length === 0 ? (
+                      <div className="p-3 md:p-4 text-xs md:text-sm text-neutral-500">Admin bulunamadı</div>
+                    ) : (
+                      allAdmins.map((admin) => {
+                        const isSelected = assignedAdmins.includes(admin.id);
+                        return (
+                          <label
+                            key={admin.id}
+                            className="flex items-center gap-2 md:gap-3 p-2 md:p-3 hover:bg-neutral-50 cursor-pointer border-b border-neutral-100 last:border-b-0"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setAssignedAdmins([...assignedAdmins, admin.id]);
+                                } else {
+                                  setAssignedAdmins(assignedAdmins.filter((id) => id !== admin.id));
+                                }
+                              }}
+                              className="w-4 h-4 text-primary-blue border-neutral-300 rounded focus:ring-primary-blue flex-shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs md:text-sm font-medium text-neutral-800 truncate">{admin.name || admin.email}</div>
+                              <div className="text-xs text-neutral-500 break-words">
+                                {admin.role === 'superadmin' ? 'Superadmin' : admin.role === 'admin' ? 'Admin' : admin.role === 'lawyer' ? 'Avukat' : 'Acente'}
+                                {admin.email && admin.name && (
+                                  <span className="hidden sm:inline"> • {admin.email}</span>
+                                )}
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+              {assignedAdmins.length > 0 && (
+                <div className="mt-2 md:mt-3 flex flex-wrap gap-1.5 md:gap-2">
+                  {assignedAdmins.map((adminId) => {
+                    const admin = allAdmins.find((a) => a.id === adminId);
+                    if (!admin) return null;
+                    return (
+                      <div
+                        key={adminId}
+                        className="inline-flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs md:text-sm"
+                      >
+                        <span className="truncate max-w-[150px] md:max-w-none">{admin.name || admin.email}</span>
+                        {isEditing && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAssignedAdmins(assignedAdmins.filter((id) => id !== adminId));
+                            }}
+                            className="hover:text-blue-600 flex-shrink-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-xs text-neutral-500 mt-2 leading-relaxed">
+                💡 Bir müşteriye birden fazla admin atayabilirsiniz. Adminler sadece kendilerine atanan müşterileri görebilir.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Portal Giriş Bilgileri */}
       <Card className="p-6">

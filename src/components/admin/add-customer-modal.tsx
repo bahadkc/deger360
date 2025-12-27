@@ -40,11 +40,13 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
       });
       setDocuments({
         kaza_tespit_tutanagi: null,
-        tamir_faturasi: null,
         arac_fotograflari: null,
-        ekspertiz_raporu: null,
-        ruhsat_fotokopisi: null,
-        kimlik_fotokopisi: null,
+        bilir_kisi_raporu: null,
+        ruhsat: null,
+        kimlik: null,
+        sigortaya_gonderilen_ihtarname: null,
+        hakem_karari: null,
+        sigorta_odeme_dekontu: null,
       });
     }
   }, [isOpen, credentials]);
@@ -71,20 +73,24 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
   // Step 3: Documents
   const [documents, setDocuments] = useState<Record<string, File | null>>({
     kaza_tespit_tutanagi: null,
-    tamir_faturasi: null,
     arac_fotograflari: null,
-    ekspertiz_raporu: null,
-    ruhsat_fotokopisi: null,
-    kimlik_fotokopisi: null,
+    bilir_kisi_raporu: null,
+    ruhsat: null,
+    kimlik: null,
+    sigortaya_gonderilen_ihtarname: null,
+    hakem_karari: null,
+    sigorta_odeme_dekontu: null,
   });
 
   const documentLabels: Record<string, string> = {
     kaza_tespit_tutanagi: 'Kaza Tespit Tutanağı',
-    tamir_faturasi: 'Tamir Faturası',
     arac_fotograflari: 'Araç Fotoğrafları',
-    ekspertiz_raporu: 'Ekspertiz Raporu',
-    ruhsat_fotokopisi: 'Ruhsat Fotokopisi',
-    kimlik_fotokopisi: 'Kimlik Fotokopisi',
+    bilir_kisi_raporu: 'Bilir Kişi Raporu',
+    ruhsat: 'Ruhsat',
+    kimlik: 'Kimlik',
+    sigortaya_gonderilen_ihtarname: 'Sigortaya Gönderilen İhtarname',
+    hakem_karari: 'Hakem Kararı',
+    sigorta_odeme_dekontu: 'Sigorta Ödeme Dekontu',
   };
 
   const handleFileChange = (category: string, file: File | null) => {
@@ -173,11 +179,13 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
       });
       setDocuments({
         kaza_tespit_tutanagi: null,
-        tamir_faturasi: null,
         arac_fotograflari: null,
-        ekspertiz_raporu: null,
-        ruhsat_fotokopisi: null,
-        kimlik_fotokopisi: null,
+        bilir_kisi_raporu: null,
+        ruhsat: null,
+        kimlik: null,
+        sigortaya_gonderilen_ihtarname: null,
+        hakem_karari: null,
+        sigorta_odeme_dekontu: null,
       });
 
       // Don't call onSuccess() here - let user see credentials first

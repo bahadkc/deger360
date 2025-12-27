@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CaseCard } from './case-card';
 import { supabase } from '@/lib/supabase/client';
+import { getAssignedCaseIds, isSuperAdmin } from '@/lib/supabase/admin-auth';
 
 export interface CaseData {
   id: string;
@@ -25,8 +26,7 @@ export interface CaseData {
 
 const BOARD_STAGES = [
   { key: 'basvuru_alindi', label: 'Başvuru Alındı', emoji: '📝', color: 'bg-blue-50 border-blue-200', textColor: 'text-blue-700' },
-  { key: 'ilk_gorusme', label: 'İlk Görüşme', emoji: '👋', color: 'bg-yellow-50 border-yellow-200', textColor: 'text-yellow-700' },
-  { key: 'evrak_ekspertiz', label: 'Evrak Toplama ve Ekspertiz', emoji: '📋', color: 'bg-orange-50 border-orange-200', textColor: 'text-orange-700' },
+  { key: 'evrak_ekspertiz', label: 'Evrak Toplama ve Bilir Kişi', emoji: '📋', color: 'bg-orange-50 border-orange-200', textColor: 'text-orange-700' },
   { key: 'sigorta_basvurusu', label: 'Sigorta Başvurusu', emoji: '📮', color: 'bg-indigo-50 border-indigo-200', textColor: 'text-indigo-700' },
   { key: 'muzakere', label: 'Müzakere', emoji: '🤝', color: 'bg-pink-50 border-pink-200', textColor: 'text-pink-700' },
   { key: 'odeme', label: 'Ödeme', emoji: '💰', color: 'bg-green-50 border-green-200', textColor: 'text-green-700' },
@@ -37,8 +37,20 @@ export function AdminBoard() {
   const [cases, setCases] = useState<CaseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [draggedCase, setDraggedCase] = useState<string | null>(null);
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [assignedCaseIds, setAssignedCaseIds] = useState<string[]>([]);
 
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      const superAdmin = await isSuperAdmin();
+      setIsSuperAdminUser(superAdmin);
+      
+      if (!superAdmin) {
+        const assignedIds = await getAssignedCaseIds();
+        setAssignedCaseIds(assignedIds);
+      }
+    };
+    checkAdminStatus();
     loadCases();
     
     // Real-time subscription for cases
@@ -73,14 +85,42 @@ export function AdminBoard() {
       )
       .subscribe();
 
+    // Real-time subscription for case_admins (to update when admin assignments change)
+    const caseAdminsChannel = supabase
+      .channel('case_admins_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'case_admins',
+        },
+        async () => {
+          await checkAdminStatus();
+          loadCases();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(casesChannel);
       supabase.removeChannel(checklistChannel);
+      supabase.removeChannel(caseAdminsChannel);
     };
   }, []);
 
   const loadCases = async () => {
     try {
+      // Update admin status and assigned cases
+      const superAdmin = await isSuperAdmin();
+      setIsSuperAdminUser(superAdmin);
+      
+      let assignedIds: string[] = [];
+      if (!superAdmin) {
+        assignedIds = await getAssignedCaseIds();
+        setAssignedCaseIds(assignedIds);
+      }
+
       const { data, error } = await supabase
         .from('cases')
         .select(`
@@ -105,7 +145,22 @@ export function AdminBoard() {
 
       if (error) throw error;
 
-      const formattedCases: CaseData[] = (data || []).map((caseItem: any) => ({
+      let filteredData = data || [];
+      
+      // Filter cases based on admin assignment (if not superadmin)
+      if (!superAdmin) {
+        // If no assigned cases, show nothing (not superadmin and no assignments)
+        if (assignedIds.length === 0) {
+          filteredData = [];
+        } else {
+          // Filter by assigned cases
+          filteredData = filteredData.filter((caseItem: any) => 
+            assignedIds.includes(caseItem.id)
+          );
+        }
+      }
+
+      const formattedCases: CaseData[] = filteredData.map((caseItem: any) => ({
         id: caseItem.id,
         case_number: caseItem.case_number,
         customer: {

@@ -22,8 +22,10 @@ export default function AdminGirisPage() {
 
     try {
       await loginAsAdmin(email, password);
-      router.push('/admin');
+      // Clear any cached data before redirect
+      window.location.href = '/admin';
     } catch (err: any) {
+      console.error('Admin login error:', err);
       setError(err.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);

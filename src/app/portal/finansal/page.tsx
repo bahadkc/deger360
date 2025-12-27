@@ -122,17 +122,11 @@ export default function FinansalPage() {
 
   // Calculate values from case data
   const degerKaybi = parseFloat(caseData?.value_loss_amount?.toString() || '0');
-  const kusurOrani = parseFloat(caseData?.fault_rate?.toString() || '0');
-  const beklenenNetTutar = parseFloat(caseData?.estimated_compensation?.toString() || '0') || (degerKaybi * kusurOrani) / 100;
-  
-  // Vekalet ücreti %15
-  const vekaletUcreti = (beklenenNetTutar * 15) / 100;
-  
-  // Noter ve dosya masrafları (cases tablosundan gelecek, şimdilik 0 veya admin panelden gelecek)
+  const karsiTarafKusurOrani = parseFloat(caseData?.fault_rate?.toString() || '0');
   const noterVeDosyaMasraflari = parseFloat(caseData?.notary_and_file_expenses?.toString() || '0');
   
-  // Size kalacak tutar = Beklenen net tutar - Vekalet ücreti - Noter ve dosya masrafları
-  const sizeKalacakTutar = beklenenNetTutar - vekaletUcreti - noterVeDosyaMasraflari;
+  // Toplam Beklenen Net Gelir = Değer Kaybı * Karşı Taraf Kusur Oranı * 80/10000
+  const sizeKalacakTutar = (degerKaybi * karsiTarafKusurOrani * 80) / 10000;
 
   const odemeDurumu = caseData?.status === 'completed' ? 'completed' : 'waiting';
   const tahminiOdemeTarihi = caseData?.estimated_completion_date
@@ -186,23 +180,24 @@ export default function FinansalPage() {
             </Card>
             
             <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
-              <p className="text-xs md:text-sm text-neutral-600 mb-1">Kusur Oranı</p>
+              <p className="text-xs md:text-sm text-neutral-600 mb-1">Karşı Tarafın Kusur Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
-                %{kusurOrani.toFixed(0)}
+                %{karsiTarafKusurOrani.toFixed(0)}
               </p>
             </Card>
 
-            <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
+            <Card className="p-3 md:p-4 hover:shadow-md transition-shadow bg-green-100 border-green-400">
               <p className="text-xs md:text-sm text-neutral-600 mb-1">Noter ve Dosya Masrafları</p>
-              <p className="text-lg md:text-xl font-bold text-neutral-800">
+              <p className="text-lg md:text-xl font-bold text-neutral-800 mb-1">
                 {noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL
               </p>
+              <p className="text-xs text-green-800 font-semibold">Biz karşılıyoruz!</p>
             </Card>
 
             <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
-              <p className="text-xs md:text-sm text-neutral-600 mb-1">Vekalet Ücreti</p>
+              <p className="text-xs md:text-sm text-neutral-600 mb-1">Müşteri Hakediş Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
-                %15
+                %80
               </p>
             </Card>
           </div>

@@ -18,6 +18,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 console.log('✅ Creating Supabase client...');
 
 // Browser/Client-side Supabase client
+// createBrowserClient automatically handles cookies in browser environment
 export const supabase = createBrowserClient<Database>(
   supabaseUrl,
   supabaseAnonKey

@@ -7,19 +7,46 @@ import { Input } from '@/components/ui/input';
 import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase/client';
+import { getAssignedCaseIds, isSuperAdmin, canEdit } from '@/lib/supabase/admin-auth';
 
 export default function MusterilerPage() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [assignedCaseIds, setAssignedCaseIds] = useState<string[]>([]);
+  const [canEditData, setCanEditData] = useState(false);
 
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      const superAdmin = await isSuperAdmin();
+      setIsSuperAdminUser(superAdmin);
+      
+      const editPermission = await canEdit();
+      setCanEditData(editPermission);
+      
+      if (!superAdmin) {
+        const assignedIds = await getAssignedCaseIds();
+        setAssignedCaseIds(assignedIds);
+      }
+    };
+    checkAdminStatus();
     loadCustomers();
   }, []);
 
   const loadCustomers = async () => {
     try {
+      // Update admin status and assigned cases
+      const superAdmin = await isSuperAdmin();
+      setIsSuperAdminUser(superAdmin);
+      
+      let assignedIds: string[] = [];
+      if (!superAdmin) {
+        assignedIds = await getAssignedCaseIds();
+        setAssignedCaseIds(assignedIds);
+      }
+
       const { data, error } = await supabase
         .from('customers')
         .select(`
@@ -41,8 +68,25 @@ export default function MusterilerPage() {
 
       if (error) throw error;
 
+      // Filter customers based on admin assignment (if not superadmin)
+      let filteredData = data || [];
+      if (!superAdmin) {
+        // If no assigned cases, show nothing (not superadmin and no assignments)
+        if (assignedIds.length === 0) {
+          filteredData = [];
+        } else {
+          // Filter by assigned cases
+          filteredData = filteredData.filter((customer: any) => {
+            // Check if customer has any case assigned to this admin
+            return customer.cases && customer.cases.some((caseItem: any) => 
+              assignedIds.includes(caseItem.id)
+            );
+          });
+        }
+      }
+
       // Her müşterinin ilk case'ini al (çoğu müşterinin tek case'i var)
-      const customersWithCases = (data || []).map((customer: any) => ({
+      const customersWithCases = filteredData.map((customer: any) => ({
         ...customer,
         case: customer.cases && customer.cases.length > 0 ? customer.cases[0] : null,
       }));
@@ -85,10 +129,12 @@ export default function MusterilerPage() {
             <h1 className="text-2xl font-bold text-neutral-800">Müşteriler</h1>
             <p className="text-sm text-neutral-600">Tüm müşterileri görüntüleyin ve yönetin</p>
           </div>
-          <Button onClick={() => setIsAddModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Yeni Müşteri
-          </Button>
+          {(canEditData || isSuperAdminUser) && (
+            <Button onClick={() => setIsAddModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Yeni Müşteri
+            </Button>
+          )}
         </div>
 
         {/* Search */}

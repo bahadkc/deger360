@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCheck, Percent, Banknote, Clock } from 'lucide-react';
+import { FileCheck, Percent, Shield, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
@@ -8,21 +8,21 @@ import { useRef } from 'react';
 const stats = [
   {
     icon: FileCheck,
-    value: '+250',
+    value: '+750',
     label: 'Başarılı Dava',
     description: 'Geçtiğimiz yılda kazandığımız davalar',
   },
   {
     icon: Percent,
-    value: '%92',
+    value: '%97',
     label: 'Kazanma Oranı',
-    description: 'Müşterilerimizin %92\'si tazminat aldı',
+    description: 'Müşterilerimizin %97\'si tazminat aldı',
   },
   {
-    icon: Banknote,
-    value: '45.000 TL',
-    label: 'Ortalama Tazminat',
-    description: 'Müşterilerimiz ortalama bu tutarı alıyor',
+    icon: Shield,
+    value: '0TL',
+    label: 'Maliyet',
+    description: 'Ön ödeme yok, masraflar bize ait. Sadece tazminat alındıktan sonra ödeme alıyoruz.',
   },
   {
     icon: Clock,

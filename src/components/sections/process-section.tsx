@@ -44,7 +44,7 @@ const steps = [
   {
     number: 6,
     title: 'Ödeme & Sonuç',
-    description: 'Tazminatınız hesabınıza geçer. Komisyonumuzu tazminattan alırız!',
+    description: 'Süreç sonunda hak ediş tutarınız hesabınıza gönderilir.',
     duration: 'Sonuç',
     icon: CheckCircle,
   },
@@ -64,7 +64,7 @@ export function ProcessSection() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
-            Nasıl Çalışır? 6 Basit Adım
+            Süreç Nasıl İşliyor
           </h2>
           <p className="text-lg text-neutral-800">
             Tüm süreci biz yönetiyoruz, siz sadece takip edin

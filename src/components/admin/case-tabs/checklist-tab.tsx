@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { CheckCircle2, Circle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { canEdit } from '@/lib/supabase/admin-auth';
 import {
   CHECKLIST_SECTIONS,
   CHECKLIST_ITEMS,
@@ -28,9 +29,55 @@ interface ChecklistItem {
 export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [canEditData, setCanEditData] = useState(false);
 
   useEffect(() => {
     loadChecklist();
+    const checkPermissions = async () => {
+      const editPermission = await canEdit();
+      setCanEditData(editPermission);
+    };
+    checkPermissions();
+
+    // Real-time subscription for admin_checklist changes
+    const checklistChannel = supabase
+      .channel(`checklist_changes_${caseId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'admin_checklist',
+          filter: `case_id=eq.${caseId}`,
+        },
+        () => {
+          loadChecklist();
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for cases table (board_stage changes)
+    const caseChannel = supabase
+      .channel(`case_changes_${caseId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'cases',
+          filter: `id=eq.${caseId}`,
+        },
+        () => {
+          // Board stage değiştiğinde checklist'i yeniden yükle
+          loadChecklist();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(checklistChannel);
+      supabase.removeChannel(caseChannel);
+    };
   }, [caseId]);
 
   const loadChecklist = async () => {
@@ -274,8 +321,14 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
                 {sectionItems.map((item) => (
                   <div
                     key={item.task_key}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white transition-colors cursor-pointer"
-                    onClick={() => toggleItem(item.task_key, item.completed)}
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      canEditData ? 'hover:bg-white cursor-pointer' : 'cursor-not-allowed opacity-75'
+                    }`}
+                    onClick={() => {
+                      if (canEditData) {
+                        toggleItem(item.task_key, item.completed);
+                      }
+                    }}
                   >
                     <button className="flex-shrink-0">
                       {item.completed ? (

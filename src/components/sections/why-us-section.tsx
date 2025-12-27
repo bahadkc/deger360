@@ -14,7 +14,7 @@ const benefits = [
   {
     icon: Shield,
     title: 'Ön Ödeme Yok',
-    description: 'Kazandıktan sonra komisyon, risk bizde',
+    description: 'Ön ödeme yok, masraflar bize ait',
   },
   {
     icon: Users,
@@ -23,8 +23,8 @@ const benefits = [
   },
   {
     icon: TrendingUp,
-    title: '%92 Başarı',
-    description: 'Müşterilerimizin %92\'si tazminat alıyor',
+    title: '%97 Başarı',
+    description: 'Müşterilerimizin %97\'si tazminat alıyor',
   },
   {
     icon: Eye,
@@ -43,7 +43,7 @@ export function WhyUsSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-20 bg-white">
+    <section ref={ref} id="neden-biz" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -52,7 +52,7 @@ export function WhyUsSection() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
-            Neden Bizi Seçmelisiniz?
+            Neden Biz?
           </h2>
           <p className="text-lg text-neutral-800">
             Farkımızı gösteren özelliklerimiz

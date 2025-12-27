@@ -69,8 +69,8 @@ export default function GirisPage() {
         localStorage.setItem('caseNumber', data.dosyaTakipNumarasi);
       }
       
-      router.push('/portal');
-      router.refresh();
+      // Clear any cached data before redirect
+      window.location.href = '/portal';
     } catch (error: any) {
       console.error('Login error:', error);
       
@@ -81,6 +81,8 @@ export default function GirisPage() {
         setError('Şifre hatalı. Lütfen tekrar deneyin.');
       } else if (error.message?.includes('Email not confirmed')) {
         setError('Hesabınız doğrulanmamış. Lütfen email kutunuzu kontrol edin.');
+      } else if (error.message?.includes('API anahtarı') || error.message?.includes('API key')) {
+        setError('Sistem hatası: API anahtarı bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.');
       } else {
         setError(error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
       }

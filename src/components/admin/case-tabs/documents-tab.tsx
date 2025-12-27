@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, FileText, Download, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { canEdit } from '@/lib/supabase/admin-auth';
 
 interface DocumentsTabProps {
   caseId: string;
@@ -25,21 +26,29 @@ interface Document {
 
 const DOCUMENT_CATEGORIES = [
   { key: 'kaza_tespit_tutanagi', label: 'Kaza Tespit Tutanağı' },
-  { key: 'tamir_faturasi', label: 'Tamir Faturası' },
   { key: 'arac_fotograflari', label: 'Araç Fotoğrafları' },
-  { key: 'ekspertiz_raporu', label: 'Ekspertiz Raporu' },
-  { key: 'ruhsat_fotokopisi', label: 'Ruhsat Fotokopisi' },
-  { key: 'kimlik_fotokopisi', label: 'Kimlik Fotokopisi' },
+  { key: 'bilir_kisi_raporu', label: 'Bilir Kişi Raporu' },
+  { key: 'ruhsat', label: 'Ruhsat' },
+  { key: 'kimlik', label: 'Kimlik' },
+  { key: 'sigortaya_gonderilen_ihtarname', label: 'Sigortaya Gönderilen İhtarname' },
+  { key: 'hakem_karari', label: 'Hakem Kararı' },
+  { key: 'sigorta_odeme_dekontu', label: 'Sigorta Ödeme Dekontu' },
 ];
 
 export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [canEditData, setCanEditData] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     loadDocuments();
+    const checkPermissions = async () => {
+      const editPermission = await canEdit();
+      setCanEditData(editPermission);
+    };
+    checkPermissions();
   }, [caseId]);
 
   const loadDocuments = async () => {
@@ -216,42 +225,46 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
                       >
                         <Download className="w-4 h-4" />
                       </Button>
+                      {canEditData && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(document.id, document.file_path)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  {canEditData && (
+                    <div>
+                      <input
+                        ref={(el) => {
+                          fileInputRefs.current[category.key] = el;
+                        }}
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, category.key)}
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        disabled={uploading}
+                      />
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(document.id, document.file_path)}
+                        disabled={uploading}
+                        type="button"
+                        onClick={() => {
+                          const input = fileInputRefs.current[category.key];
+                          if (input) {
+                            input.click();
+                          }
+                        }}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Upload className="w-4 h-4 mr-1" />
+                        {document ? 'Yenile' : 'Yükle'}
                       </Button>
-                    </>
+                    </div>
                   )}
-                  <div>
-                    <input
-                      ref={(el) => {
-                        fileInputRefs.current[category.key] = el;
-                      }}
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e, category.key)}
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      disabled={uploading}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={uploading}
-                      type="button"
-                      onClick={() => {
-                        const input = fileInputRefs.current[category.key];
-                        if (input) {
-                          input.click();
-                        }
-                      }}
-                    >
-                      <Upload className="w-4 h-4 mr-1" />
-                      {document ? 'Yenile' : 'Yükle'}
-                    </Button>
-                  </div>
                 </div>
               </div>
             </Card>

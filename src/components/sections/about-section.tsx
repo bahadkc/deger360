@@ -13,8 +13,8 @@ export function AboutSection() {
     {
       icon: Phone,
       title: 'Telefon',
-      content: '0549 732 19 00',
-      link: 'tel:+905497321900',
+      content: '0505 705 33 05',
+      link: 'tel:+905057053305',
     },
     {
       icon: Mail,
@@ -25,7 +25,7 @@ export function AboutSection() {
     {
       icon: MapPin,
       title: 'Konum',
-      content: 'Antalya, Türkiye',
+      content: 'Şirinyalı mahallesi, 1501 sokak, no: 9/5, Muratpaşa/ANTALYA',
       link: '#',
     },
   ];
@@ -52,7 +52,7 @@ export function AboutSection() {
               </p>
               <p>
                 Ekibimiz, +20 yıllık avukatlık tecrübesi olan deneyimli hukukçular ve ekspertiz uzmanlarından 
-                oluşmaktadır. %92 başarı oranımız ve müşteri memnuniyeti odaklı yaklaşımımız ile sektörde 
+                oluşmaktadır. %97 başarı oranımız ve müşteri memnuniyeti odaklı yaklaşımımız ile sektörde 
                 güvenilir bir isim olmayı hedefliyoruz.
               </p>
               <p>

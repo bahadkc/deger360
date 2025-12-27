@@ -26,9 +26,10 @@ export function HeroSection() {
 
   const onSubmit = (data: HeroFormData) => {
     setIsCalculating(true);
-    // Save form data to localStorage
+    // Save form data to localStorage with flag indicating it came from hero form
     if (typeof window !== 'undefined') {
       localStorage.setItem('heroFormData', JSON.stringify(data));
+      localStorage.setItem('fromHeroForm', 'true');
     }
     // Redirect to teklif page
     setTimeout(() => {

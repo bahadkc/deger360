@@ -32,17 +32,22 @@ export async function POST(request: NextRequest) {
     });
 
     // Update password using admin API
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+    console.log('Updating password for user:', userId);
+    const { data: updateData, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
       password: newPassword,
     });
 
     if (updateError) {
+      console.error('Password update error:', updateError);
       throw updateError;
     }
+
+    console.log('Password updated successfully for user:', userId);
 
     return NextResponse.json({
       success: true,
       message: 'Şifre başarıyla güncellendi',
+      userId: userId,
     });
   } catch (error: any) {
     console.error('Error updating password:', error);

@@ -1,4 +1,4 @@
-import { FileText, Clock, DollarSign, User } from 'lucide-react';
+import { FileText, Clock, Building2, User } from 'lucide-react';
 import { StatusBadge } from './status-badge';
 import { Card } from '@/components/ui/card';
 
@@ -13,15 +13,15 @@ interface DashboardSummaryCardsProps {
   fileNumber?: string;
   status?: string;
   duration?: string;
-  estimatedCompensation?: string;
+  insuranceCompany?: string;
   assignedLawyer?: string;
 }
 
 export function DashboardSummaryCards({
   fileNumber = '#DK-2024-542',
   status = 'Aktif',
-  duration = '45 gün',
-  estimatedCompensation = '42.000 TL',
+  duration = '160 gün',
+  insuranceCompany = '-',
   assignedLawyer = 'Atanmadı',
 }: DashboardSummaryCardsProps) {
   const cards: SummaryCard[] = [
@@ -42,9 +42,9 @@ export function DashboardSummaryCards({
       icon: Clock,
     },
     {
-      label: 'Tahmini Tazminat',
-      value: estimatedCompensation,
-      icon: DollarSign,
+      label: 'Sigorta Şirketi',
+      value: insuranceCompany,
+      icon: Building2,
     },
     {
       label: 'Sorumlu Avukat',

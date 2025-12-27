@@ -16,7 +16,7 @@ interface DocumentDisplay {
   description: string;
   uploaded: boolean;
   documentData?: {
-    id: string;
+  id: string;
     file_path: string;
     file_name?: string;
     file_size?: number;
@@ -24,6 +24,8 @@ interface DocumentDisplay {
     uploaded_by_name?: string;
   };
 }
+
+type DocumentCategory = 'all' | string;
 
 export default function BelgelerPage() {
   const [activeCategory, setActiveCategory] = useState<DocumentCategory>('all');
@@ -128,12 +130,12 @@ export default function BelgelerPage() {
         </div>
 
         {/* Document List */}
-        <div className="space-y-4">
+          <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-12 text-neutral-500">
+              <div className="text-center py-12 text-neutral-500">
               <p>Yükleniyor...</p>
-            </div>
-          ) : (
+              </div>
+            ) : (
             documents.map((doc) => {
               const isUploaded = doc.uploaded && doc.documentData;
               
@@ -151,7 +153,7 @@ export default function BelgelerPage() {
                     {/* Icon */}
                     <div className="flex-shrink-0">
                       {isUploaded ? (
-                        <FileText className="w-8 h-8 text-primary-blue" />
+                      <FileText className="w-8 h-8 text-primary-blue" />
                       ) : (
                         <FileText className="w-8 h-8 text-neutral-400" />
                       )}
@@ -161,7 +163,7 @@ export default function BelgelerPage() {
                     <div className="flex-1 min-w-0">
                       {/* Header */}
                       <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0">
                           <h3 className={cn(
                             'text-lg font-bold mb-1',
                             isUploaded ? 'text-neutral-800' : 'text-neutral-500'
@@ -172,8 +174,8 @@ export default function BelgelerPage() {
                             <p className="text-sm text-neutral-600 truncate">
                               {doc.documentData.file_name}
                             </p>
-                          )}
-                        </div>
+                        )}
+                      </div>
                         {isUploaded ? (
                           <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 ml-2" />
                         ) : (
@@ -205,11 +207,11 @@ export default function BelgelerPage() {
                               <span className="text-green-600">
                                 {doc.documentData.uploaded_by_name} tarafından yüklendi
                               </span>
-                            )}
-                          </div>
+                      )}
+                    </div>
                           {/* Action Buttons */}
                           <div className="flex items-center gap-2">
-                            <button
+                        <button
                               className="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center gap-2"
                               onClick={async () => {
                                 if (doc.documentData?.file_path) {
@@ -222,11 +224,11 @@ export default function BelgelerPage() {
                                   }
                                 }
                               }}
-                            >
+                        >
                               <Eye className="w-4 h-4" />
                               Görüntüle
-                            </button>
-                            <button
+                        </button>
+                        <button
                               className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors flex items-center gap-2"
                               onClick={async () => {
                                 if (doc.documentData?.file_path) {
@@ -242,24 +244,24 @@ export default function BelgelerPage() {
                                   }
                                 }
                               }}
-                            >
+                        >
                               <Download className="w-4 h-4" />
                               İndir
-                            </button>
+                        </button>
                           </div>
-                        </>
+                      </>
                       ) : (
                         <p className="text-sm text-neutral-500 italic">
                           Bu belge ileriki zamanlarda yüklenecektir
                         </p>
-                      )}
-                    </div>
+                    )}
                   </div>
+                </div>
                 </Card>
               );
             })
-          )}
-        </div>
+            )}
+          </div>
       </div>
     </PortalLayout>
   );

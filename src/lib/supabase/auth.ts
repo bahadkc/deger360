@@ -16,16 +16,25 @@ export async function loginWithCaseNumber(fileTrackingNumber: string, password: 
   // Email ile giriş yap (Supabase Auth hala email kullanıyor arka planda)
   const email = customerData.email;
   
+  // Ensure Supabase client is properly initialized
+  if (!supabase) {
+    throw new Error('Supabase client başlatılamadı. Lütfen sayfayı yenileyin.');
+  }
+  
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
-    if (error.message?.includes('Invalid login credentials')) {
+    console.error('Login error details:', error);
+    if (error.message?.includes('Invalid login credentials') || error.message?.includes('Invalid credentials')) {
       throw new Error('Şifre hatalı. Lütfen tekrar deneyin.');
     }
-    throw error;
+    if (error.message?.includes('No API key found')) {
+      throw new Error('Sistem hatası: API anahtarı bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.');
+    }
+    throw new Error(error.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
   }
 
   // Ensure user_auth record exists after login

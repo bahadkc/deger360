@@ -13,11 +13,11 @@ const faqs = [
   },
   {
     question: 'Ne kadar tazminat alabilirim?',
-    answer: 'Tazminat tutarı aracınızın markası, modeli, yaşı, hasar tutarı ve piyasa değerine göre değişir. Müşterilerimiz ortalama 45.000 TL tazminat alıyor.',
+    answer: 'Tazminat tutarı aracınızın markası, modeli, yaşı, hasar tutarı ve piyasa değerine göre değişir.',
   },
   {
     question: 'Ön ödeme yapmam gerekiyor mu?',
-    answer: 'Hayır! Biz ön ödeme almıyoruz. Tazminatı aldıktan sonra komisyonumuzu tazminattan kesiyoruz. Risk tamamen bizde.',
+    answer: 'Hayır! Biz ön ödeme almıyoruz. Masraflar bizde. Kendi ücretimizi sadece size tazminatı gönderirken alıyoruz. Risk tamamen bizde.',
   },
   {
     question: 'Süreç ne kadar sürer?',
@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     question: 'Kazanma garantisi var mı?',
-    answer: 'Hiçbir avukatlık bürosu %100 garanti veremez. Ancak %92 başarı oranımız ve 750+ başarılı davamız var. Ücretsiz değerlendirme ile durumunuzu öğrenebilirsiniz.',
+    answer: '%97 başarı oranımız ve 750+ başarılı davamız var. Ücretsiz değerlendirme ile durumunuzu öğrenebilirsiniz.',
   },
 ];
 

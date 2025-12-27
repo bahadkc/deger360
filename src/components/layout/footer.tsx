@@ -109,8 +109,8 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <Phone className="w-5 h-5 mt-1 flex-shrink-0" />
                 <div>
-                  <a href="tel:+905497321900" className="hover:text-primary-orange transition-colors">
-                    0549 732 19 00
+                  <a href="tel:+905057053305" className="hover:text-primary-orange transition-colors">
+                    0505 705 33 05
                   </a>
                 </div>
               </li>
@@ -125,7 +125,7 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
                 <div className="text-neutral-200">
-                  Antalya, Türkiye
+                  Şirinyalı mahallesi, 1501 sokak, no: 9/5, Muratpaşa/ANTALYA
                 </div>
               </li>
             </ul>

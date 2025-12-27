@@ -7,7 +7,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { adSoyad, telefon, aracMarkaModel, hasarTutari } = body;
+    const { adSoyad, telefon, aracMarkaModel, hasarTutari, email: providedEmail } = body;
 
     // Validate required fields
     if (!adSoyad || !telefon || !aracMarkaModel || !hasarTutari) {
@@ -33,15 +33,15 @@ export async function POST(request: NextRequest) {
 
     const existingNumbers = (existingCustomers || [])
       .map((c) => parseInt(c.dosya_takip_numarasi || '0'))
-      .filter((n) => !isNaN(n) && n >= 216738);
+      .filter((n) => !isNaN(n) && n >= 546178);
 
     const dosyaTakipNo =
-      existingNumbers.length === 0 ? '216739' : (Math.max(...existingNumbers) + 1).toString();
+      existingNumbers.length === 0 ? '546179' : (Math.max(...existingNumbers) + 1).toString();
 
-    // Generate email from phone number (for portal login)
+    // Use provided email if available, otherwise generate from phone number
     // Remove spaces and special characters from phone
     const cleanPhone = telefon.replace(/\s/g, '').replace(/[^0-9]/g, '');
-    const email = `${cleanPhone}@deger360.net`;
+    const email = providedEmail?.trim() || `${cleanPhone}@deger360.net`;
 
     // Generate password for portal
     const surname = adSoyad.split(' ').pop() || '';

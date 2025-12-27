@@ -14,6 +14,10 @@ const personalInfoSchema = z.object({
     .max(50, "En fazla 50 karakter olabilir"),
   telefon: z.string()
     .regex(/^(\+90|0)?5\d{9}$/, "Geçerli bir telefon numarası girin (5XX XXX XX XX)"),
+  email: z.string()
+    .email("Geçerli bir email adresi girin")
+    .optional()
+    .or(z.literal('')),
   kvkkOnay: z.boolean()
     .refine(val => val === true, "KVKK onayı zorunludur")
 });
@@ -44,11 +48,20 @@ export default function TeklifPage() {
     resolver: zodResolver(vehicleInfoSchema)
   });
 
-  // Load vehicle data from localStorage on mount
+  // Load vehicle data from localStorage on mount (only if exists and came from hero form)
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const fromHeroForm = localStorage.getItem('fromHeroForm');
       const heroData = localStorage.getItem('heroFormData');
-      if (heroData) {
+      
+      // If there's data but no flag, it means user came directly (not from hero form)
+      // Clear the old data
+      if (heroData && !fromHeroForm) {
+        localStorage.removeItem('heroFormData');
+      }
+      
+      // Only use data if it came from hero form
+      if (heroData && fromHeroForm === 'true') {
         try {
           const data = JSON.parse(heroData);
           if (data.aracMarkaModel && data.hasarTutari) {
@@ -56,26 +69,20 @@ export default function TeklifPage() {
               aracMarkaModel: data.aracMarkaModel,
               hasarTutari: data.hasarTutari
             });
-            // Pre-fill vehicle form
+            // Pre-fill vehicle form only if data exists
             vehicleForm.setValue('aracMarkaModel', data.aracMarkaModel);
             vehicleForm.setValue('hasarTutari', data.hasarTutari);
           }
+          // Remove the flag after using it
+          localStorage.removeItem('fromHeroForm');
         } catch (e) {
           console.error('Error loading hero form data:', e);
+          localStorage.removeItem('fromHeroForm');
         }
       }
+      // If no heroData or no flag, vehicle form stays empty (default state)
     }
   }, [vehicleForm]);
-
-  // If no vehicle data, redirect to home
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !vehicleData) {
-      const heroData = localStorage.getItem('heroFormData');
-      if (!heroData) {
-        router.push('/');
-      }
-    }
-  }, [vehicleData, router]);
 
   const onPersonalSubmit = (data: PersonalInfoData) => {
     setCurrentStep(2);
@@ -89,6 +96,7 @@ export default function TeklifPage() {
       const formData = {
         adSoyad: personalData.adSoyad,
         telefon: personalData.telefon,
+        email: personalData.email || undefined, // Include email if provided
         aracMarkaModel: data.aracMarkaModel,
         hasarTutari: data.hasarTutari,
         kvkkOnay: personalData.kvkkOnay
@@ -359,10 +367,12 @@ export default function TeklifPage() {
             {currentStep === 2 && (
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-3">
-                  Araç Bilgilerinizi Kontrol Edin
+                  {vehicleData ? 'Araç Bilgilerinizi Kontrol Edin' : 'Araç Bilgilerinizi Girin'}
                 </h1>
                 <p className="text-base text-neutral-600 mb-8">
-                  Araç bilgileriniz hazır. Devam etmek için butona basın.
+                  {vehicleData 
+                    ? 'Araç bilgileriniz otomatik olarak dolduruldu. Gerekirse düzenleyebilirsiniz.'
+                    : 'Devam etmek için lütfen araç bilgilerinizi doldurun.'}
                 </p>
 
                 <form onSubmit={vehicleForm.handleSubmit(onVehicleSubmit)} className="space-y-6">
@@ -375,9 +385,16 @@ export default function TeklifPage() {
                       {...vehicleForm.register('aracMarkaModel')}
                       type="text"
                       id="aracMarkaModel"
-                      readOnly
-                      className="w-full px-4 py-3 rounded-lg border-2 border-neutral-200 bg-neutral-50 text-neutral-600 cursor-not-allowed"
+                      placeholder="Örn: Toyota Corolla"
+                      className={`w-full px-4 py-3 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-primary-blue transition-all ${
+                        vehicleForm.formState.errors.aracMarkaModel ? 'border-red-500' : 'border-neutral-200'
+                      }`}
                     />
+                    {vehicleForm.formState.errors.aracMarkaModel && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {vehicleForm.formState.errors.aracMarkaModel.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Hasar Tutarı */}
@@ -390,13 +407,20 @@ export default function TeklifPage() {
                         {...vehicleForm.register('hasarTutari')}
                         type="number"
                         id="hasarTutari"
-                        readOnly
-                        className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-neutral-200 bg-neutral-50 text-neutral-600 cursor-not-allowed"
+                        placeholder="Örn: 50000"
+                        className={`w-full pl-12 pr-4 py-3 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-primary-blue transition-all ${
+                          vehicleForm.formState.errors.hasarTutari ? 'border-red-500' : 'border-neutral-200'
+                        }`}
                       />
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600 font-semibold">
                         TL
                       </span>
                     </div>
+                    {vehicleForm.formState.errors.hasarTutari && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {vehicleForm.formState.errors.hasarTutari.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Navigation Buttons */}

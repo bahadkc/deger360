@@ -12,6 +12,10 @@ const formSchema = z.object({
     .max(50, "En fazla 50 karakter olabilir"),
   telefon: z.string()
     .regex(/^(\+90|0)?5\d{9}$/, "Geçerli bir telefon numarası girin (5XX XXX XX XX)"),
+  email: z.string()
+    .email("Geçerli bir email adresi girin")
+    .optional()
+    .or(z.literal('')),
   aracMarkaModel: z.string()
     .min(2, "Lütfen araç marka/model seçin"),
   hasarTutari: z.coerce.number()
@@ -56,7 +60,10 @@ export function ContactForm() {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          ...data,
+          email: data.email || undefined, // Only include email if provided
+        })
       });
 
       if (response.ok) {
@@ -137,6 +144,29 @@ export function ContactForm() {
             {errors.telefon && (
               <p className="mt-1 text-sm text-red-500">{errors.telefon.message}</p>
             )}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-semibold text-neutral-800 mb-2">
+              E-posta <span className="text-neutral-500 font-normal">(Opsiyonel)</span>
+            </label>
+            <input
+              {...register('email')}
+              type="email"
+              id="email"
+              placeholder="ornek@email.com"
+              autoComplete="email"
+              className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-orange ${
+                errors.email ? 'border-red-500' : 'border-neutral-300 focus:border-primary-orange'
+              }`}
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+            )}
+            <p className="mt-1 text-xs text-neutral-600">
+              Email adresiniz müşteri bilgilerinize kaydedilecektir
+            </p>
           </div>
 
           {/* Araç Marka/Model */}
