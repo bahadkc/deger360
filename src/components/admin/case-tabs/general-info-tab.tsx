@@ -372,7 +372,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                userId: userAuth.id,
+                userId: (userAuth as { id: string }).id,
                 newPassword: passwordData.newPassword.trim(),
               }),
             });
@@ -443,8 +443,9 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         console.warn('notary_and_file_expenses column may not exist, skipping...');
       }
       
-      const { error: caseError } = await supabase
-        .from('cases')
+      // Type assertion to bypass Supabase type inference issue
+      const updateQuery = supabase.from('cases') as any;
+      const { error: caseError } = await updateQuery
         .update(caseUpdateData)
         .eq('id', caseData.id);
 
@@ -453,8 +454,9 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         if (caseError.message?.includes('notary_and_file_expenses')) {
           console.warn('notary_and_file_expenses column not found, retrying without it...');
           const { notary_and_file_expenses, ...caseUpdateDataWithoutNotary } = caseUpdateData;
-          const { error: retryError } = await supabase
-            .from('cases')
+          // Type assertion to bypass Supabase type inference issue
+          const retryUpdateQuery = supabase.from('cases') as any;
+          const { error: retryError } = await retryUpdateQuery
             .update(caseUpdateDataWithoutNotary)
             .eq('id', caseData.id);
           
