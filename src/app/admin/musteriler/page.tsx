@@ -59,13 +59,13 @@ export default function MusterilerPage() {
       }
 
       // Use optimized API with caching and pagination
-      const data = await optimizedCustomersApi.getList({
+      const data: any[] = await optimizedCustomersApi.getList({
         search: search || undefined,
         assignedCaseIds: superAdmin ? undefined : assignedIds,
         limit: 100, // Limit to prevent excessive data
       });
 
-      setCustomers(data || []);
+      setCustomers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading customers:', error);
     } finally {
