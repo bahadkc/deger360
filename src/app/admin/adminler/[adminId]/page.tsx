@@ -291,7 +291,7 @@ export default function AdminDetayPage() {
             {assignedCustomers.length === 0 ? (
               <Card className="p-12 text-center">
                 <Users className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-                <p className="text-neutral-600">Bu admin'e henüz müşteri atanmamış</p>
+                <p className="text-neutral-600">Bu admin&apos;e henüz müşteri atanmamış</p>
               </Card>
             ) : (
               assignedCustomers.map((customer) => (

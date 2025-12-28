@@ -32,7 +32,7 @@ export default function KullanimKosullariPage() {
             <h2 className="text-2xl font-bold text-dark-blue mb-4">1. Genel Hükümler</h2>
             <p>
               Bu web sitesi Değer360 tarafından işletilmektedir. Web sitemizi ziyaret ederek veya 
-              hizmetlerimizi kullanarak bu Kullanım Koşulları'nı kabul etmiş sayılırsınız. Bu koşulları 
+              hizmetlerimizi kullanarak bu Kullanım Koşulları&apos;nı kabul etmiş sayılırsınız. Bu koşulları 
               kabul etmiyorsanız, lütfen web sitemizi kullanmayın.
             </p>
           </section>
@@ -111,7 +111,7 @@ export default function KullanimKosullariPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">7. Fikri Mülkiyet Hakları</h2>
             <p>
-              Bu web sitesindeki tüm içerik (metin, görsel, logo, tasarım vb.) Değer360'ın mülkiyetindedir 
+              Bu web sitesindeki tüm içerik (metin, görsel, logo, tasarım vb.) Değer360&apos;ın mülkiyetindedir 
               ve telif hakkı yasaları ile korunmaktadır. İçeriği izinsiz kopyalayamaz, çoğaltamaz, 
               dağıtamaz veya ticari amaçla kullanamazsınız.
             </p>
@@ -126,14 +126,14 @@ export default function KullanimKosullariPage() {
               <Link href="/gizlilik-politikasi" className="text-primary-blue hover:text-primary-orange">
                 Gizlilik Politikası
               </Link>
-              'nı inceleyin.
+              &apos;nı inceleyin.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">9. Bilgi Verme ve İletişim</h2>
             <p>
-              Müşterilerimiz, dosya durumlarını "Dosyam Nerede?" bölümünden takip edebilirler. 
+              Müşterilerimiz, dosya durumlarını &quot;Dosyam Nerede?&quot; bölümünden takip edebilirler. 
               Ayrıca önemli gelişmeler hakkında e-posta ve telefon ile bilgilendirilirler.
             </p>
             <p>
@@ -153,7 +153,7 @@ export default function KullanimKosullariPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">11. Değişiklikler</h2>
             <p>
-              Değer360, bu Kullanım Koşulları'nı herhangi bir zamanda değiştirme hakkını saklı tutar. 
+              Değer360, bu Kullanım Koşulları&apos;nı herhangi bir zamanda değiştirme hakkını saklı tutar. 
               Değişiklikler web sitesinde yayınlandığı anda yürürlüğe girer. Önemli değişiklikler 
               için kayıtlı kullanıcılarımızı e-posta ile bilgilendiririz.
             </p>

@@ -146,7 +146,7 @@ export default function GizlilikPolitikasiPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">10. Politika Değişiklikleri</h2>
             <p>
-              Bu Gizlilik Politikası'nı zaman zaman güncelleyebiliriz. Önemli değişiklikler olduğunda 
+              Bu Gizlilik Politikası&apos;nı zaman zaman güncelleyebiliriz. Önemli değişiklikler olduğunda 
               sizi e-posta veya web sitesi bildirimi ile bilgilendireceğiz. Güncel politikayı düzenli 
               olarak kontrol etmenizi öneririz.
             </p>

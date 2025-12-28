@@ -123,7 +123,7 @@ export function TestimonialsSection() {
                 </div>
                 <Quote className="w-8 h-8 text-primary-orange/30 mb-4" />
                 <p className="text-neutral-800 mb-4 italic leading-relaxed">
-                  "{testimonial.text}"
+                  &quot;{testimonial.text}&quot;
                 </p>
                 <div className="border-t pt-4">
                   <p className="font-bold text-dark-blue">{testimonial.name}</p>

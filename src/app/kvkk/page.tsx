@@ -31,7 +31,7 @@ export default function KVKKPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">1. Veri Sorumlusu</h2>
             <p>
-              6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kişisel verileriniz; 
+              6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) uyarınca, kişisel verileriniz; 
               veri sorumlusu olarak Değer360 tarafından aşağıda açıklanan kapsamda işlenebilecektir.
             </p>
           </section>
@@ -39,7 +39,7 @@ export default function KVKKPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">2. Kişisel Verilerin İşlenme Amacı</h2>
             <p>
-              Toplanan kişisel verileriniz, KVKK'nın 5. ve 6. maddelerinde belirtilen kişisel veri işleme şartları 
+              Toplanan kişisel verileriniz, KVKK&apos;nın 5. ve 6. maddelerinde belirtilen kişisel veri işleme şartları 
               ve amaçları dahilinde aşağıdaki amaçlarla işlenebilmektedir:
             </p>
             <ul className="list-disc pl-6 space-y-2">
@@ -70,7 +70,7 @@ export default function KVKKPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">4. Kişisel Verilerin Aktarılması</h2>
             <p>
-              Toplanan kişisel verileriniz, KVKK'nın 8. ve 9. maddelerinde belirtilen kişisel veri işleme şartları 
+              Toplanan kişisel verileriniz, KVKK&apos;nın 8. ve 9. maddelerinde belirtilen kişisel veri işleme şartları 
               ve amaçları çerçevesinde:
             </p>
             <ul className="list-disc pl-6 space-y-2">
@@ -101,7 +101,7 @@ export default function KVKKPage() {
           <section>
             <h2 className="text-2xl font-bold text-dark-blue mb-4">6. Kişisel Veri Sahibinin Hakları</h2>
             <p>
-              KVKK'nın 11. maddesi uyarınca, kişisel veri sahipleri olarak aşağıdaki haklara sahipsiniz:
+              KVKK&apos;nın 11. maddesi uyarınca, kişisel veri sahipleri olarak aşağıdaki haklara sahipsiniz:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
@@ -109,7 +109,7 @@ export default function KVKKPage() {
               <li>Kişisel verilerinizin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme</li>
               <li>Yurt içinde veya yurt dışında kişisel verilerinizin aktarıldığı üçüncü kişileri bilme</li>
               <li>Kişisel verilerinizin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme</li>
-              <li>KVKK'nın 7. maddesinde öngörülen şartlar çerçevesinde kişisel verilerinizin silinmesini veya yok edilmesini isteme</li>
+              <li>KVKK&apos;nın 7. maddesinde öngörülen şartlar çerçevesinde kişisel verilerinizin silinmesini veya yok edilmesini isteme</li>
               <li>Kişisel verilerinizin düzeltilmesi, silinmesi veya yok edilmesi halinde bu işlemlerin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
               <li>İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
               <li>Kişisel verilerinizin kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme</li>

@@ -206,7 +206,7 @@ export function ContactForm() {
             <label htmlFor="hasarTutari" className="block text-sm font-semibold text-neutral-800 mb-2">
               Hasar (TRAMER) Tutarı *
               <span className="ml-2 text-xs font-normal text-neutral-600">
-                (5664'e SMS gönderip öğrenebilirsiniz)
+                (5664&apos;e SMS gönderip öğrenebilirsiniz)
               </span>
             </label>
             <div className="relative">
@@ -242,7 +242,7 @@ export function ContactForm() {
               <span className="text-sm text-neutral-800">
                 <a href="/kvkk" target="_blank" className="underline font-semibold text-primary-blue hover:text-dark-blue">
                   KVKK Aydınlatma Metni
-                </a>'ni okudum, onaylıyorum. *
+                </a>&apos;ni okudum, onaylıyorum. *
               </span>
             </label>
             {errors.kvkkOnay && (

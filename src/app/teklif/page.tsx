@@ -333,7 +333,7 @@ export default function TeklifPage() {
                       <span className="text-sm text-neutral-800">
                         <a href="/kvkk" target="_blank" className="underline font-semibold text-primary-blue hover:text-primary-orange">
                           KVKK Aydınlatma Metni
-                        </a>'ni okudum, onaylıyorum. *
+                        </a>&apos;ni okudum, onaylıyorum. *
                       </span>
                     </label>
                     {personalForm.formState.errors.kvkkOnay && (

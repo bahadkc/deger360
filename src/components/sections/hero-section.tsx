@@ -99,7 +99,7 @@ export function HeroSection() {
                         </button>
                         <div className="absolute left-0 bottom-full mb-2 w-72 p-3 bg-dark-blue text-white text-xs rounded-lg shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                           <p className="mb-1 font-semibold">TRAMER Tutarı Nasıl Öğrenilir?</p>
-                          <p className="mb-1">5664'e SMS gönderip öğrenebilirsiniz.</p>
+                          <p className="mb-1">5664&apos;e SMS gönderip öğrenebilirsiniz.</p>
                           <p>TRAMER tutarını bilmiyorsanız tahmini yazabilirsiniz.</p>
                           <div className="absolute left-4 bottom-0 translate-y-1/2 rotate-45 w-2 h-2 bg-dark-blue"></div>
                         </div>
