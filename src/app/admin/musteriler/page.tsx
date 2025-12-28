@@ -65,7 +65,7 @@ export default function MusterilerPage() {
         limit: 100, // Limit to prevent excessive data
       });
 
-      setCustomers(data);
+      setCustomers(data || []);
     } catch (error) {
       console.error('Error loading customers:', error);
     } finally {
