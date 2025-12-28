@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { AdminUser } from '@/lib/supabase/admin-auth';
 import { supabase } from '@/lib/supabase/client';
@@ -36,7 +36,7 @@ export function AvukatReport({ adminUser }: { adminUser: AdminUser }) {
   const [checklistList, setChecklistList] = useState<any[]>([]);
 
   // Helper function to check if a case is completed
-  const checkCaseCompleted = (caseItem: any): boolean => {
+  const checkCaseCompleted = useCallback((caseItem: any): boolean => {
     if (caseItem.board_stage === 'tamamlandi') return true;
     const caseChecklist = checklistList
       .filter((c: any) => c.case_id === caseItem.id)
@@ -46,13 +46,9 @@ export function AvukatReport({ adminUser }: { adminUser: AdminUser }) {
       .filter((item: any) => item.completed)
       .map((item: any) => item.task_key);
     return allTaskKeys.every((key) => completedTaskKeys.includes(key));
-  };
+  }, [checklistList]);
 
-  useEffect(() => {
-    loadReportData();
-  }, []);
-
-  const loadReportData = async () => {
+  const loadReportData = useCallback(async () => {
     try {
       setLoading(true);
       const assignedIds = await getAssignedCaseIds();
@@ -197,7 +193,11 @@ export function AvukatReport({ adminUser }: { adminUser: AdminUser }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [checkCaseCompleted]);
+
+  useEffect(() => {
+    loadReportData();
+  }, [loadReportData]);
 
   const getStatusType = (status: string, boardStage: string, caseItem?: any): string => {
     if (caseItem && checkCaseCompleted && checkCaseCompleted(caseItem)) return 'completed';

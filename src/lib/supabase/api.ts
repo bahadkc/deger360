@@ -1,4 +1,5 @@
-import { supabase, supabaseAdmin } from './client';
+import { supabase } from './client';
+import { supabaseAdmin } from './admin';
 import { Database } from './database.types';
 
 type Tables = Database['public']['Tables'];
@@ -56,7 +57,7 @@ export const casesApi = {
 
   // Update case
   async update(caseId: string, updates: Partial<Tables['cases']['Update']>) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('cases')
       .update(updates)
       .eq('id', caseId)
@@ -96,7 +97,7 @@ export const documentsApi = {
     if (uploadError) throw uploadError;
 
     // Create document record
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('documents')
       .insert({
         case_id: caseId,
@@ -158,7 +159,7 @@ export const processStepsApi = {
 
   // Update step
   async update(stepId: string, updates: Partial<Tables['process_steps']['Update']>) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('process_steps')
       .update(updates)
       .eq('id', stepId)
@@ -195,7 +196,7 @@ export const customerTasksApi = {
       completed_at: updates.completed_at,
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('customer_tasks')
       .update(safeUpdates)
       .eq('id', taskId)
@@ -232,7 +233,7 @@ export const activitiesApi = {
 
   // Create new activity
   async create(activity: Tables['activities']['Insert']) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('activities')
       .insert(activity)
       .select()
@@ -271,7 +272,7 @@ export const notificationsApi = {
 
   // Mark as read
   async markAsRead(notificationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('notifications')
       .update({ read: true, read_at: new Date().toISOString() })
       .eq('id', notificationId)
@@ -299,7 +300,7 @@ export const customersApi = {
 
   // Update customer
   async update(customerId: string, updates: Partial<Tables['customers']['Update']>) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('customers')
       .update(updates)
       .eq('id', customerId)

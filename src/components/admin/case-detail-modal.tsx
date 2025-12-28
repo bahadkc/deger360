@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,16 +23,7 @@ export function CaseDetailModal({ caseId, isOpen, onClose }: CaseDetailModalProp
   const [caseData, setCaseData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (isOpen && caseId) {
-      setLoading(true);
-      setCaseData(null);
-      setActiveTab('general');
-      loadCaseData();
-    }
-  }, [isOpen, caseId]);
-
-  const loadCaseData = async () => {
+  const loadCaseData = useCallback(async () => {
     if (!caseId) return;
     
     try {
@@ -53,7 +44,16 @@ export function CaseDetailModal({ caseId, isOpen, onClose }: CaseDetailModalProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId]);
+
+  useEffect(() => {
+    if (isOpen && caseId) {
+      setLoading(true);
+      setCaseData(null);
+      setActiveTab('general');
+      loadCaseData();
+    }
+  }, [isOpen, caseId, loadCaseData]);
 
   if (!isOpen) return null;
 

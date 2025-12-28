@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { PortalLayout } from '@/components/portal/portal-layout';
 import { DashboardSummaryCards } from '@/components/portal/dashboard-summary-cards';
 import { ProgressTracker, ProgressStep } from '@/components/portal/progress-tracker';
@@ -43,127 +43,10 @@ export default function DashboardPage() {
   const [documents, setDocuments] = useState<DocumentDisplay[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadDashboardData();
+  const customerId = useMemo(() => customerData?.id, [customerData?.id]);
+  const caseId = useMemo(() => caseData?.id, [caseData?.id]);
 
-    // Real-time subscription for cases table
-    const caseChannel = supabase
-      .channel('dashboard_case_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-        },
-        (payload) => {
-          if (caseData && payload.new.id === caseData.id) {
-            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-          } else {
-            loadDashboardData();
-          }
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for admin_checklist
-    const checklistChannel = supabase
-      .channel('dashboard_checklist_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_checklist',
-        },
-        () => {
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for cases (board_stage changes)
-    const casesChannel2 = supabase
-      .channel('dashboard_cases_board_stage_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-        },
-        (payload) => {
-          if (caseData && payload.new.id === caseData.id) {
-            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-          loadDashboardData();
-        }
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for documents
-    const documentsChannel = supabase
-      .channel('dashboard_documents_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'documents',
-        },
-        () => {
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for payments
-    const paymentsChannel = supabase
-      .channel('dashboard_payments_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'payments',
-  },
-        () => {
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for customers
-    const customersChannel = supabase
-      .channel('dashboard_customers_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'customers',
-        },
-        (payload) => {
-          if (customerData && payload.new.id === customerData.id) {
-            setCustomerData(payload.new as any);
-          } else {
-            loadDashboardData();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(caseChannel);
-      supabase.removeChannel(checklistChannel);
-      supabase.removeChannel(casesChannel2);
-      supabase.removeChannel(documentsChannel);
-      supabase.removeChannel(paymentsChannel);
-      supabase.removeChannel(customersChannel);
-    };
-  }, [caseData?.id]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       console.log('Dashboard: Loading data...');
       const cases = await getCurrentUserCases();
@@ -330,7 +213,127 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+
+    // Real-time subscription for cases table
+    const caseChannel = supabase
+      .channel('dashboard_case_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'cases',
+        },
+        (payload) => {
+          if (caseData && payload.new.id === caseData.id) {
+            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
+          } else {
+            loadDashboardData();
+          }
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for admin_checklist
+    const checklistChannel = supabase
+      .channel('dashboard_checklist_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'admin_checklist',
+        },
+        () => {
+          loadDashboardData();
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for cases (board_stage changes)
+    const casesChannel2 = supabase
+      .channel('dashboard_cases_board_stage_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'cases',
+        },
+        (payload) => {
+          if (caseData && payload.new.id === caseData.id) {
+            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
+          loadDashboardData();
+        }
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for documents
+    const documentsChannel = supabase
+      .channel('dashboard_documents_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'documents',
+        },
+        () => {
+          loadDashboardData();
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for payments
+    const paymentsChannel = supabase
+      .channel('dashboard_payments_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'payments',
+  },
+        () => {
+          loadDashboardData();
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for customers
+    const customersChannel = supabase
+      .channel('dashboard_customers_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'customers',
+        },
+        (payload) => {
+          if (customerData && payload.new.id === customerData.id) {
+            setCustomerData(payload.new as any);
+          } else {
+            loadDashboardData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(caseChannel);
+      supabase.removeChannel(checklistChannel);
+      supabase.removeChannel(casesChannel2);
+      supabase.removeChannel(documentsChannel);
+      supabase.removeChannel(paymentsChannel);
+      supabase.removeChannel(customersChannel);
+    };
+  }, [caseId, customerId, loadDashboardData, caseData, customerData]);
 
   if (loading) {
     return (

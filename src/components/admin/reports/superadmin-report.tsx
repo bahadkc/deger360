@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { AdminUser } from '@/lib/supabase/admin-auth';
 import { supabase } from '@/lib/supabase/client';
@@ -61,11 +61,7 @@ export function SuperAdminReport({ adminUser, period }: { adminUser: AdminUser; 
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
 
-  useEffect(() => {
-    loadReportData();
-  }, [period]);
-
-  const loadReportData = async () => {
+  const loadReportData = useCallback(async () => {
     try {
       setLoading(true);
       console.log('SuperAdmin Report: Loading data for period:', period);
@@ -404,7 +400,11 @@ export function SuperAdminReport({ adminUser, period }: { adminUser: AdminUser; 
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    loadReportData();
+  }, [period, loadReportData]);
 
   const getPeriodLabel = () => {
     switch (period) {

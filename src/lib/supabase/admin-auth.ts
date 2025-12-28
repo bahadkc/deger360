@@ -27,7 +27,8 @@ export async function isAdmin(): Promise<boolean> {
       .single();
 
     if (error || !data) return false;
-    return data.role === 'superadmin' || data.role === 'admin' || data.role === 'lawyer' || data.role === 'acente';
+    const role = (data as { role: string }).role;
+    return role === 'superadmin' || role === 'admin' || role === 'lawyer' || role === 'acente';
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
@@ -49,7 +50,7 @@ export async function isSuperAdmin(): Promise<boolean> {
       .single();
 
     if (error || !data) return false;
-    return data.role === 'superadmin';
+    return (data as { role: string }).role === 'superadmin';
   } catch (error) {
     console.error('Error checking superadmin status:', error);
     return false;
@@ -66,18 +67,19 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
 
     const { data, error } = await supabase
       .from('user_auth')
-      .select('role, customer_id')
+      .select('role, customer_id, name')
       .eq('id', user.id)
       .single();
 
     if (error || !data) return null;
 
+    const authData = data as { role: string; customer_id: string | null; name: string | null };
     return {
       id: user.id,
       email: user.email || '',
-      role: data.role as 'superadmin' | 'admin' | 'lawyer' | 'acente',
-      customer_id: data.customer_id,
-      name: data.name || null,
+      role: authData.role as 'superadmin' | 'admin' | 'lawyer' | 'acente',
+      customer_id: authData.customer_id,
+      name: authData.name || null,
     };
   } catch (error) {
     console.error('Error getting admin user:', error);
@@ -111,7 +113,7 @@ export async function getAssignedCaseIds(): Promise<string[]> {
       return [];
     }
 
-    return (data || []).map((item) => item.case_id);
+    return (data || []).map((item: { case_id: string }) => item.case_id);
   } catch (error) {
     console.error('Error getting assigned case IDs:', error);
     return [];

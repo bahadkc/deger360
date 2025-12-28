@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { casesApi, documentsApi, processStepsApi, customerTasksApi, activitiesApi, notificationsApi } from './api';
 import { Database } from './database.types';
 
@@ -39,7 +39,7 @@ export function useDocuments(caseId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     try {
       setLoading(true);
       const documents = await documentsApi.getByCaseId(caseId);
@@ -49,12 +49,12 @@ export function useDocuments(caseId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId]);
 
   useEffect(() => {
     if (!caseId) return;
     refetch();
-  }, [caseId]);
+  }, [caseId, refetch]);
 
   return { data, loading, error, refetch };
 }
@@ -92,7 +92,7 @@ export function useCustomerTasks(caseId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     try {
       setLoading(true);
       const tasks = await customerTasksApi.getByCaseId(caseId);
@@ -102,12 +102,12 @@ export function useCustomerTasks(caseId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId]);
 
   useEffect(() => {
     if (!caseId) return;
     refetch();
-  }, [caseId]);
+  }, [caseId, refetch]);
 
   return { data, loading, error, refetch };
 }
@@ -146,7 +146,7 @@ export function useNotifications(customerId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     try {
       setLoading(true);
       const [notifications, count] = await Promise.all([
@@ -160,12 +160,12 @@ export function useNotifications(customerId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [customerId]);
 
   useEffect(() => {
     if (!customerId) return;
     refetch();
-  }, [customerId]);
+  }, [customerId, refetch]);
 
   return { data, unreadCount, loading, error, refetch };
 }

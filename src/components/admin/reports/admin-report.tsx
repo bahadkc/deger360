@@ -115,6 +115,7 @@ export function AdminReport({ adminUser }: { adminUser: AdminUser }) {
         // Prepare customer list
         const customersList = periodCases.map((caseItem: any) => ({
           id: caseItem.customers?.id || '',
+          case_id: caseItem.id || '',
           full_name: caseItem.customers?.full_name || '',
           assigned_lawyer: caseItem.assigned_lawyer || null,
           status: caseItem.status || 'active',

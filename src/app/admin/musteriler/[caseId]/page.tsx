@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,16 +24,7 @@ export default function MusteriDetayPage() {
   const [caseData, setCaseData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    console.log('useEffect triggered, caseId:', caseId);
-    if (caseId) {
-      loadCaseData();
-    } else {
-      console.warn('No caseId found in params');
-    }
-  }, [caseId]);
-
-  const loadCaseData = async () => {
+  const loadCaseData = useCallback(async () => {
     if (!caseId) {
       console.warn('loadCaseData called but no caseId');
       return;
@@ -61,7 +52,16 @@ export default function MusteriDetayPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId]);
+
+  useEffect(() => {
+    console.log('useEffect triggered, caseId:', caseId);
+    if (caseId) {
+      loadCaseData();
+    } else {
+      console.warn('No caseId found in params');
+    }
+  }, [caseId, loadCaseData]);
 
   if (loading) {
     return (

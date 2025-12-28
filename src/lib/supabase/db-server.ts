@@ -2,9 +2,7 @@
  * Server-side Database Access Utility
  * 
  * This file provides server-side database operations using Server Components.
- * Use this ONLY in Server Components and API routes.
- * 
- * DO NOT import this in Client Components!
+ * Only import this in Server Components and API routes.
  */
 
 import { createServerSupabaseClient } from './server';
@@ -14,7 +12,7 @@ type Tables = Database['public']['Tables'];
 
 /**
  * Server-side database operations
- * Use this in Server Components and API routes only
+ * Use this in Server Components and API routes
  */
 export function getServerDb() {
   const supabase = createServerSupabaseClient();

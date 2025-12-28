@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,52 +39,7 @@ export default function AdminDetayPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info' | 'customers'>('info');
 
-  useEffect(() => {
-    if (adminId) {
-      loadAdminData();
-
-      // Real-time subscription for case_admins changes
-      const caseAdminsChannel = supabase
-        .channel(`admin_detay_case_admins_${adminId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'case_admins',
-            filter: `admin_id=eq.${adminId}`,
-          },
-          () => {
-            loadAdminData();
-          }
-        )
-        .subscribe();
-
-      // Real-time subscription for cases changes
-      const casesChannel = supabase
-        .channel(`admin_detay_cases_${adminId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'cases',
-          },
-          () => {
-            loadAdminData();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(caseAdminsChannel);
-        supabase.removeChannel(casesChannel);
-      };
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminId]);
-
-  const loadAdminData = async () => {
+  const loadAdminData = useCallback(async () => {
     try {
       // Load admin info
       const allAdmins = await getAllAdmins();
@@ -146,7 +101,51 @@ export default function AdminDetayPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [adminId, router]);
+
+  useEffect(() => {
+    if (adminId) {
+      loadAdminData();
+
+      // Real-time subscription for case_admins changes
+      const caseAdminsChannel = supabase
+        .channel(`admin_detay_case_admins_${adminId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'case_admins',
+            filter: `admin_id=eq.${adminId}`,
+          },
+          () => {
+            loadAdminData();
+          }
+        )
+        .subscribe();
+
+      // Real-time subscription for cases changes
+      const casesChannel = supabase
+        .channel(`admin_detay_cases_${adminId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'cases',
+          },
+          () => {
+            loadAdminData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(caseAdminsChannel);
+        supabase.removeChannel(casesChannel);
+      };
+    }
+  }, [adminId, loadAdminData]);
 
   const getRoleIcon = (role: string) => {
     switch (role) {

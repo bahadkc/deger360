@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { CheckCircle2, Circle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
@@ -31,6 +31,36 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [canEditData, setCanEditData] = useState(false);
+
+  const loadChecklist = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_checklist')
+        .select('*')
+        .eq('case_id', caseId) as { data: any[] | null; error: any };
+
+      if (error) throw error;
+
+      // Merge with default checklist items
+      const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
+        const existing = data?.find((c) => c.task_key === item.key);
+        return existing || {
+          id: '',
+          task_key: item.key,
+          title: item.title,
+          completed: false,
+          completed_at: null,
+          completed_by: null,
+        };
+      });
+
+      setChecklist(mergedChecklist);
+    } catch (error) {
+      console.error('Error loading checklist:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [caseId]);
 
   useEffect(() => {
     loadChecklist();
@@ -79,37 +109,7 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
       supabase.removeChannel(checklistChannel);
       supabase.removeChannel(caseChannel);
     };
-  }, [caseId]);
-
-  const loadChecklist = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('admin_checklist')
-        .select('*')
-        .eq('case_id', caseId) as { data: any[] | null; error: any };
-
-      if (error) throw error;
-
-      // Merge with default checklist items
-      const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
-        const existing = data?.find((c) => c.task_key === item.key);
-        return existing || {
-          id: '',
-          task_key: item.key,
-          title: item.title,
-          completed: false,
-          completed_at: null,
-          completed_by: null,
-        };
-      });
-
-      setChecklist(mergedChecklist);
-    } catch (error) {
-      console.error('Error loading checklist:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [caseId, loadChecklist]);
 
 
   // Section tamamlandığında bir sonraki sectiona geçiş yap

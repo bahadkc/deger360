@@ -20,7 +20,7 @@ export const optimizedCasesApi = {
    */
   async getById(caseId: string, options?: { includeRelations?: string[] }): Promise<any> {
     const cacheKey = getCacheKey('case', caseId, JSON.stringify(options));
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any>(cacheKey);
     if (cached) return cached;
 
     // Build selective query based on what's needed
@@ -60,7 +60,7 @@ export const optimizedCasesApi = {
     assignedTo?: string[];
   }): Promise<any[]> {
     const cacheKey = getCacheKey('board_cases', JSON.stringify(options));
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
 
     // Only fetch fields needed for board display
@@ -151,8 +151,33 @@ export const optimizedCustomersApi = {
     assignedCaseIds?: string[];
   }): Promise<any[]> {
     const cacheKey = getCacheKey('customers_list', JSON.stringify(options));
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
+
+    // If assignedCaseIds is explicitly provided as empty array, return empty result
+    // This means non-superadmin with no assignments should see nothing
+    if (options?.assignedCaseIds !== undefined && options.assignedCaseIds.length === 0) {
+      supabaseCache.set(cacheKey, [], 60000);
+      return [];
+    }
+
+    // If filtering by assigned case IDs, first get customer IDs from those cases
+    let customerIds: string[] | undefined = undefined;
+    if (options?.assignedCaseIds && options.assignedCaseIds.length > 0) {
+      const { data: casesData, error: casesError } = await supabase
+        .from('cases')
+        .select('customer_id')
+        .in('id', options.assignedCaseIds);
+      
+      if (casesError) throw casesError;
+      customerIds = (casesData || []).map((c: any) => c.customer_id).filter((id: string | null) => id !== null) as string[];
+      
+      // If no customers found, return empty array
+      if (customerIds.length === 0) {
+        supabaseCache.set(cacheKey, [], 60000);
+        return [];
+      }
+    }
 
     // Only fetch essential fields
     let query = supabase
@@ -178,10 +203,16 @@ export const optimizedCustomersApi = {
       `)
       .order('created_at', { ascending: false });
 
+    // Filter by customer IDs if we have them (from assigned cases)
+    if (customerIds && customerIds.length > 0) {
+      query = query.in('id', customerIds);
+    }
+
     if (options?.search) {
       query = query.or(`full_name.ilike.%${options.search}%,email.ilike.%${options.search}%,phone.ilike.%${options.search}%`);
     }
 
+    // Also filter cases by assigned IDs to ensure we only get the right cases
     if (options?.assignedCaseIds && options.assignedCaseIds.length > 0) {
       query = query.in('cases.id', options.assignedCaseIds);
     }
@@ -213,7 +244,7 @@ export const optimizedCustomersApi = {
    */
   async getById(customerId: string): Promise<any> {
     const cacheKey = getCacheKey('customer', customerId);
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any>(cacheKey);
     if (cached) return cached;
 
     const { data, error } = await supabase
@@ -237,7 +268,7 @@ export const optimizedDocumentsApi = {
    */
   async getByCaseId(caseId: string): Promise<any[]> {
     const cacheKey = getCacheKey('documents', caseId);
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
 
     const { data, error } = await supabase
@@ -261,7 +292,7 @@ export const optimizedActivitiesApi = {
    */
   async getByCaseId(caseId: string, options?: { limit?: number; offset?: number }): Promise<any[]> {
     const cacheKey = getCacheKey('activities', caseId, JSON.stringify(options));
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
 
     let query = supabase
@@ -315,7 +346,7 @@ export const optimizedNotificationsApi = {
    */
   async getByCustomerId(customerId: string, options?: { limit?: number; offset?: number }): Promise<any[]> {
     const cacheKey = getCacheKey('notifications', customerId, JSON.stringify(options));
-    const cached = supabaseCache.get(cacheKey);
+    const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
 
     let query = supabase

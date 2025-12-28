@@ -11,9 +11,8 @@ export function WebVitals() {
     if (process.env.NODE_ENV !== 'production') return;
 
     // Import and track web vitals
-    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
+    import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB }) => {
       onCLS(trackWebVitals);
-      onFID(trackWebVitals);
       onFCP(trackWebVitals);
       onLCP(trackWebVitals);
       onTTFB(trackWebVitals);

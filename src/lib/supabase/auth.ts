@@ -14,7 +14,7 @@ export async function loginWithCaseNumber(fileTrackingNumber: string, password: 
   }
 
   // Email ile giriş yap (Supabase Auth hala email kullanıyor arka planda)
-  const email = customerData.email;
+  const email = (customerData as { email: string }).email;
   
   // Ensure Supabase client is properly initialized
   if (!supabase) {
@@ -39,7 +39,7 @@ export async function loginWithCaseNumber(fileTrackingNumber: string, password: 
 
   // Ensure user_auth record exists after login
   if (data.user) {
-    const { data: existingAuth, error: checkError } = await supabase
+    const { data: existingAuth, error: checkError } = await (supabase as any)
       .from('user_auth')
       .select('id')
       .eq('id', data.user.id)
@@ -47,11 +47,11 @@ export async function loginWithCaseNumber(fileTrackingNumber: string, password: 
 
     // If user_auth doesn't exist, create it
     if (checkError || !existingAuth) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from('user_auth')
         .insert({
           id: data.user.id,
-          customer_id: customerData.id,
+          customer_id: (customerData as { id: string }).id,
           role: 'customer',
         });
 
@@ -61,9 +61,9 @@ export async function loginWithCaseNumber(fileTrackingNumber: string, password: 
       }
     } else {
       // Update customer_id if it's missing
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from('user_auth')
-        .update({ customer_id: customerData.id })
+        .update({ customer_id: (customerData as { id: string }).id })
         .eq('id', data.user.id);
 
       if (updateError) {
@@ -93,7 +93,7 @@ export async function getCurrentCustomer(): Promise<any> {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('user_auth')
     .select('customer_id, customers(*)')
     .eq('id', user.id)
@@ -114,7 +114,7 @@ export async function getCurrentUserCases(): Promise<any[]> {
 
     console.log('getCurrentUserCases: User found:', user.id);
 
-    const { data: userAuth, error: authError } = await supabase
+    const { data: userAuth, error: authError } = await (supabase as any)
       .from('user_auth')
       .select('customer_id')
       .eq('id', user.id)
@@ -125,20 +125,21 @@ export async function getCurrentUserCases(): Promise<any[]> {
       throw authError;
     }
 
-    if (!userAuth || !userAuth.customer_id) {
+    const authData = userAuth as { customer_id: string } | null;
+    if (!authData || !authData.customer_id) {
       console.error('getCurrentUserCases: No customer_id found for user');
       return [];
     }
 
-    console.log('getCurrentUserCases: Customer ID:', userAuth.customer_id);
+    console.log('getCurrentUserCases: Customer ID:', authData.customer_id);
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('cases')
       .select(`
         *,
         customers (*)
       `)
-      .eq('customer_id', userAuth.customer_id)
+      .eq('customer_id', authData.customer_id)
       .order('created_at', { ascending: false });
 
     if (error) {

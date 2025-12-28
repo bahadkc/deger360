@@ -313,19 +313,19 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       if (emailChanged && newEmail) {
         try {
           // Get auth user ID from user_auth table
-          const { data: userAuth, error: userAuthError } = await (supabase
+          const { data: userAuth, error: userAuthError } = await supabase
             .from('user_auth')
             .select('id')
             .eq('customer_id', customerId)
-            .single() as any);
+            .single();
 
-          if (!userAuthError && userAuth?.id) {
+          if (!userAuthError && userAuth && (userAuth as { id: string }).id) {
             // Update email via API
             const response = await fetch('/api/update-user-email', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                userId: userAuth.id,
+                userId: (userAuth as { id: string }).id,
                 newEmail: newEmail.trim(),
               }),
             });
@@ -443,9 +443,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         console.warn('notary_and_file_expenses column may not exist, skipping...');
       }
       
-      // Type assertion to bypass Supabase type inference issue
-      const updateQuery = supabase.from('cases') as any;
-      const { error: caseError } = await updateQuery
+      const { error: caseError } = await (supabase as any)
+        .from('cases')
         .update(caseUpdateData)
         .eq('id', caseData.id);
 
@@ -454,9 +453,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         if (caseError.message?.includes('notary_and_file_expenses')) {
           console.warn('notary_and_file_expenses column not found, retrying without it...');
           const { notary_and_file_expenses, ...caseUpdateDataWithoutNotary } = caseUpdateData;
-          // Type assertion to bypass Supabase type inference issue
-          const retryUpdateQuery = supabase.from('cases') as any;
-          const { error: retryError } = await retryUpdateQuery
+          const { error: retryError } = await (supabase as any)
+            .from('cases')
             .update(caseUpdateDataWithoutNotary)
             .eq('id', caseData.id);
           
@@ -486,7 +484,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               admin_id: adminId,
             }));
 
-            const { error: insertError } = await supabase
+            const { error: insertError } = await (supabase as any)
               .from('case_admins')
               .insert(assignments);
 
@@ -574,7 +572,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.full_name}
               onChange={(e) => setCustomerData({ ...customerData, full_name: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -583,7 +580,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.phone}
               onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -593,7 +589,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.email}
               onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -602,7 +597,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.tc_kimlik}
               onChange={(e) => setCustomerData({ ...customerData, tc_kimlik: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               placeholder="11 haneli TC kimlik numarası"
               maxLength={11}
             />
@@ -613,7 +607,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.address}
               onChange={(e) => setCustomerData({ ...customerData, address: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -622,7 +615,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={customerData.iban}
               onChange={(e) => setCustomerData({ ...customerData, iban: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               placeholder="TR00 0000 0000 0000 0000 0000 00"
             />
           </div>
@@ -636,7 +628,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 setCustomerData({ ...customerData, payment_person_name: e.target.value })
               }
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -649,7 +640,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 setCustomerData({ ...customerData, insurance_company: e.target.value })
               }
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               placeholder="Örn: Allianz Sigorta, Anadolu Sigorta"
             />
           </div>
@@ -666,7 +656,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={vehicleData.vehicle_plate}
               onChange={(e) => setVehicleData({ ...vehicleData, vehicle_plate: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -677,7 +666,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 setVehicleData({ ...vehicleData, vehicle_brand_model: e.target.value })
               }
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
           <div>
@@ -687,7 +675,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={vehicleData.accident_date}
               onChange={(e) => setVehicleData({ ...vehicleData, accident_date: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
             />
           </div>
         </div>
@@ -709,7 +696,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 setFinancialData({ ...financialData, value_loss_amount: e.target.value })
               }
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               className="w-full"
             />
           </div>
@@ -724,7 +710,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 setFinancialData({ ...financialData, fault_rate: e.target.value })
               }
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               className="w-full"
             />
           </div>
@@ -741,7 +726,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 setFinancialData({ ...financialData, notary_and_file_expenses: e.target.value })
               }
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               className="w-full"
             />
           </div>
@@ -788,7 +772,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={fileData.status}
               onChange={(e) => setFileData({ ...fileData, status: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg"
             >
               <option value="active">Aktif</option>
@@ -813,7 +796,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               value={fileData.assigned_lawyer}
               onChange={(e) => setFileData({ ...fileData, assigned_lawyer: e.target.value })}
               disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
               placeholder="Av. Ad Soyad"
             />
           </div>
@@ -834,7 +816,6 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                   type="button"
                   onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
                   disabled={!isEditing || !canEditData}
-              readOnly={!canEditData}
                   className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg border-2 transition-colors text-left flex items-center justify-between text-sm md:text-base ${
                     !isEditing
                       ? 'bg-neutral-50 border-neutral-200 cursor-not-allowed'

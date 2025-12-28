@@ -20,7 +20,7 @@ export function DateFilter({ onDateRangeChange }: DateFilterProps) {
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
     onDateRangeChange('this_month', startDate, endDate);
-  }, []);
+  }, [onDateRangeChange]);
 
   const handleRangeChange = (range: DateRangeType) => {
     setSelectedRange(range);

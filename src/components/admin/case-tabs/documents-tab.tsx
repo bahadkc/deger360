@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, FileText, Download, Trash2 } from 'lucide-react';
@@ -42,16 +42,7 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
   const [canEditData, setCanEditData] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  useEffect(() => {
-    loadDocuments();
-    const checkPermissions = async () => {
-      const editPermission = await canEdit();
-      setCanEditData(editPermission);
-    };
-    checkPermissions();
-  }, [caseId]);
-
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('documents')
@@ -66,7 +57,16 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId]);
+
+  useEffect(() => {
+    loadDocuments();
+    const checkPermissions = async () => {
+      const editPermission = await canEdit();
+      setCanEditData(editPermission);
+    };
+    checkPermissions();
+  }, [caseId, loadDocuments]);
 
   const formatFileSize = (bytes: number | null) => {
     if (!bytes) return 'Bilinmiyor';

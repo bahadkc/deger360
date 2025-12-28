@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,19 +19,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    checkAdminAccess();
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      checkAdminAccess();
-    });
-
-    return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  const checkAdminAccess = async () => {
+  const checkAdminAccess = useCallback(async () => {
     try {
       const adminStatus = await isAdmin();
       if (!adminStatus && pathname !== adminRoutes.login) {
@@ -55,7 +43,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pathname, router]);
+
+  useEffect(() => {
+    checkAdminAccess();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdminAccess();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [checkAdminAccess]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

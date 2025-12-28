@@ -3,7 +3,7 @@
 import { PortalLayout } from '@/components/portal/portal-layout';
 import { Card } from '@/components/ui/card';
 import { User, Car, Bell, MessageCircle, AlertCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentUserCases } from '@/lib/supabase/auth';
 
@@ -18,6 +18,33 @@ export default function AyarlarPage() {
     confirmPassword: '',
   });
   const [changingPassword, setChangingPassword] = useState(false);
+
+  const customerId = useMemo(() => customerData?.id, [customerData?.id]);
+  const caseId = useMemo(() => caseData?.id, [caseData?.id]);
+
+  const loadAccountData = useCallback(async () => {
+    try {
+      console.log('Settings: Loading data...');
+      const cases = await getCurrentUserCases();
+      console.log('Settings: Cases received:', cases);
+      
+      if (cases && cases.length > 0) {
+        const currentCase = cases[0];
+        console.log('Settings: Current case:', currentCase);
+        console.log('Settings: Customer data:', currentCase.customers);
+        
+        // Case already includes customer data from getCurrentUserCases
+        setCaseData(currentCase);
+        setCustomerData(currentCase.customers);
+      } else {
+        console.warn('Settings: No cases found for current user');
+      }
+    } catch (error) {
+      console.error('Settings: Error loading account data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadAccountData();
@@ -66,31 +93,7 @@ export default function AyarlarPage() {
       supabase.removeChannel(customerChannel);
       supabase.removeChannel(caseChannel);
     };
-  }, [customerData?.id, caseData?.id]);
-
-  const loadAccountData = async () => {
-    try {
-      console.log('Settings: Loading data...');
-      const cases = await getCurrentUserCases();
-      console.log('Settings: Cases received:', cases);
-      
-      if (cases && cases.length > 0) {
-        const currentCase = cases[0];
-        console.log('Settings: Current case:', currentCase);
-        console.log('Settings: Customer data:', currentCase.customers);
-        
-        // Case already includes customer data from getCurrentUserCases
-        setCaseData(currentCase);
-        setCustomerData(currentCase.customers);
-      } else {
-        console.warn('Settings: No cases found for current user');
-      }
-    } catch (error) {
-      console.error('Settings: Error loading account data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [customerId, caseId, loadAccountData, customerData, caseData]);
 
   if (loading) {
     return (

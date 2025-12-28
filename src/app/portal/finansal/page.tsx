@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { PortalLayout } from '@/components/portal/portal-layout';
 import { Card } from '@/components/ui/card';
 import { CheckCircle2, Clock, AlertCircle } from 'lucide-react';
@@ -13,6 +13,46 @@ export default function FinansalPage() {
   const [caseData, setCaseData] = useState<any>(null);
   const [customerData, setCustomerData] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
+
+  const customerId = useMemo(() => customerData?.id, [customerData?.id]);
+  const caseId = useMemo(() => caseData?.id, [caseData?.id]);
+
+  const loadFinancialData = useCallback(async () => {
+    try {
+      console.log('Financial: Loading data...');
+      // Get current user's cases (now includes customer data)
+      const cases = await getCurrentUserCases();
+      console.log('Financial: Cases received:', cases);
+      
+      if (cases && cases.length > 0) {
+        const currentCase = cases[0]; // Get first active case
+        console.log('Financial: Current case:', currentCase);
+        console.log('Financial: Customer data:', currentCase.customers);
+        
+        // Case already includes customer data from getCurrentUserCases
+        setCaseData(currentCase);
+        setCustomerData(currentCase.customers);
+        
+        console.log('Financial: IBAN:', currentCase.customers?.iban);
+
+        // Get payments
+        const { data: paymentsData, error: paymentsError } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('case_id', currentCase.id)
+          .order('payment_date', { ascending: false }) as { data: any[] | null; error: any };
+
+        if (paymentsError) throw paymentsError;
+        setPayments(paymentsData || []);
+      } else {
+        console.warn('Financial: No cases found for current user');
+      }
+    } catch (error) {
+      console.error('Financial: Error loading financial data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadFinancialData();
@@ -81,44 +121,7 @@ export default function FinansalPage() {
       supabase.removeChannel(caseChannel);
       supabase.removeChannel(paymentChannel);
     };
-  }, [customerData?.id, caseData?.id]);
-
-  const loadFinancialData = async () => {
-    try {
-      console.log('Financial: Loading data...');
-      // Get current user's cases (now includes customer data)
-      const cases = await getCurrentUserCases();
-      console.log('Financial: Cases received:', cases);
-      
-      if (cases && cases.length > 0) {
-        const currentCase = cases[0]; // Get first active case
-        console.log('Financial: Current case:', currentCase);
-        console.log('Financial: Customer data:', currentCase.customers);
-        
-        // Case already includes customer data from getCurrentUserCases
-        setCaseData(currentCase);
-        setCustomerData(currentCase.customers);
-        
-        console.log('Financial: IBAN:', currentCase.customers?.iban);
-
-        // Get payments
-        const { data: paymentsData, error: paymentsError } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('case_id', currentCase.id)
-          .order('payment_date', { ascending: false }) as { data: any[] | null; error: any };
-
-        if (paymentsError) throw paymentsError;
-        setPayments(paymentsData || []);
-      } else {
-        console.warn('Financial: No cases found for current user');
-      }
-    } catch (error) {
-      console.error('Financial: Error loading financial data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [customerId, caseId, loadFinancialData, customerData, caseData]);
 
   // Calculate values from case data
   const degerKaybi = parseFloat(caseData?.value_loss_amount?.toString() || '0');

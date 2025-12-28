@@ -43,7 +43,7 @@ export class DatabaseAccess {
     const { data, error } = await query;
 
     if (error) throw error;
-    return data as Tables[T]['Row'][];
+    return data as any;
   }
 
   /**
@@ -51,17 +51,17 @@ export class DatabaseAccess {
    */
   static async getById<T extends TableName>(
     table: T,
-    id: string,
+    id: string | number,
     select?: string
   ): Promise<Tables[T]['Row']> {
     const { data, error } = await supabase
       .from(table)
       .select(select || '*')
-      .eq('id', id)
+      .eq('id', id as any)
       .single();
 
     if (error) throw error;
-    return data as Tables[T]['Row'];
+    return data as any;
   }
 
   /**
@@ -91,7 +91,7 @@ export class DatabaseAccess {
     const { data, error } = await query;
 
     if (error) throw error;
-    return data as Tables[T]['Row'][];
+    return data as any;
   }
 
   /**
@@ -103,12 +103,12 @@ export class DatabaseAccess {
   ): Promise<Tables[T]['Row']> {
     const { data: inserted, error } = await supabase
       .from(table)
-      .insert(data)
+      .insert(data as any)
       .select()
       .single();
 
     if (error) throw error;
-    return inserted as Tables[T]['Row'];
+    return inserted as any;
   }
 
   /**
@@ -116,15 +116,15 @@ export class DatabaseAccess {
    */
   static async insertMany<T extends TableName>(
     table: T,
-    data: Tables[T]['Insert'][]
-  ): Promise<Tables[T]['Row'][]> {
+    data: any[]
+  ): Promise<any[]> {
     const { data: inserted, error } = await supabase
       .from(table)
-      .insert(data)
+      .insert(data as any)
       .select();
 
     if (error) throw error;
-    return inserted as Tables[T]['Row'][];
+    return inserted as any;
   }
 
   /**
@@ -132,18 +132,18 @@ export class DatabaseAccess {
    */
   static async update<T extends TableName>(
     table: T,
-    id: string,
+    id: string | number,
     updates: Tables[T]['Update']
-  ): Promise<Tables[T]['Row']> {
+  ): Promise<any> {
     const { data, error } = await supabase
       .from(table)
-      .update(updates)
-      .eq('id', id)
+      .update(updates as any)
+      .eq('id', id as any)
       .select()
       .single();
 
     if (error) throw error;
-    return data as Tables[T]['Row'];
+    return data as any;
   }
 
   /**
@@ -154,15 +154,15 @@ export class DatabaseAccess {
     field: keyof Tables[T]['Row'],
     value: any,
     updates: Tables[T]['Update']
-  ): Promise<Tables[T]['Row'][]> {
+  ): Promise<any[]> {
     const { data, error } = await supabase
       .from(table)
-      .update(updates)
+      .update(updates as any)
       .eq(field as string, value)
       .select();
 
     if (error) throw error;
-    return data as Tables[T]['Row'][];
+    return data as any;
   }
 
   /**
@@ -172,7 +172,7 @@ export class DatabaseAccess {
     table: T,
     id: string
   ): Promise<void> {
-    const { error } = await supabase.from(table).delete().eq('id', id);
+    const { error } = await supabase.from(table).delete().eq('id', id as any);
 
     if (error) throw error;
   }
@@ -188,7 +188,7 @@ export class DatabaseAccess {
     const { error } = await supabase
       .from(table)
       .delete()
-      .eq(field as string, value);
+      .eq(field as string, value as any);
 
     if (error) throw error;
   }
@@ -206,7 +206,7 @@ export class DatabaseAccess {
     let query = supabase.from(table).select('*', { count: 'exact', head: true });
 
     if (filter) {
-      query = query.eq(filter.field as string, filter.value);
+      query = query.eq(filter.field as string, filter.value as any);
     }
 
     const { count, error } = await query;
@@ -220,12 +220,12 @@ export class DatabaseAccess {
    */
   static async exists<T extends TableName>(
     table: T,
-    id: string
+    id: string | number
   ): Promise<boolean> {
     const { data, error } = await supabase
       .from(table)
       .select('id')
-      .eq('id', id)
+      .eq('id', id as any)
       .single();
 
     return !error && !!data;
@@ -239,24 +239,24 @@ export const db = {
   // Customers
   customers: {
     getAll: () => DatabaseAccess.getAll('customers'),
-    getById: (id: string) => DatabaseAccess.getById('customers', id),
+    getById: (id: string | number) => DatabaseAccess.getById('customers', id as any),
     getByEmail: (email: string) =>
       DatabaseAccess.getByField('customers', 'email', email),
     getByTrackingNumber: (trackingNumber: string) =>
       DatabaseAccess.getByField('customers', 'dosya_takip_numarasi', trackingNumber),
     insert: (data: Tables['customers']['Insert']) =>
       DatabaseAccess.insert('customers', data),
-    update: (id: string, updates: Tables['customers']['Update']) =>
-      DatabaseAccess.update('customers', id, updates),
-    delete: (id: string) => DatabaseAccess.delete('customers', id),
+    update: (id: string | number, updates: Tables['customers']['Update']) =>
+      DatabaseAccess.update('customers', id as any, updates as any),
+    delete: (id: string | number) => DatabaseAccess.delete('customers', id as any),
     count: () => DatabaseAccess.count('customers'),
   },
 
   // Cases
   cases: {
-    getAll: (options?: { orderBy?: string; ascending?: boolean; limit?: number }) =>
+    getAll: (options?: { orderBy?: keyof Tables['cases']['Row']; ascending?: boolean; limit?: number }) =>
       DatabaseAccess.getAll('cases', options),
-    getById: (id: string) => DatabaseAccess.getById('cases', id),
+    getById: (id: string | number) => DatabaseAccess.getById('cases', id as any),
     getByCaseNumber: (caseNumber: string) =>
       DatabaseAccess.getByField('cases', 'case_number', caseNumber),
     getByCustomerId: (customerId: string) =>
@@ -458,39 +458,39 @@ export const dbAdmin = {
       if (error) throw error;
       return data as Tables['customers']['Row'][];
     },
-    getById: async (id: string) => {
+    getById: async (id: string | number) => {
       const { data, error } = await supabaseAdmin
         .from('customers')
         .select('*')
-        .eq('id', id)
+        .eq('id', id as any)
         .single();
       if (error) throw error;
-      return data as Tables['customers']['Row'];
+      return data as never;
     },
     insert: async (data: Tables['customers']['Insert']) => {
       const { data: inserted, error } = await supabaseAdmin
         .from('customers')
-        .insert(data)
+        .insert(data as never)
         .select()
         .single();
       if (error) throw error;
-      return inserted as Tables['customers']['Row'];
+      return inserted as never;
     },
-    update: async (id: string, updates: Tables['customers']['Update']) => {
+    update: async (id: string | number, updates: Tables['customers']['Update']) => {
       const { data, error } = await supabaseAdmin
         .from('customers')
-        .update(updates)
-        .eq('id', id)
+        .update(updates as never)
+        .eq('id', id as any)
         .select()
         .single();
       if (error) throw error;
-      return data as Tables['customers']['Row'];
+      return data as never;
     },
-    delete: async (id: string) => {
+    delete: async (id: string | number) => {
       const { error } = await supabaseAdmin
         .from('customers')
         .delete()
-        .eq('id', id);
+        .eq('id', id as any);
       if (error) throw error;
     },
   },
@@ -499,5 +499,7 @@ export const dbAdmin = {
 
 /**
  * Export the Supabase clients for direct use if needed
+ * Note: createServerSupabaseClient should be imported directly from './server' in Server Components only
+ * Note: getServerDb should be imported from './db-server' in Server Components only
  */
 export { supabase, supabaseAdmin };
