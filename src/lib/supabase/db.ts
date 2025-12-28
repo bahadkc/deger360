@@ -7,7 +7,6 @@
 
 import { supabase } from './client';
 import { supabaseAdmin } from './admin';
-import { createServerSupabaseClient } from './server';
 import { Database } from './database.types';
 
 type Tables = Database['public']['Tables'];
@@ -499,35 +498,6 @@ export const dbAdmin = {
 };
 
 /**
- * Server-side database operations
- * Use this in Server Components and API routes
- */
-export function getServerDb() {
-  const supabase = createServerSupabaseClient();
-  
-  return {
-    customers: {
-      getAll: async () => {
-        const { data, error } = await supabase.from('customers').select('*');
-        if (error) throw error;
-        return data as Tables['customers']['Row'][];
-      },
-      getById: async (id: string) => {
-        const { data, error } = await supabase
-          .from('customers')
-          .select('*')
-          .eq('id', id)
-          .single();
-        if (error) throw error;
-        return data as Tables['customers']['Row'];
-      },
-      // Add more methods as needed...
-    },
-    // Add other tables as needed...
-  };
-}
-
-/**
  * Export the Supabase clients for direct use if needed
  */
-export { supabase, supabaseAdmin, createServerSupabaseClient };
+export { supabase, supabaseAdmin };

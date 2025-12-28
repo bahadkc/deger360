@@ -8,13 +8,16 @@
 // Clients
 export { supabase } from './client';
 export { supabaseAdmin } from './admin';
-export { createServerSupabaseClient } from './server';
+// Note: createServerSupabaseClient should be imported directly from './server' 
+// in Server Components only (it uses next/headers which is not available in Client Components)
 
 // Database Types
 export type { Database } from './database.types';
 
 // Database Access Utilities
-export { DatabaseAccess, db, dbAdmin, getServerDb } from './db';
+export { DatabaseAccess, db, dbAdmin } from './db';
+// Note: getServerDb should be imported directly from './server-db' in Server Components only
+// (it uses createServerSupabaseClient which requires next/headers)
 
 // API Utilities (existing)
 export {
