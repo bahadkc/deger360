@@ -28,7 +28,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const checkAdminAccess = async () => {
     try {

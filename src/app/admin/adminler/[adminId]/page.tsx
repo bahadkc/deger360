@@ -81,6 +81,7 @@ export default function AdminDetayPage() {
         supabase.removeChannel(casesChannel);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminId]);
 
   const loadAdminData = async () => {
