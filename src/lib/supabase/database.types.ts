@@ -18,6 +18,8 @@ export interface Database {
           address: string | null
           tc_kimlik: string | null
           dosya_takip_numarasi: string | null
+          iban: string | null
+          payment_person_name: string | null
           created_at: string
           updated_at: string
         }
@@ -29,6 +31,8 @@ export interface Database {
           address?: string | null
           tc_kimlik?: string | null
           dosya_takip_numarasi?: string | null
+          iban?: string | null
+          payment_person_name?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -40,6 +44,8 @@ export interface Database {
           address?: string | null
           tc_kimlik?: string | null
           dosya_takip_numarasi?: string | null
+          iban?: string | null
+          payment_person_name?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -60,10 +66,12 @@ export interface Database {
           estimated_compensation: number | null
           commission_rate: number
           current_stage: string
+          board_stage: string | null
           assigned_lawyer: string | null
           start_date: string
           estimated_completion_date: string | null
           completion_date: string | null
+          notary_and_file_expenses: number | null
           created_at: string
           updated_at: string
         }
@@ -82,10 +90,12 @@ export interface Database {
           estimated_compensation?: number | null
           commission_rate?: number
           current_stage?: string
+          board_stage?: string | null
           assigned_lawyer?: string | null
           start_date?: string
           estimated_completion_date?: string | null
           completion_date?: string | null
+          notary_and_file_expenses?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -104,10 +114,12 @@ export interface Database {
           estimated_compensation?: number | null
           commission_rate?: number
           current_stage?: string
+          board_stage?: string | null
           assigned_lawyer?: string | null
           start_date?: string
           estimated_completion_date?: string | null
           completion_date?: string | null
+          notary_and_file_expenses?: number | null
           created_at?: string
           updated_at?: string
         }

@@ -71,7 +71,7 @@ export default function BelgelerPage() {
           .from('documents')
           .select('*')
           .eq('case_id', currentCase.id)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
 
         if (error) {
           console.error('Documents: Error loading documents:', error);

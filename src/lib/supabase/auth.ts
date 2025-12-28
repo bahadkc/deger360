@@ -82,14 +82,14 @@ export async function logout() {
 }
 
 // Get current user
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<any> {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error) throw error;
   return user;
 }
 
 // Get current customer
-export async function getCurrentCustomer() {
+export async function getCurrentCustomer(): Promise<any> {
   const user = await getCurrentUser();
   if (!user) return null;
 
@@ -104,7 +104,7 @@ export async function getCurrentCustomer() {
 }
 
 // Get current user's cases with customer data
-export async function getCurrentUserCases() {
+export async function getCurrentUserCases(): Promise<any[]> {
   try {
     const user = await getCurrentUser();
     if (!user) {

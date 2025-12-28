@@ -10,6 +10,7 @@ import {
   CHECKLIST_ITEMS,
   isSectionCompleted,
   getCurrentSection,
+  ChecklistSection,
 } from '@/lib/checklist-sections';
 
 interface ChecklistTabProps {
@@ -85,7 +86,7 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
       const { data, error } = await supabase
         .from('admin_checklist')
         .select('*')
-        .eq('case_id', caseId);
+        .eq('case_id', caseId) as { data: any[] | null; error: any };
 
       if (error) throw error;
 
@@ -122,8 +123,8 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
       // Eğer tüm sectionlar tamamlandıysa, son section'a geç
       if (currentSectionIndex === -1) {
         const lastSection = CHECKLIST_SECTIONS[CHECKLIST_SECTIONS.length - 1];
-        const { error } = await supabase
-          .from('cases')
+        const { error } = await (supabase
+          .from('cases') as any)
           .update({ board_stage: lastSection.boardStage })
           .eq('id', caseId);
         if (error) console.error('Error updating board stage:', error);
@@ -139,8 +140,8 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
         
         // Önceki section tamamlandıysa, mevcut section'a geç
         if (isSectionCompleted(previousSection, checklistItems.map((item) => ({ task_key: item.task_key, completed: item.completed })))) {
-          const { error } = await supabase
-            .from('cases')
+          const { error } = await (supabase
+            .from('cases') as any)
             .update({ board_stage: currentSection.boardStage })
             .eq('id', caseId);
 
@@ -153,8 +154,8 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
         const firstSection = CHECKLIST_SECTIONS[0];
         if (isSectionCompleted(firstSection, checklistItems.map((item) => ({ task_key: item.task_key, completed: item.completed }))) && CHECKLIST_SECTIONS.length > 1) {
           const nextSection = CHECKLIST_SECTIONS[1];
-          const { error } = await supabase
-            .from('cases')
+          const { error } = await (supabase
+            .from('cases') as any)
             .update({ board_stage: nextSection.boardStage })
             .eq('id', caseId);
 
@@ -174,8 +175,8 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
 
       if (existingItem?.id) {
         // Update existing
-        const { error } = await supabase
-          .from('admin_checklist')
+        const { error } = await (supabase
+          .from('admin_checklist') as any)
           .update({
             completed: !currentCompleted,
             completed_at: !currentCompleted ? new Date().toISOString() : null,
@@ -186,7 +187,7 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
         if (error) throw error;
       } else {
         // Create new
-        const { error } = await supabase.from('admin_checklist').insert({
+        const { error } = await (supabase.from('admin_checklist') as any).insert({
           case_id: caseId,
           task_key: taskKey,
           title: CHECKLIST_ITEMS.find((item) => item.key === taskKey)?.title || '',
@@ -201,14 +202,14 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
       await loadChecklist();
       
       // Yeni checklist'i al ve section kontrolü yap
-      const { data: updatedChecklist } = await supabase
+      const { data: updatedChecklist } = await (supabase
         .from('admin_checklist')
         .select('*')
-        .eq('case_id', caseId);
+        .eq('case_id', caseId) as any);
 
       if (updatedChecklist) {
         const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
-          const existing = updatedChecklist.find((c) => c.task_key === item.key);
+          const existing = updatedChecklist.find((c: any) => c.task_key === item.key);
           return existing || {
             id: '',
             task_key: item.key,

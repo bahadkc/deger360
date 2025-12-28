@@ -176,17 +176,17 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       if (!caseData?.id) return;
       
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase
           .from('case_admins')
           .select('admin_id')
-          .eq('case_id', caseData.id);
+          .eq('case_id', caseData.id) as any);
 
         if (error) {
           console.error('Error loading assigned admins:', error);
           return;
         }
 
-        setAssignedAdmins((data || []).map((item) => item.admin_id));
+        setAssignedAdmins((data || []).map((item: any) => item.admin_id));
       } catch (error) {
         console.error('Error loading assigned admins:', error);
       }
@@ -279,21 +279,21 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       let dosyaTakipNo = customerData.dosya_takip_numarasi?.trim();
       if (!dosyaTakipNo) {
         // Generate new tracking number if empty
-        const { data: existingCustomers } = await supabase
+        const { data: existingCustomers } = await (supabase
           .from('customers')
           .select('dosya_takip_numarasi')
-          .not('dosya_takip_numarasi', 'is', null);
+          .not('dosya_takip_numarasi', 'is', null) as any);
 
         const existingNumbers = (existingCustomers || [])
-          .map((c) => parseInt(c.dosya_takip_numarasi || '0'))
-          .filter((n) => !isNaN(n) && n >= 546178);
+          .map((c: any) => parseInt(c.dosya_takip_numarasi || '0'))
+          .filter((n: number) => !isNaN(n) && n >= 546178);
 
         dosyaTakipNo =
           existingNumbers.length === 0 ? '546179' : (Math.max(...existingNumbers) + 1).toString();
       }
 
-      const { error: customerError } = await supabase
-        .from('customers')
+      const { error: customerError } = await (supabase
+        .from('customers') as any)
         .update({
           full_name: customerData.full_name,
           phone: customerData.phone,
@@ -313,11 +313,11 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       if (emailChanged && newEmail) {
         try {
           // Get auth user ID from user_auth table
-          const { data: userAuth, error: userAuthError } = await supabase
+          const { data: userAuth, error: userAuthError } = await (supabase
             .from('user_auth')
             .select('id')
             .eq('customer_id', customerId)
-            .single();
+            .single() as any);
 
           if (!userAuthError && userAuth?.id) {
             // Update email via API

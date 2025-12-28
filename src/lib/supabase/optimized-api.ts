@@ -18,7 +18,7 @@ export const optimizedCasesApi = {
   /**
    * Get single case by ID - Only fetch required fields
    */
-  async getById(caseId: string, options?: { includeRelations?: string[] }) {
+  async getById(caseId: string, options?: { includeRelations?: string[] }): Promise<any> {
     const cacheKey = getCacheKey('case', caseId, JSON.stringify(options));
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;
@@ -58,7 +58,7 @@ export const optimizedCasesApi = {
     offset?: number;
     stage?: string;
     assignedTo?: string[];
-  }) {
+  }): Promise<any[]> {
     const cacheKey = getCacheKey('board_cases', JSON.stringify(options));
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;
@@ -116,7 +116,7 @@ export const optimizedCasesApi = {
   /**
    * Get cases count - Lightweight query
    */
-  async getCount(filters?: { stage?: string; assignedTo?: string[] }) {
+  async getCount(filters?: { stage?: string; assignedTo?: string[] }): Promise<number> {
     const cacheKey = getCacheKey('cases_count', JSON.stringify(filters));
     const cached = supabaseCache.get<number>(cacheKey);
     if (cached !== null) return cached;
@@ -149,7 +149,7 @@ export const optimizedCustomersApi = {
     offset?: number;
     search?: string;
     assignedCaseIds?: string[];
-  }) {
+  }): Promise<any[]> {
     const cacheKey = getCacheKey('customers_list', JSON.stringify(options));
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;
@@ -211,7 +211,7 @@ export const optimizedCustomersApi = {
   /**
    * Get customer by ID - Selective fields
    */
-  async getById(customerId: string) {
+  async getById(customerId: string): Promise<any> {
     const cacheKey = getCacheKey('customer', customerId);
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;
@@ -235,7 +235,7 @@ export const optimizedDocumentsApi = {
   /**
    * Get documents for case - Only metadata, not file content
    */
-  async getByCaseId(caseId: string) {
+  async getByCaseId(caseId: string): Promise<any[]> {
     const cacheKey = getCacheKey('documents', caseId);
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;
@@ -259,7 +259,7 @@ export const optimizedActivitiesApi = {
   /**
    * Get activities for case - Paginated
    */
-  async getByCaseId(caseId: string, options?: { limit?: number; offset?: number }) {
+  async getByCaseId(caseId: string, options?: { limit?: number; offset?: number }): Promise<any[]> {
     const cacheKey = getCacheKey('activities', caseId, JSON.stringify(options));
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;
@@ -292,7 +292,7 @@ export const optimizedNotificationsApi = {
   /**
    * Get unread count - Lightweight query
    */
-  async getUnreadCount(customerId: string) {
+  async getUnreadCount(customerId: string): Promise<number> {
     const cacheKey = getCacheKey('notifications_count', customerId);
     const cached = supabaseCache.get<number>(cacheKey);
     if (cached !== null) return cached;
@@ -313,7 +313,7 @@ export const optimizedNotificationsApi = {
   /**
    * Get notifications - Paginated
    */
-  async getByCustomerId(customerId: string, options?: { limit?: number; offset?: number }) {
+  async getByCustomerId(customerId: string, options?: { limit?: number; offset?: number }): Promise<any[]> {
     const cacheKey = getCacheKey('notifications', customerId, JSON.stringify(options));
     const cached = supabaseCache.get(cacheKey);
     if (cached) return cached;

@@ -174,8 +174,9 @@ export function AdminBoard() {
     if (!draggedCase) return;
 
     try {
-      const { error } = await supabase
-        .from('cases')
+      // Update case board stage
+      const { error } = await (supabase
+        .from('cases') as any)
         .update({ board_stage: targetStage })
         .eq('id', draggedCase);
 

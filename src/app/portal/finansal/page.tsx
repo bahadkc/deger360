@@ -106,7 +106,7 @@ export default function FinansalPage() {
           .from('payments')
           .select('*')
           .eq('case_id', currentCase.id)
-          .order('payment_date', { ascending: false });
+          .order('payment_date', { ascending: false }) as { data: any[] | null; error: any };
 
         if (paymentsError) throw paymentsError;
         setPayments(paymentsData || []);

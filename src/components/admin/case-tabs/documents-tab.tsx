@@ -98,7 +98,7 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
       } = supabase.storage.from('documents').getPublicUrl(filePath);
 
       // Save document record
-      const { error: dbError } = await supabase.from('documents').insert({
+      const { error: dbError } = await (supabase.from('documents') as any).insert({
         case_id: caseId,
         name: file.name,
         file_path: filePath,
@@ -121,18 +121,18 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
     }
   };
 
-  const handleDownload = async (document: Document) => {
+  const handleDownload = async (doc: Document) => {
     try {
       const { data, error } = await supabase.storage
         .from('documents')
-        .download(document.file_path);
+        .download(doc.file_path);
 
       if (error) throw error;
 
       const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = document.name;
+      a.download = doc.name;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

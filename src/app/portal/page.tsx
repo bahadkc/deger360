@@ -180,7 +180,7 @@ export default function DashboardPage() {
         const { data: checklistData, error: checklistError } = await supabase
           .from('admin_checklist')
           .select('*')
-          .eq('case_id', currentCase.id);
+          .eq('case_id', currentCase.id) as { data: any[] | null; error: any };
 
         if (!checklistError && checklistData) {
           // Merge with default checklist items
@@ -266,7 +266,7 @@ export default function DashboardPage() {
           .from('documents')
           .select('*')
           .eq('case_id', currentCase.id)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
 
         if (!docsError && documentsData) {
           // Create document display list from expected documents
