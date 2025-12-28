@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
+import { captureException } from '@/lib/sentry';
+import { protectAPI, createProtectedResponse } from '@/lib/security/api-protection';
 
 export async function POST(request: NextRequest) {
+  // API Protection (bot detection, rate limiting, size validation)
+  const protection = await protectAPI(request, {
+    maxRequestSize: 100 * 1024, // 100KB max for contact form
+    rateLimit: {
+      windowMs: 60000,
+      maxRequests: 5,
+    },
+  });
+
+  if (protection) {
+    return protection; // Blocked by protection
+  }
+
   try {
     const data = await request.json();
+    logger.info('Contact form submission', { hasEmail: !!data.email });
     
     // Get base URL from request
     const url = new URL(request.url);
@@ -28,12 +45,19 @@ export async function POST(request: NextRequest) {
 
     const result = await createLeadResponse.json();
     
-    return NextResponse.json({ success: true, ...result }, { status: 200 });
+    return createProtectedResponse(
+      { success: true, ...result },
+      200
+    );
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json(
+    logger.error('Contact API error', { error: error.message, stack: error.stack });
+    captureException(error instanceof Error ? error : new Error(error.message), {
+      endpoint: '/api/contact',
+    });
+    
+    return createProtectedResponse(
       { error: error.message || 'Bir hata oluştu' },
-      { status: 500 }
+      500
     );
   }
 }

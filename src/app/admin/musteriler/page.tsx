@@ -6,8 +6,9 @@ import { AddCustomerModal } from '@/components/admin/add-customer-modal';
 import { Input } from '@/components/ui/input';
 import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase/client';
 import { getAssignedCaseIds, isSuperAdmin, canEdit } from '@/lib/supabase/admin-auth';
+import { optimizedCustomersApi, cacheInvalidation } from '@/lib/supabase/optimized-api';
+import { useDebounce } from '@/lib/utils/debounce';
 
 export default function MusterilerPage() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -17,6 +18,9 @@ export default function MusterilerPage() {
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [assignedCaseIds, setAssignedCaseIds] = useState<string[]>([]);
   const [canEditData, setCanEditData] = useState(false);
+  
+  // Debounce search query to reduce API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -35,8 +39,15 @@ export default function MusterilerPage() {
     loadCustomers();
   }, []);
 
-  const loadCustomers = async () => {
+  // Reload when debounced search query changes
+  useEffect(() => {
+    loadCustomers(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
+
+  const loadCustomers = async (search?: string) => {
     try {
+      setLoading(true);
+      
       // Update admin status and assigned cases
       const superAdmin = await isSuperAdmin();
       setIsSuperAdminUser(superAdmin);
@@ -47,51 +58,14 @@ export default function MusterilerPage() {
         setAssignedCaseIds(assignedIds);
       }
 
-      const { data, error } = await supabase
-        .from('customers')
-        .select(`
-          *,
-          cases (
-            id,
-            case_number,
-            status,
-            vehicle_plate,
-            vehicle_brand_model,
-            value_loss_amount,
-            fault_rate,
-            board_stage,
-            assigned_lawyer,
-            created_at
-          )
-        `)
-        .order('created_at', { ascending: false });
+      // Use optimized API with caching and pagination
+      const data = await optimizedCustomersApi.getList({
+        search: search || undefined,
+        assignedCaseIds: superAdmin ? undefined : assignedIds,
+        limit: 100, // Limit to prevent excessive data
+      });
 
-      if (error) throw error;
-
-      // Filter customers based on admin assignment (if not superadmin)
-      let filteredData = data || [];
-      if (!superAdmin) {
-        // If no assigned cases, show nothing (not superadmin and no assignments)
-        if (assignedIds.length === 0) {
-          filteredData = [];
-        } else {
-          // Filter by assigned cases
-          filteredData = filteredData.filter((customer: any) => {
-            // Check if customer has any case assigned to this admin
-            return customer.cases && customer.cases.some((caseItem: any) => 
-              assignedIds.includes(caseItem.id)
-            );
-          });
-        }
-      }
-
-      // Her müşterinin ilk case'ini al (çoğu müşterinin tek case'i var)
-      const customersWithCases = filteredData.map((customer: any) => ({
-        ...customer,
-        case: customer.cases && customer.cases.length > 0 ? customer.cases[0] : null,
-      }));
-
-      setCustomers(customersWithCases);
+      setCustomers(data);
     } catch (error) {
       console.error('Error loading customers:', error);
     } finally {
@@ -100,17 +74,8 @@ export default function MusterilerPage() {
   };
 
 
-  const filteredCustomers = customers.filter((customer) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      customer.full_name?.toLowerCase().includes(query) ||
-      customer.email?.toLowerCase().includes(query) ||
-      customer.phone?.toLowerCase().includes(query) ||
-      customer.case?.case_number?.toLowerCase().includes(query) ||
-      customer.dosya_takip_numarasi?.toLowerCase().includes(query)
-    );
-  });
+  // Filtering is now done server-side via optimized API
+  const filteredCustomers = customers;
 
   if (loading) {
     return (
@@ -123,35 +88,36 @@ export default function MusterilerPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6 py-4 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-800">Müşteriler</h1>
-            <p className="text-sm text-neutral-600">Tüm müşterileri görüntüleyin ve yönetin</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-800">Müşteriler</h1>
+            <p className="text-xs sm:text-sm text-neutral-600">Tüm müşterileri görüntüleyin ve yönetin</p>
           </div>
           {(canEditData || isSuperAdminUser) && (
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Yeni Müşteri
+            <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Yeni Müşteri</span>
+              <span className="sm:hidden">Yeni Ekle</span>
             </Button>
           )}
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
           <Input
             type="text"
             placeholder="Müşteri ara (ad, email, telefon, dosya no)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-9 sm:pl-10 text-sm sm:text-base"
           />
         </div>
       </div>
 
       {/* Customer List */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         <CustomerList customers={filteredCustomers} onDelete={loadCustomers} />
       </div>
 
@@ -161,7 +127,8 @@ export default function MusterilerPage() {
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={() => {
           setIsAddModalOpen(false);
-          loadCustomers();
+          cacheInvalidation.invalidateCustomer('all');
+          loadCustomers(debouncedSearchQuery);
         }}
       />
     </div>

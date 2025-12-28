@@ -175,22 +175,22 @@ export default function FinansalPage() {
             <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
               <p className="text-xs md:text-sm text-neutral-600 mb-1">Değer Kaybı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
-                {degerKaybi.toLocaleString('tr-TR')} TL
-              </p>
+                  {degerKaybi.toLocaleString('tr-TR')} TL
+                </p>
             </Card>
             
             <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
               <p className="text-xs md:text-sm text-neutral-600 mb-1">Karşı Tarafın Kusur Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
                 %{karsiTarafKusurOrani.toFixed(0)}
-              </p>
+                </p>
             </Card>
 
             <Card className="p-3 md:p-4 hover:shadow-md transition-shadow bg-green-100 border-green-400">
               <p className="text-xs md:text-sm text-neutral-600 mb-1">Noter ve Dosya Masrafları</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800 mb-1">
                 {noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL
-              </p>
+                </p>
               <p className="text-xs text-green-800 font-semibold">Biz karşılıyoruz!</p>
             </Card>
 
@@ -198,9 +198,9 @@ export default function FinansalPage() {
               <p className="text-xs md:text-sm text-neutral-600 mb-1">Müşteri Hakediş Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
                 %80
-              </p>
+                </p>
             </Card>
-          </div>
+              </div>
 
           <div className="mt-4 md:mt-6 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start gap-2">

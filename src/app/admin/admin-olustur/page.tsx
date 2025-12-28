@@ -8,6 +8,7 @@ import { Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/supabase/admin-auth';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { adminRoutes } from '@/lib/config/admin-paths';
 
 export default function AdminOlusturPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function AdminOlusturPage() {
       setLoading(false);
 
       if (!superAdmin) {
-        router.push('/admin');
+        router.push(adminRoutes.dashboard);
       }
     };
     checkAccess();

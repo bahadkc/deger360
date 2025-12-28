@@ -73,25 +73,25 @@ export function TestimonialsSection() {
   const duplicatedTestimonials = [...testimonials, ...testimonials, ...testimonials];
 
   return (
-    <section ref={ref} className="py-20 bg-white overflow-hidden">
-      <div className="container mx-auto px-4">
+    <section ref={ref} className="py-12 sm:py-16 md:py-20 bg-white overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-3 sm:mb-4">
             Müşterilerimiz Ne Diyor?
           </h2>
-          <p className="text-lg text-neutral-800">
+          <p className="text-base sm:text-lg text-neutral-800 px-2">
             Gerçek müşteri yorumları
           </p>
         </motion.div>
 
         <div className="relative overflow-hidden">
           <div 
-            className="flex gap-6"
+            className="flex gap-4 sm:gap-6"
             style={{
               width: 'max-content',
               animation: 'scroll 60s linear infinite',
@@ -107,7 +107,7 @@ export function TestimonialsSection() {
                   zIndex: 10,
                   transition: { duration: 0.15 }
                 }}
-                className={`bg-neutral-50 p-6 rounded-xl w-[350px] flex-shrink-0 transition-shadow duration-200 relative ${
+                className={`bg-neutral-50 p-4 sm:p-6 rounded-xl w-[280px] sm:w-[320px] md:w-[350px] flex-shrink-0 transition-shadow duration-200 relative ${
                   hoveredIndex === index 
                       ? 'shadow-xl' 
                       : 'shadow-md hover:shadow-lg'

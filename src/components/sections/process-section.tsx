@@ -55,18 +55,18 @@ export function ProcessSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="surec" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={ref} id="surec" className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-3 sm:mb-4">
             Süreç Nasıl İşliyor
           </h2>
-          <p className="text-lg text-neutral-800">
+          <p className="text-base sm:text-lg text-neutral-800 px-2">
             Tüm süreci biz yönetiyoruz, siz sadece takip edin
           </p>
         </motion.div>
@@ -81,35 +81,35 @@ export function ProcessSection() {
                 initial={{ opacity: 0, y: 40 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative pl-8 pb-12 last:pb-0"
+                className="relative pl-6 sm:pl-8 pb-8 sm:pb-12 last:pb-0"
               >
                 {/* Vertical Line */}
                 {index !== steps.length - 1 && (
-                  <div className="absolute left-[15px] top-12 bottom-0 w-0.5 bg-primary-blue/20" />
+                  <div className="absolute left-[11px] sm:left-[15px] top-10 sm:top-12 bottom-0 w-0.5 bg-primary-blue/20" />
                 )}
                 {/* Step */}
-                <div className="flex gap-6">
+                <div className="flex gap-3 sm:gap-6">
                   {/* Icon Circle */}
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary-orange rounded-full flex items-center justify-center text-white font-bold text-sm z-10">
+                  <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-primary-orange rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm z-10">
                     {step.number}
                   </div>
                   
                   {/* Content */}
-                  <div className="flex-grow bg-neutral-50 p-6 rounded-xl hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-primary-blue" />
+                  <div className="flex-grow bg-neutral-50 p-4 sm:p-6 rounded-xl hover:shadow-md transition-shadow">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-blue" />
                         </div>
-                        <h3 className="text-xl font-bold text-dark-blue">
+                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-dark-blue">
                           {step.title}
                         </h3>
                       </div>
-                      <span className="text-sm font-semibold text-primary-orange bg-primary-orange/10 px-3 py-1 rounded-full">
+                      <span className="text-xs sm:text-sm font-semibold text-primary-orange bg-primary-orange/10 px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
                         {step.duration}
                       </span>
                     </div>
-                    <p className="text-neutral-800">
+                    <p className="text-sm sm:text-base text-neutral-800">
                       {step.description}
                     </p>
                   </div>

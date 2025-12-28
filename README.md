@@ -121,20 +121,40 @@ Form gönderimi `/api/contact` endpoint'ine POST isteği yapar. Supabase entegra
 
 ## 🌐 Deployment
 
-### Vercel
+Detaylı deployment dokümantasyonu için: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+### Hızlı Başlangıç
+
+#### Vercel Deployment
+
+1. Vercel hesabı oluşturun ve GitHub repository'nizi bağlayın
+2. Environment variables'ları ekleyin (bkz: `ENV_PRODUCTION_TEMPLATE.txt`)
+3. Deploy butonuna tıklayın - Vercel otomatik deploy edecektir
+
+#### Docker Deployment
 
 ```bash
-vercel --prod
+# Build image
+npm run docker:build
+
+# Run with docker-compose
+npm run docker:run
+
+# Stop
+npm run docker:stop
 ```
 
 ### Environment Variables
 
-`.env.local` dosyası oluşturun:
+Production için gerekli environment variables:
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side only!)
+- `NEXT_PUBLIC_SITE_URL` - Production site URL
+- `NEXT_PUBLIC_GA_ID` - Google Analytics ID (optional)
+- `NEXT_PUBLIC_SENTRY_DSN` - Sentry DSN (optional)
 
-```
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-NEXT_PUBLIC_SITE_URL=https://degerkaybim.com
-```
+Detaylar için: `ENV_PRODUCTION_TEMPLATE.txt` dosyasına bakın.
 
 ## 📄 Lisans
 

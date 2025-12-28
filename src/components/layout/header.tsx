@@ -43,17 +43,17 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-      <div className="container mx-auto px-2">
-        <div className="flex items-center gap-4 h-16">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-4 h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 w-[200px]">
-            <Link href="/" className="flex items-center gap-2 -ml-2">
+          <div className="flex-shrink-0 w-auto sm:w-[200px]">
+            <Link href="/" className="flex items-center gap-2">
               <Image
                 src="/images/logo.png"
-                alt="Değer360 Logo"
+                alt="Değer360 - Araç Değer Kaybı Tazminatı Danışmanlığı Logo"
                 width={150}
                 height={50}
-                className="h-10 md:h-12 w-auto"
+                className="h-8 sm:h-10 md:h-12 w-auto"
                 priority
               />
             </Link>
@@ -106,7 +106,7 @@ export function Header() {
           </nav>
 
           {/* CTA Buttons - Right Aligned */}
-          <div className="hidden lg:flex items-center gap-2 flex-shrink-0 w-[200px] justify-end ml-4 -mr-2">
+          <div className="hidden lg:flex items-center gap-2 flex-shrink-0 w-[200px] justify-end ml-4">
             <Link
               href="/teklif"
               className="bg-primary-orange hover:bg-primary-orange-hover text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap inline-block text-center"
@@ -124,7 +124,7 @@ export function Header() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden"
+            className="lg:hidden ml-auto p-2 -mr-2"
             aria-label="Menu"
           >
             {mobileMenuOpen ? (

@@ -62,59 +62,59 @@ export default function RaporlarPage() {
     // Superadmin needs to select period first
     if (adminUser.role === 'superadmin') {
       return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center space-y-6 max-w-md">
-            <FileText className="w-16 h-16 text-neutral-400 mx-auto" />
-            <h2 className="text-2xl font-bold text-neutral-800">Rapor Oluştur</h2>
-            <p className="text-neutral-600">Rapor süresini seçin</p>
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="text-center space-y-4 sm:space-y-6 max-w-md w-full">
+            <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-neutral-400 mx-auto" />
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-800">Rapor Oluştur</h2>
+            <p className="text-sm sm:text-base text-neutral-600">Rapor süresini seçin</p>
             
-            <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
               <button
                 onClick={() => setSelectedPeriod('1_month')}
-                className={`p-4 rounded-lg border-2 transition-colors ${
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-colors ${
                   selectedPeriod === '1_month'
                     ? 'border-primary-blue bg-primary-blue text-white'
                     : 'border-neutral-200 hover:border-primary-blue'
                 }`}
               >
-                <div className="text-2xl mb-2">📅</div>
-                <div className="font-medium">1 Aylık</div>
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">📅</div>
+                <div className="font-medium text-sm sm:text-base">1 Aylık</div>
               </button>
               
               <button
                 onClick={() => setSelectedPeriod('3_months')}
-                className={`p-4 rounded-lg border-2 transition-colors ${
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-colors ${
                   selectedPeriod === '3_months'
                     ? 'border-primary-blue bg-primary-blue text-white'
                     : 'border-neutral-200 hover:border-primary-blue'
                 }`}
               >
-                <div className="text-2xl mb-2">📆</div>
-                <div className="font-medium">3 Aylık</div>
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">📆</div>
+                <div className="font-medium text-sm sm:text-base">3 Aylık</div>
               </button>
               
               <button
                 onClick={() => setSelectedPeriod('1_year')}
-                className={`p-4 rounded-lg border-2 transition-colors ${
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-colors ${
                   selectedPeriod === '1_year'
                     ? 'border-primary-blue bg-primary-blue text-white'
                     : 'border-neutral-200 hover:border-primary-blue'
                 }`}
               >
-                <div className="text-2xl mb-2">🗓️</div>
-                <div className="font-medium">1 Yıllık</div>
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🗓️</div>
+                <div className="font-medium text-sm sm:text-base">1 Yıllık</div>
               </button>
               
               <button
                 onClick={() => setSelectedPeriod('all_time')}
-                className={`p-4 rounded-lg border-2 transition-colors ${
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-colors ${
                   selectedPeriod === 'all_time'
                     ? 'border-primary-blue bg-primary-blue text-white'
                     : 'border-neutral-200 hover:border-primary-blue'
                 }`}
               >
-                <div className="text-2xl mb-2">∞</div>
-                <div className="font-medium">Baştan Sona</div>
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">∞</div>
+                <div className="font-medium text-sm sm:text-base">Baştan Sona</div>
               </button>
             </div>
             
@@ -134,12 +134,12 @@ export default function RaporlarPage() {
     
     // Other roles don't need period selection
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <FileText className="w-16 h-16 text-neutral-400 mx-auto" />
-          <h2 className="text-2xl font-bold text-neutral-800">Rapor Oluştur</h2>
-          <p className="text-neutral-600">Detaylı raporunuzu görmek için butona tıklayın</p>
-          <Button onClick={handleGenerateReport} size="lg" className="mt-4">
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="text-center space-y-4 max-w-md w-full">
+          <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-neutral-400 mx-auto" />
+          <h2 className="text-xl sm:text-2xl font-bold text-neutral-800">Rapor Oluştur</h2>
+          <p className="text-sm sm:text-base text-neutral-600">Detaylı raporunuzu görmek için butona tıklayın</p>
+          <Button onClick={handleGenerateReport} size="lg" className="mt-4 w-full sm:w-auto">
             <FileText className="w-5 h-5 mr-2" />
             Rapor Oluştur
           </Button>
@@ -175,7 +175,7 @@ export default function RaporlarPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {renderReport()}
     </div>
   );

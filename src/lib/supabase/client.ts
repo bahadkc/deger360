@@ -3,19 +3,17 @@ import { createBrowserClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from './database.types';
 
-console.log('🔍 Loading Supabase client...');
-console.log('URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log('Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Supabase credentials missing!');
+  if (process.env.NODE_ENV === 'development') {
+    console.error('❌ Supabase credentials missing!');
+    console.error('URL:', supabaseUrl);
+    console.error('Key exists:', !!supabaseAnonKey);
+  }
   throw new Error('Supabase environment variables are not configured');
 }
-
-console.log('✅ Creating Supabase client...');
 
 // Browser/Client-side Supabase client
 // createBrowserClient automatically handles cookies in browser environment
@@ -23,5 +21,3 @@ export const supabase = createBrowserClient<Database>(
   supabaseUrl,
   supabaseAnonKey
 );
-
-console.log('✅ Supabase client created successfully!');

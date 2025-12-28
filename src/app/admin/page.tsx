@@ -103,14 +103,14 @@ export default function AdminDashboardPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Stats Cards - Compact Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4 flex-shrink-0">
+      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-800">Süreç Yönetimi</h1>
-            <p className="text-sm text-neutral-600">Tüm dosyaları ve süreçleri yönetin</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-800">Süreç Yönetimi</h1>
+            <p className="text-xs sm:text-sm text-neutral-600">Tüm dosyaları ve süreçleri yönetin</p>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-2xl">📁</div>
             <div>

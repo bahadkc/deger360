@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { loginAsAdmin } from '@/lib/supabase/admin-auth';
 import { Lock, Mail } from 'lucide-react';
+import { adminRoutes } from '@/lib/config/admin-paths';
 
 export default function AdminGirisPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function AdminGirisPage() {
     try {
       await loginAsAdmin(email, password);
       // Clear any cached data before redirect
-      window.location.href = '/admin';
+      window.location.href = adminRoutes.dashboard;
     } catch (err: any) {
       console.error('Admin login error:', err);
       setError(err.message || 'Giriş başarısız. Lütfen tekrar deneyin.');

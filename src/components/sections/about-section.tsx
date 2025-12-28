@@ -31,20 +31,20 @@ export function AboutSection() {
   ];
 
   return (
-    <section ref={ref} id="hakkimizda" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={ref} id="hakkimizda" className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           {/* Şirket Hikayesi */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-4 sm:mb-6">
               Hakkımızda
             </h2>
-            <div className="prose prose-lg max-w-none text-left text-neutral-800 space-y-4">
+            <div className="prose prose-sm sm:prose-base md:prose-lg max-w-none text-left text-neutral-800 space-y-3 sm:space-y-4">
               <p>
                 Değer360 olarak, araç değer kaybı tazminatı konusunda uzmanlaşmış bir danışmanlık firmasıyız. 
                 Kaza sonrası mağduriyet yaşayan müşterilerimizin haklarını en etkili şekilde almalarını sağlamak 
@@ -73,7 +73,7 @@ export function AboutSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid md:grid-cols-3 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6"
           >
             {contactInfo.map((info, index) => {
               const Icon = info.icon;

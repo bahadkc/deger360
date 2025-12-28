@@ -8,6 +8,7 @@ import { ArrowLeft, User, Mail, Phone, Building2, Scale, UserCheck, Users } from
 import { supabase } from '@/lib/supabase/client';
 import { getAllAdmins } from '@/lib/supabase/admin-auth';
 import Link from 'next/link';
+import { adminRoutes } from '@/lib/config/admin-paths';
 
 interface AdminInfo {
   id: string;
@@ -89,7 +90,7 @@ export default function AdminDetayPage() {
       const admin = allAdmins.find((a) => a.id === adminId);
       
       if (!admin) {
-        router.push('/admin/adminler');
+        router.push(adminRoutes.admins);
         return;
       }
 
@@ -193,7 +194,7 @@ export default function AdminDetayPage() {
       {/* Header */}
       <div className="bg-white border-b border-neutral-200 px-6 py-4 flex-shrink-0">
         <div className="flex items-center gap-4 mb-4">
-          <Button variant="outline" onClick={() => router.push('/admin/adminler')}>
+          <Button variant="outline" onClick={() => router.push(adminRoutes.admins)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Geri
           </Button>
@@ -294,7 +295,7 @@ export default function AdminDetayPage() {
               </Card>
             ) : (
               assignedCustomers.map((customer) => (
-                <Link key={customer.case_id} href={`/admin/musteriler/${customer.case_id}`}>
+                <Link key={customer.case_id} href={adminRoutes.customerDetail(customer.case_id)}>
                   <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-primary-blue">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">

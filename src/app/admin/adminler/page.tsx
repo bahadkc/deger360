@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Search, UserCheck, Scale, Building2 } from 'lucide-react';
+import { Search, UserCheck, Scale, Building2, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase/client';
-import { getAllAdmins } from '@/lib/supabase/admin-auth';
+import { getAllAdmins, isSuperAdmin } from '@/lib/supabase/admin-auth';
 import Link from 'next/link';
+import { adminRoutes } from '@/lib/config/admin-paths';
 
 interface AdminUser {
   id: string;
@@ -22,8 +24,15 @@ export default function AdminlerPage() {
   const [acentes, setAcentes] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
+    const checkSuperAdmin = async () => {
+      const superAdmin = await isSuperAdmin();
+      setIsSuperAdminUser(superAdmin);
+    };
+    checkSuperAdmin();
     loadAdmins();
 
     // Real-time subscription for user_auth changes (when new admins are created)
@@ -104,6 +113,35 @@ export default function AdminlerPage() {
     );
   };
 
+  const handleDeleteAdmin = async (adminId: string, adminName: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!confirm(`"${adminName}" adlı admini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)) {
+      return;
+    }
+
+    try {
+      setDeletingId(adminId);
+      const response = await fetch(`/api/delete-admin?id=${adminId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Admin silinirken bir hata oluştu');
+      }
+
+      // Reload admins list
+      await loadAdmins();
+    } catch (error: any) {
+      alert(error.message || 'Admin silinirken bir hata oluştu');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -148,8 +186,8 @@ export default function AdminlerPage() {
             </div>
             <div className="space-y-3">
               {filterUsers(admins).map((admin) => (
-                <Link key={admin.id} href={`/admin/adminler/${admin.id}`}>
-                  <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-blue-300">
+                <Link key={admin.id} href={adminRoutes.adminDetail(admin.id)}>
+                  <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-blue-300 relative">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-neutral-800 mb-1">{admin.name || admin.email}</h3>
@@ -159,6 +197,16 @@ export default function AdminlerPage() {
                           <span className="font-semibold text-blue-600">{admin.assignedCaseCount || 0}</span>
                         </div>
                       </div>
+                      {isSuperAdminUser && (
+                        <button
+                          onClick={(e) => handleDeleteAdmin(admin.id, admin.name || admin.email, e)}
+                          disabled={deletingId === admin.id}
+                          className="ml-2 p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          title="Admini Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </Card>
                 </Link>
@@ -182,8 +230,8 @@ export default function AdminlerPage() {
             </div>
             <div className="space-y-3">
               {filterUsers(lawyers).map((lawyer) => (
-                <Link key={lawyer.id} href={`/admin/adminler/${lawyer.id}`}>
-                  <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-purple-300">
+                <Link key={lawyer.id} href={adminRoutes.adminDetail(lawyer.id)}>
+                  <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-purple-300 relative">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-neutral-800 mb-1">{lawyer.name || lawyer.email}</h3>
@@ -193,6 +241,16 @@ export default function AdminlerPage() {
                           <span className="font-semibold text-purple-600">{lawyer.assignedCaseCount || 0}</span>
                         </div>
                       </div>
+                      {isSuperAdminUser && (
+                        <button
+                          onClick={(e) => handleDeleteAdmin(lawyer.id, lawyer.name || lawyer.email, e)}
+                          disabled={deletingId === lawyer.id}
+                          className="ml-2 p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          title="Avukatı Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </Card>
                 </Link>
@@ -216,8 +274,8 @@ export default function AdminlerPage() {
             </div>
             <div className="space-y-3">
               {filterUsers(acentes).map((acente) => (
-                <Link key={acente.id} href={`/admin/adminler/${acente.id}`}>
-                  <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-green-300">
+                <Link key={acente.id} href={adminRoutes.adminDetail(acente.id)}>
+                  <Card className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-green-300 relative">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-neutral-800 mb-1">{acente.name || acente.email}</h3>
@@ -227,6 +285,16 @@ export default function AdminlerPage() {
                           <span className="font-semibold text-green-600">{acente.assignedCaseCount || 0}</span>
                         </div>
                       </div>
+                      {isSuperAdminUser && (
+                        <button
+                          onClick={(e) => handleDeleteAdmin(acente.id, acente.name || acente.email, e)}
+                          disabled={deletingId === acente.id}
+                          className="ml-2 p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          title="Acenteyi Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </Card>
                 </Link>

@@ -9,6 +9,7 @@ import { DocumentsTab } from '@/components/admin/case-tabs/documents-tab';
 import { ChecklistTab } from '@/components/admin/case-tabs/checklist-tab';
 import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
+import { adminRoutes } from '@/lib/config/admin-paths';
 
 type TabType = 'general' | 'documents' | 'checklist';
 
@@ -75,7 +76,7 @@ export default function MusteriDetayPage() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <p className="text-red-600 mb-4">Dosya bulunamadı</p>
-          <Button onClick={() => router.push('/admin/musteriler')}>
+          <Button onClick={() => router.push(adminRoutes.customers)}>
             Müşteriler Listesine Dön
           </Button>
         </div>
@@ -86,22 +87,23 @@ export default function MusteriDetayPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4 flex-shrink-0">
+      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push('/admin/musteriler')}
+              onClick={() => router.push(adminRoutes.customers)}
+              className="w-fit"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Geri
+              <ArrowLeft className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Geri</span>
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-neutral-800">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-neutral-800 truncate">
                 {caseData.case_number || 'Dosya Detayı'}
               </h1>
-              <p className="text-sm text-neutral-600 mt-1">
+              <p className="text-xs sm:text-sm text-neutral-600 mt-1 truncate">
                 {caseData.customers?.full_name || 'Müşteri bilgileri'}
               </p>
             </div>
@@ -109,11 +111,11 @@ export default function MusteriDetayPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-neutral-200">
+        <div className="flex border-b border-neutral-200 overflow-x-auto">
           <button
             onClick={() => setActiveTab('general')}
             className={cn(
-              'px-6 py-4 font-medium transition-colors',
+              'px-3 sm:px-6 py-3 sm:py-4 font-medium transition-colors text-xs sm:text-base whitespace-nowrap',
               activeTab === 'general'
                 ? 'text-primary-blue border-b-2 border-primary-blue'
                 : 'text-neutral-600 hover:text-neutral-800'
@@ -124,7 +126,7 @@ export default function MusteriDetayPage() {
           <button
             onClick={() => setActiveTab('documents')}
             className={cn(
-              'px-6 py-4 font-medium transition-colors',
+              'px-3 sm:px-6 py-3 sm:py-4 font-medium transition-colors text-xs sm:text-base whitespace-nowrap',
               activeTab === 'documents'
                 ? 'text-primary-blue border-b-2 border-primary-blue'
                 : 'text-neutral-600 hover:text-neutral-800'
@@ -135,7 +137,7 @@ export default function MusteriDetayPage() {
           <button
             onClick={() => setActiveTab('checklist')}
             className={cn(
-              'px-6 py-4 font-medium transition-colors',
+              'px-3 sm:px-6 py-3 sm:py-4 font-medium transition-colors text-xs sm:text-base whitespace-nowrap',
               activeTab === 'checklist'
                 ? 'text-primary-blue border-b-2 border-primary-blue'
                 : 'text-neutral-600 hover:text-neutral-800'
@@ -147,7 +149,7 @@ export default function MusteriDetayPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         {activeTab === 'general' && (
           <GeneralInfoTab caseData={caseData} onUpdate={loadCaseData} />
         )}

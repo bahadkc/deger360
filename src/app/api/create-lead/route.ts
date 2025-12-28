@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
+import { captureException } from '@/lib/sentry';
+import { protectAPI, createProtectedResponse } from '@/lib/security/api-protection';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(request: NextRequest) {
+  // API Protection (bot detection, rate limiting, size validation)
+  const protection = await protectAPI(request, {
+    maxRequestSize: 200 * 1024, // 200KB max for lead creation
+    rateLimit: {
+      windowMs: 60000,
+      maxRequests: 10,
+    },
+  });
+
+  if (protection) {
+    return protection; // Blocked by protection
+  }
+
   try {
     const body = await request.json();
+    logger.info('Create lead request', { hasEmail: !!body.email });
     const { adSoyad, telefon, aracMarkaModel, hasarTutari, email: providedEmail } = body;
 
     // Validate required fields
@@ -183,7 +200,9 @@ export async function POST(request: NextRequest) {
       console.error('Error creating case:', caseError);
     }
 
-    return NextResponse.json({
+    logger.info('Lead created successfully', { customerId: customer.id, dosyaTakipNo });
+    
+    return createProtectedResponse({
       success: true,
       customer: customer,
       case: caseData,
@@ -194,10 +213,14 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Error creating lead:', error);
-    return NextResponse.json(
+    logger.error('Error creating lead', { error: error.message, stack: error.stack });
+    captureException(error instanceof Error ? error : new Error(error.message), {
+      endpoint: '/api/create-lead',
+    });
+    
+    return createProtectedResponse(
       { success: false, error: error.message || 'Bir hata oluştu' },
-      { status: 500 }
+      500
     );
   }
 }

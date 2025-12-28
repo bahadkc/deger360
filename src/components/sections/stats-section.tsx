@@ -37,23 +37,23 @@ export function StatsSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="hizmetlerimiz" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={ref} id="hizmetlerimiz" className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-3 sm:mb-4">
             Rakamlar Konuşuyor
           </h2>
-          <p className="text-lg text-neutral-800">
+          <p className="text-base sm:text-lg text-neutral-800 px-2">
             Geçtiğimiz yıllardaki başarı oranlarımız, verilerimiz ve sonuçlarımız
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (

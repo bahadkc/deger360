@@ -9,6 +9,7 @@ import { MessageCircle, Settings, CheckCircle2, Clock, AlertCircle, Eye, Downloa
 import { getCurrentUserCases } from '@/lib/supabase/auth';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   CHECKLIST_SECTIONS,
   CHECKLIST_ITEMS,
@@ -50,7 +51,7 @@ export default function DashboardPage() {
       .channel('dashboard_case_changes')
       .on(
         'postgres_changes',
-  {
+        {
           event: 'UPDATE',
           schema: 'public',
           table: 'cases',
@@ -94,8 +95,8 @@ export default function DashboardPage() {
         (payload) => {
           if (caseData && payload.new.id === caseData.id) {
             setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-            loadDashboardData();
-          }
+          loadDashboardData();
+        }
         }
       )
       .subscribe();
@@ -105,7 +106,7 @@ export default function DashboardPage() {
       .channel('dashboard_documents_changes')
       .on(
         'postgres_changes',
-  {
+        {
           event: '*',
           schema: 'public',
           table: 'documents',
@@ -245,7 +246,7 @@ export default function DashboardPage() {
                 ? 'Bu aşama tamamlandı'
                 : isCurrentSection
                 ? 'Bu aşamada çalışılıyor'
-                : undefined,
+              : undefined,
               completedTasks: completedItems.length > 0 ? completedItems : undefined,
               checklistItems: sectionItems.map((item) => ({
                 task_key: item.task_key,
@@ -362,54 +363,68 @@ export default function DashboardPage() {
     <PortalLayout>
       <div className="space-y-6">
         {/* Tazminat Özet Bilgileri - En Üstte */}
-        <Card className="p-4 md:p-6">
+        <Card className="p-4 md:p-6 bg-gradient-to-br from-white to-blue-50/20 border border-blue-100 shadow-md">
           <h2 className="text-lg md:text-xl font-bold text-neutral-800 mb-4 md:mb-6">Tazminat Özet Bilgileri</h2>
           
           {/* Toplam Beklenen Net Gelir - Focus */}
-          <div className="mb-6 p-5 md:p-6 bg-gradient-to-r from-primary-blue to-primary-orange rounded-xl text-white shadow-lg">
-            <p className="text-sm md:text-base mb-2 opacity-90">Toplam Beklenen Net Gelir</p>
-            <p className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">💰 {sizeKalacakTutar.toLocaleString('tr-TR')} TL</p>
-            <p className="text-xs md:text-sm opacity-80">
-              Bu tutar, tüm kesintilerden sonra size kalacak net tutardır
-            </p>
+          <div className="mb-6 p-5 md:p-6 bg-gradient-to-r from-primary-blue to-primary-orange rounded-xl text-white shadow-lg relative overflow-hidden">
+            {/* Background Logo - Sağ taraf, eğik, şeffaf beyaz */}
+            <div className="absolute right-0 top-0 bottom-0 flex items-center justify-end opacity-10 -rotate-12 translate-x-8 translate-y-4">
+              <Image
+                src="/images/logo.png"
+                alt="Değer360 Logo"
+                width={300}
+                height={100}
+                className="h-32 md:h-40 lg:h-48 w-auto"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
+            </div>
+            
+            <div className="relative z-10">
+              <p className="text-sm md:text-base mb-2 opacity-90">Toplam Beklenen Net Gelir</p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">{sizeKalacakTutar.toLocaleString('tr-TR')} TL</p>
+              <p className="text-xs md:text-sm opacity-80">
+                Bu tutar, tüm kesintilerden sonra size kalacak net tutardır
+              </p>
+            </div>
           </div>
 
           {/* İstatistikler - 4'lü Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
-              <p className="text-xs md:text-sm text-neutral-600 mb-1">Değer Kaybı</p>
+            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
+              <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Değer Kaybı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
                 {degerKaybi.toLocaleString('tr-TR')} TL
               </p>
             </Card>
             
-            <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
-              <p className="text-xs md:text-sm text-neutral-600 mb-1">Karşı Tarafın Kusur Oranı</p>
+            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
+              <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Karşı Tarafın Kusur Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
                 %{karsiTarafKusurOrani.toFixed(0)}
               </p>
             </Card>
 
-            <Card className="p-3 md:p-4 hover:shadow-md transition-shadow bg-green-100 border-green-400">
-              <p className="text-xs md:text-sm text-neutral-600 mb-1">Noter ve Dosya Masrafları</p>
-              <p className="text-lg md:text-xl font-bold text-neutral-800 mb-1">
+            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-green-100 to-green-200/50 border-2 border-green-400 shadow-md">
+              <p className="text-xs md:text-sm text-green-800 mb-1 font-semibold">Noter ve Dosya Masrafları</p>
+              <p className="text-lg md:text-xl font-bold text-green-900 mb-1">
                 {noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL
               </p>
-              <p className="text-xs text-green-800 font-semibold">Biz karşılıyoruz!</p>
+              <p className="text-xs text-green-900 font-bold">Biz karşılıyoruz!</p>
             </Card>
 
-            <Card className="p-3 md:p-4 hover:shadow-md transition-shadow">
-              <p className="text-xs md:text-sm text-neutral-600 mb-1">Müşteri Hakediş Oranı</p>
+            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
+              <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Müşteri Hakediş Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
                 %80
               </p>
             </Card>
         </div>
 
-          <div className="mt-4 md:mt-6 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-300 rounded-lg shadow-sm">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <p className="text-xs md:text-sm text-yellow-800">
+              <p className="text-xs md:text-sm text-yellow-900">
                 <strong>Uyarı:</strong> Bu rakamlar tahminidir. Kesin tutar sigorta/mahkeme kararına
                 göre değişebilir.
               </p>
@@ -427,15 +442,15 @@ export default function DashboardPage() {
         />
 
         {/* Progress Bar */}
-        <Card className="p-6">
+        <Card className="p-6 bg-gradient-to-br from-white to-blue-50/20 border border-blue-200 shadow-md">
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-neutral-800">İlerleme</h3>
               <span className="text-2xl font-bold text-primary-blue">{progressPercentage}%</span>
             </div>
-            <div className="w-full bg-neutral-200 rounded-full h-4">
+            <div className="w-full bg-neutral-200 rounded-full h-5 shadow-inner">
               <div
-                className="bg-gradient-to-r from-primary-blue to-primary-orange h-4 rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-primary-blue to-primary-orange h-5 rounded-full transition-all duration-500 shadow-md"
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
@@ -443,18 +458,20 @@ export default function DashboardPage() {
         </Card>
 
         {/* 2 Column Layout: Süreç Takibi (Sol, Geniş) ve Yüklenen Dosyalar (Sağ) */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
           {/* Süreç Takibi - Sol, Daha Geniş */}
           <div className="lg:col-span-3">
-            <Card className="p-6">
-              <h2 className="text-xl font-bold text-neutral-800 mb-6">Süreç Takibi</h2>
-              <ProgressTracker steps={progressSteps} />
+            <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-blue-50/20 border border-blue-200 shadow-md">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-800 mb-4 sm:mb-6">Süreç Takibi</h2>
+              <div className="overflow-x-hidden">
+                <ProgressTracker steps={progressSteps} />
+              </div>
             </Card>
           </div>
 
           {/* Yüklenen Dosyalar - Sağ */}
           <div className="lg:col-span-2">
-            <Card className="p-6">
+            <Card className="p-6 bg-gradient-to-br from-white to-blue-50/20 border border-blue-200 shadow-md">
               <h2 className="text-xl font-bold text-neutral-800 mb-6">Yüklenen Dosyalar</h2>
               <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {documents.length === 0 ? (
@@ -468,7 +485,7 @@ export default function DashboardPage() {
                         className={cn(
                           'p-4 rounded-lg border transition-all',
                           isUploaded
-                            ? 'border-neutral-200 hover:shadow-md bg-white'
+                            ? 'border-blue-200 hover:shadow-md bg-gradient-to-br from-blue-50/30 to-white hover:from-blue-50/40'
                             : 'border-neutral-200 bg-neutral-50 opacity-75'
                         )}
                       >

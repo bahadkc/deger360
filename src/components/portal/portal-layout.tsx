@@ -26,7 +26,7 @@ export function PortalLayout({ children }: PortalLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50" data-portal-page>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-neutral-50/80 to-neutral-50" data-portal-page>
       <PortalHeader 
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
@@ -40,8 +40,8 @@ export function PortalLayout({ children }: PortalLayoutProps) {
         />
 
         {/* Main Content - Ortalanmış, header için padding-top ekle */}
-        <main className="min-h-screen pt-16">
-          <div className="max-w-7xl mx-auto px-4 py-6 lg:px-8">
+        <main className="min-h-screen pt-14 sm:pt-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:px-8">
             {children}
           </div>
         </main>

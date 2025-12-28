@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "supabase:migrate": "supabase db push",
-    "supabase:reset": "supabase db reset"
+    "supabase:reset": "supabase db reset",
+    "docker:build": "docker build -t deger-kaybi-web .",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",

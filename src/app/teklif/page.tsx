@@ -244,14 +244,14 @@ export default function TeklifPage() {
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
           <div className="w-full max-w-xl">
             {currentStep === 1 && (
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-800 mb-2 sm:mb-3">
                   Kişisel Bilgilerinizi Girin
                 </h1>
-                <p className="text-base text-neutral-600 mb-8">
+                <p className="text-sm sm:text-base text-neutral-600 mb-6 sm:mb-8">
                   Devam etmek için lütfen kişisel bilgilerinizi doldurun.
                 </p>
 
@@ -366,10 +366,10 @@ export default function TeklifPage() {
 
             {currentStep === 2 && (
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-800 mb-2 sm:mb-3">
                   {vehicleData ? 'Araç Bilgilerinizi Kontrol Edin' : 'Araç Bilgilerinizi Girin'}
                 </h1>
-                <p className="text-base text-neutral-600 mb-8">
+                <p className="text-sm sm:text-base text-neutral-600 mb-6 sm:mb-8">
                   {vehicleData 
                     ? 'Araç bilgileriniz otomatik olarak dolduruldu. Gerekirse düzenleyebilirsiniz.'
                     : 'Devam etmek için lütfen araç bilgilerinizi doldurun.'}

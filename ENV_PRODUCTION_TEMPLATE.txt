@@ -1,0 +1,40 @@
+# ==============================================
+# PRODUCTION ENVIRONMENT VARIABLES
+# ==============================================
+# 
+# Bu dosyayı kopyalayıp production platform'unuzda (Vercel, etc.)
+# environment variables olarak ekleyin
+#
+# ==============================================
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Site Configuration
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+
+# Google Analytics (Optional)
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+
+# Sentry Error Tracking (Optional)
+NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+SENTRY_AUTH_TOKEN=your_sentry_auth_token
+
+# Node Environment
+NODE_ENV=production
+
+# ==============================================
+# ÖNEMLİ NOTLAR:
+# ==============================================
+# 
+# 1. Bu dosyayı GIT'e commit ETMEYİN!
+# 2. Production platform'unda (Vercel, etc.) bu değişkenleri
+#    Environment Variables olarak ekleyin
+# 3. SUPABASE_SERVICE_ROLE_KEY'i asla client-side'da kullanmayın
+# 4. NEXT_PUBLIC_ prefix'i olan değişkenler client-side'da erişilebilir
+# 5. Diğerleri sadece server-side'da kullanılabilir
+#
+# ==============================================
+

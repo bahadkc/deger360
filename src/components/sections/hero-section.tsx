@@ -38,20 +38,20 @@ export function HeroSection() {
   };
 
   return (
-    <section id="contact-form" className="relative min-h-screen bg-white pt-12 pb-8 flex items-center">
-      <div className="container mx-auto px-4">
+    <section id="contact-form" className="relative min-h-screen bg-white pt-20 sm:pt-24 pb-8 sm:pb-12 flex items-center">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-8"
+            className="text-center mb-6 sm:mb-8"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-dark-blue mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-dark-blue mb-3 sm:mb-4 leading-tight px-2">
               Değer Kaybınızı{' '}
               <span className="text-primary-orange">Hesaplayın</span>
             </h1>
-            <p className="text-lg md:text-xl text-neutral-800 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-neutral-800 max-w-2xl mx-auto px-2">
               Kaza sonrası aracınızın değer kaybını öğrenin ve tazminat hakkınızı kolayca hesaplayın. Ücretsiz, hızlı ve güvenli.
             </p>
           </motion.div>
@@ -61,10 +61,10 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-xl border border-neutral-200 p-6 md:p-8"
+            className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-neutral-200 p-4 sm:p-6 md:p-8"
           >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <div className="grid md:grid-cols-2 gap-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 {/* Araç Marka/Model */}
                 <div className="flex flex-col">
                   <label htmlFor="hero-aracMarkaModel" className="block text-sm font-semibold text-neutral-800 mb-2">

@@ -26,6 +26,10 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -34,6 +38,26 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# cursor MCP configuration (contains sensitive tokens)
-.cursor/mcp.json
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+logs
+*.log
+
+# Sentry
+.sentryclirc
+
+# Admin path info (contains sensitive path information)
+ADMIN_PATH_INFO.txt

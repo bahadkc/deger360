@@ -115,32 +115,16 @@ export default function GirisPage() {
               transition={{ duration: 0.6 }}
               className="relative z-10 text-center"
             >
-              {/* Car Illustration Placeholder - SVG */}
+              {/* Portal Giriş İllüstrasyonu */}
               <div className="mb-8">
-                <svg
-                  width="400"
-                  height="300"
-                  viewBox="0 0 400 300"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="mx-auto"
-                >
-                  {/* Car Body */}
-                  <rect x="80" y="140" width="240" height="80" rx="10" fill="#FF6B35" />
-                  {/* Car Windows */}
-                  <rect x="100" y="150" width="80" height="50" rx="5" fill="#90E0EF" />
-                  <rect x="220" y="150" width="80" height="50" rx="5" fill="#90E0EF" />
-                  {/* Wheels */}
-                  <circle cx="130" cy="220" r="25" fill="#023E8A" />
-                  <circle cx="130" cy="220" r="15" fill="#343A40" />
-                  <circle cx="270" cy="220" r="25" fill="#023E8A" />
-                  <circle cx="270" cy="220" r="15" fill="#343A40" />
-                  {/* Car Details */}
-                  <rect x="180" y="160" width="40" height="30" rx="3" fill="#FF6B35" />
-                  {/* Headlights */}
-                  <circle cx="90" cy="170" r="8" fill="#FFD700" />
-                  <circle cx="90" cy="190" r="8" fill="#FF6B35" />
-                </svg>
+                <Image
+                  src="/images/portal_giris.png"
+                  alt="Değer360 Müşteri Portalı Giriş Ekranı - Araç Değer Kaybı Tazminatı Takip Sistemi"
+                  width={600}
+                  height={450}
+                  className="mx-auto w-full max-w-[600px] h-auto"
+                  priority
+                />
               </div>
               
               <h2 className="text-3xl font-bold text-dark-blue mb-4">
@@ -289,12 +273,14 @@ export default function GirisPage() {
 
                 {/* Forgot Password Link */}
                 <div className="text-center">
-                  <button
-                    type="button"
-                    className="text-sm text-primary-blue hover:text-primary-orange transition-colors font-medium"
+                  <a
+                    href="https://wa.me/905057053305?text=Benim%20adım%3A%20%2C%20telefon%20numaram%3A%20%2C%20aracımın%20plakası%3A%20"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary-blue hover:text-primary-orange transition-colors font-medium inline-block"
                   >
                     Şifremi Unuttum
-                  </button>
+                  </a>
                 </div>
               </form>
 

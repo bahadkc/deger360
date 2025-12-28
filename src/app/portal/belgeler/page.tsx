@@ -122,15 +122,15 @@ export default function BelgelerPage() {
 
   return (
     <PortalLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Page Header */}
         <div>
-          <h1 className="text-3xl font-bold text-neutral-800 mb-2">Belgeler</h1>
-          <p className="text-neutral-600">Dosyanızla ilgili tüm belgeleri görüntüleyin</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800 mb-2">Belgeler</h1>
+          <p className="text-sm sm:text-base text-neutral-600">Dosyanızla ilgili tüm belgeleri görüntüleyin</p>
         </div>
 
         {/* Document List */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
           {loading ? (
               <div className="text-center py-12 text-neutral-500">
               <p>Yükleniyor...</p>
@@ -143,19 +143,19 @@ export default function BelgelerPage() {
                 <Card
                   key={doc.key}
                   className={cn(
-                    'p-6 transition-all',
+                    'p-4 sm:p-6 transition-all',
                     isUploaded
                       ? 'border-neutral-200 hover:shadow-lg bg-white'
                       : 'border-neutral-200 bg-neutral-50 opacity-75'
                   )}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
                     {/* Icon */}
                     <div className="flex-shrink-0">
                       {isUploaded ? (
-                      <FileText className="w-8 h-8 text-primary-blue" />
+                      <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-primary-blue" />
                       ) : (
-                        <FileText className="w-8 h-8 text-neutral-400" />
+                        <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-neutral-400" />
                       )}
                     </div>
 
@@ -165,27 +165,27 @@ export default function BelgelerPage() {
                       <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
                           <h3 className={cn(
-                            'text-lg font-bold mb-1',
+                            'text-base sm:text-lg font-bold mb-1',
                             isUploaded ? 'text-neutral-800' : 'text-neutral-500'
                           )}>
                             {doc.name}
                           </h3>
                           {isUploaded && doc.documentData?.file_name && (
-                            <p className="text-sm text-neutral-600 truncate">
+                            <p className="text-xs sm:text-sm text-neutral-600 truncate">
                               {doc.documentData.file_name}
                             </p>
                         )}
                       </div>
                         {isUploaded ? (
-                          <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 ml-2" />
+                          <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 flex-shrink-0 ml-2" />
                         ) : (
-                          <Clock className="w-6 h-6 text-neutral-400 flex-shrink-0 ml-2" />
+                          <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-neutral-400 flex-shrink-0 ml-2" />
                         )}
                       </div>
 
                       {/* Description */}
                       <p className={cn(
-                        'text-sm mb-3',
+                        'text-xs sm:text-sm mb-3',
                         isUploaded ? 'text-neutral-600' : 'text-neutral-500'
                       )}>
                         {doc.description}
@@ -194,7 +194,7 @@ export default function BelgelerPage() {
                       {/* Details */}
                       {isUploaded && doc.documentData ? (
                         <>
-                          <div className="flex items-center gap-4 text-sm text-neutral-600 mb-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-neutral-600 mb-3">
                             {doc.documentData.created_at && (
                               <span>
                                 Tarih: {new Date(doc.documentData.created_at).toLocaleDateString('tr-TR')}
@@ -210,9 +210,9 @@ export default function BelgelerPage() {
                       )}
                     </div>
                           {/* Action Buttons */}
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <button
-                              className="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center gap-2"
+                              className="px-3 sm:px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                               onClick={async () => {
                                 if (doc.documentData?.file_path) {
                                   const { data, error } = await supabase.storage
@@ -229,7 +229,7 @@ export default function BelgelerPage() {
                               Görüntüle
                         </button>
                         <button
-                              className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors flex items-center gap-2"
+                              className="px-3 sm:px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                               onClick={async () => {
                                 if (doc.documentData?.file_path) {
                                   const { data, error } = await supabase.storage
@@ -251,7 +251,7 @@ export default function BelgelerPage() {
                           </div>
                       </>
                       ) : (
-                        <p className="text-sm text-neutral-500 italic">
+                        <p className="text-xs sm:text-sm text-neutral-500 italic">
                           Bu belge ileriki zamanlarda yüklenecektir
                         </p>
                     )}

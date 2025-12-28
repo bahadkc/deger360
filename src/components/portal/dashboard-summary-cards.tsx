@@ -53,19 +53,29 @@ export function DashboardSummaryCards({
     },
   ];
 
+  // Tutarlı renk paleti: Mavi ana renk, tüm kartlar mavi border (açık tonlar)
+  const cardColors = [
+    { bg: 'from-blue-50/50 to-white', border: 'border-blue-200', iconBg: 'bg-blue-100', iconColor: 'text-primary-blue' },
+    { bg: 'from-blue-50/50 to-white', border: 'border-blue-200', iconBg: 'bg-blue-100', iconColor: 'text-primary-blue' },
+    { bg: 'from-blue-50/50 to-white', border: 'border-blue-200', iconBg: 'bg-blue-100', iconColor: 'text-primary-blue' },
+    { bg: 'from-blue-50/50 to-white', border: 'border-blue-200', iconBg: 'bg-blue-100', iconColor: 'text-primary-blue' },
+    { bg: 'from-blue-50/50 to-white', border: 'border-blue-200', iconBg: 'bg-blue-100', iconColor: 'text-primary-blue' },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       {cards.map((card, index) => {
         const Icon = card.icon;
+        const colors = cardColors[index % cardColors.length];
         return (
-          <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+          <Card key={index} className={`p-6 hover:shadow-lg transition-all border ${colors.border} bg-gradient-to-br ${colors.bg} shadow-md`}>
             <div className="flex items-start justify-between mb-3">
-              <div className="p-2 bg-primary-blue/10 rounded-lg">
-                <Icon className="w-5 h-5 text-primary-blue" />
+              <div className={`p-2 ${colors.iconBg} rounded-lg`}>
+                <Icon className={`w-5 h-5 ${colors.iconColor}`} />
               </div>
               {card.status && <StatusBadge status={card.status} />}
             </div>
-            <p className="text-sm text-neutral-600 mb-1">{card.label}</p>
+            <p className="text-sm text-neutral-700 mb-1 font-medium">{card.label}</p>
             <p className="text-2xl font-bold text-neutral-800">{card.value}</p>
           </Card>
         );

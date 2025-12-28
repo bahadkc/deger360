@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { adminRoutes } from '@/lib/config/admin-paths';
 
 interface Customer {
   id: string;
@@ -138,7 +139,7 @@ export function CustomerList({ customers, onDelete }: CustomerListProps) {
         }
 
         const caseId = customer.case?.id;
-        const detailUrl = caseId ? `/admin/musteriler/${caseId}` : null;
+        const detailUrl = caseId ? adminRoutes.customerDetail(caseId) : null;
 
         return (
           <Link key={customer.id} href={detailUrl || '#'} className="block">
@@ -151,13 +152,13 @@ export function CustomerList({ customers, onDelete }: CustomerListProps) {
                 }
               }}
             >
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 {/* Sol Taraf - Müşteri Bilgileri */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="text-2xl">👤</div>
+                  <div className="text-xl sm:text-2xl flex-shrink-0">👤</div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-neutral-800 truncate">{customer.full_name}</h3>
-                    <div className="flex items-center gap-3 mt-1 text-sm text-neutral-600">
+                    <h3 className="font-semibold text-sm sm:text-base text-neutral-800 truncate">{customer.full_name}</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-xs sm:text-sm text-neutral-600">
                       {customer.case.vehicle_plate && (
                         <span className="flex items-center gap-1">
                           <span>🚗</span>
@@ -177,13 +178,13 @@ export function CustomerList({ customers, onDelete }: CustomerListProps) {
                 </div>
 
                 {/* Sağ Taraf - Avukat, Durum ve Silme Butonu */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                   {customer.case.assigned_lawyer && (
-                    <div className="text-right">
+                    <div className="text-right hidden sm:block">
                       <div className="text-xs text-neutral-500">Avukat</div>
                       <div className="text-sm font-medium text-neutral-700 flex items-center gap-1">
                         <span>⚖️</span>
-                        <span>{customer.case.assigned_lawyer}</span>
+                        <span className="truncate max-w-[100px]">{customer.case.assigned_lawyer}</span>
                       </div>
                     </div>
                   )}

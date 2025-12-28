@@ -39,24 +39,24 @@ export function FAQSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="sss" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={ref} id="sss" className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-dark-blue mb-4">
-              Sıkça Sorulan Sorular
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-3 sm:mb-4">
+              Merak Ettikleriniz
             </h2>
-            <p className="text-lg text-neutral-800">
+            <p className="text-base sm:text-lg text-neutral-800 px-2">
               Merak ettiklerinizin cevapları
             </p>
           </motion.div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {faqs.map((faq, index) => (
               <motion.div
                 key={index}
@@ -67,19 +67,19 @@ export function FAQSection() {
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-neutral-100 transition-colors"
+                  className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between text-left hover:bg-neutral-100 transition-colors"
                 >
-                  <span className="font-bold text-dark-blue pr-4">
+                  <span className="font-bold text-sm sm:text-base text-dark-blue pr-4">
                     {faq.question}
                   </span>
                   {openIndex === index ? (
-                    <ChevronUp className="w-5 h-5 text-primary-orange flex-shrink-0" />
+                    <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary-orange flex-shrink-0" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-primary-orange flex-shrink-0" />
+                    <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-primary-orange flex-shrink-0" />
                   )}
                 </button>
                 {openIndex === index && (
-                  <div className="px-6 pb-4 text-neutral-800">
+                  <div className="px-4 sm:px-6 pb-3 sm:pb-4 text-sm sm:text-base text-neutral-800">
                     {faq.answer}
                   </div>
                 )}

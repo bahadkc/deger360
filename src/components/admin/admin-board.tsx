@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { CaseCard } from './case-card';
 import { supabase } from '@/lib/supabase/client';
 import { getAssignedCaseIds, isSuperAdmin } from '@/lib/supabase/admin-auth';
+import { optimizedCasesApi, cacheInvalidation } from '@/lib/supabase/optimized-api';
 
 export interface CaseData {
   id: string;
@@ -64,6 +65,8 @@ export function AdminBoard() {
           table: 'cases',
         },
         () => {
+          // Invalidate cache and reload
+          cacheInvalidation.invalidateBoard();
           loadCases();
         }
       )
@@ -80,6 +83,8 @@ export function AdminBoard() {
           table: 'admin_checklist',
         },
         () => {
+          // Invalidate cache and reload
+          cacheInvalidation.invalidateBoard();
           loadCases();
         }
       )
@@ -97,6 +102,8 @@ export function AdminBoard() {
         },
         async () => {
           await checkAdminStatus();
+          // Invalidate cache and reload
+          cacheInvalidation.invalidateBoard();
           loadCases();
         }
       )
@@ -111,6 +118,8 @@ export function AdminBoard() {
 
   const loadCases = async () => {
     try {
+      setLoading(true);
+      
       // Update admin status and assigned cases
       const superAdmin = await isSuperAdmin();
       setIsSuperAdminUser(superAdmin);
@@ -121,53 +130,19 @@ export function AdminBoard() {
         setAssignedCaseIds(assignedIds);
       }
 
-      const { data, error } = await supabase
-        .from('cases')
-        .select(`
-          id,
-          case_number,
-          vehicle_plate,
-          vehicle_brand_model,
-          board_stage,
-          status,
-          assigned_lawyer,
-          value_loss_amount,
-          fault_rate,
-          created_at,
-          customers (
-            id,
-            full_name,
-            phone,
-            email
-          )
-        `)
-        .order('created_at', { ascending: false });
+      // Use optimized API with caching
+      const data = await optimizedCasesApi.getForBoard({
+        assignedTo: superAdmin ? undefined : assignedIds,
+      });
 
-      if (error) throw error;
-
-      let filteredData = data || [];
-      
-      // Filter cases based on admin assignment (if not superadmin)
-      if (!superAdmin) {
-        // If no assigned cases, show nothing (not superadmin and no assignments)
-        if (assignedIds.length === 0) {
-          filteredData = [];
-        } else {
-          // Filter by assigned cases
-          filteredData = filteredData.filter((caseItem: any) => 
-            assignedIds.includes(caseItem.id)
-          );
-        }
-      }
-
-      const formattedCases: CaseData[] = filteredData.map((caseItem: any) => ({
+      const formattedCases: CaseData[] = (data || []).map((caseItem: any) => ({
         id: caseItem.id,
         case_number: caseItem.case_number,
         customer: {
-          id: caseItem.customers.id,
-          full_name: caseItem.customers.full_name,
-          phone: caseItem.customers.phone,
-          email: caseItem.customers.email,
+          id: caseItem.customer?.id || '',
+          full_name: caseItem.customer?.full_name || '',
+          phone: caseItem.customer?.phone || null,
+          email: caseItem.customer?.email || '',
         },
         vehicle_plate: caseItem.vehicle_plate,
         vehicle_brand_model: caseItem.vehicle_brand_model,
@@ -234,27 +209,27 @@ export function AdminBoard() {
   }
 
   return (
-    <div className="h-full overflow-x-auto overflow-y-hidden p-6">
-      <div className="flex gap-4 h-full min-w-max">
+    <div className="h-full overflow-x-auto overflow-y-hidden p-3 sm:p-4 md:p-6">
+      <div className="flex gap-3 sm:gap-4 h-full min-w-max">
         {BOARD_STAGES.map((stage) => {
           const stageCases = getCasesForStage(stage.key);
           return (
             <div
               key={stage.key}
-              className={`flex-shrink-0 w-80 ${stage.color} rounded-lg p-4 flex flex-col h-full border-2`}
+              className={`flex-shrink-0 w-[280px] sm:w-[300px] md:w-80 ${stage.color} rounded-lg p-3 sm:p-4 flex flex-col h-full border-2`}
               onDragOver={handleDragOver}
               onDrop={() => handleDrop(stage.key)}
             >
-              <div className="mb-4 flex-shrink-0">
+              <div className="mb-3 sm:mb-4 flex-shrink-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xl">{stage.emoji}</span>
-                  <h3 className={`font-bold ${stage.textColor} text-lg`}>{stage.label}</h3>
+                  <span className="text-lg sm:text-xl">{stage.emoji}</span>
+                  <h3 className={`font-bold ${stage.textColor} text-sm sm:text-base md:text-lg truncate`}>{stage.label}</h3>
                 </div>
-                <span className={`text-sm ${stage.textColor} opacity-75`}>
+                <span className={`text-xs sm:text-sm ${stage.textColor} opacity-75`}>
                   {stageCases.length} dosya
                 </span>
               </div>
-              <div className="space-y-3 flex-1 overflow-y-auto">
+              <div className="space-y-2 sm:space-y-3 flex-1 overflow-y-auto">
                 {stageCases.length === 0 ? (
                   <div className="text-center py-8 text-neutral-400 text-sm">
                     Bu aşamada dosya yok

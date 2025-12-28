@@ -82,22 +82,31 @@ export function PortalHeader({
 
   return (
     <header className="fixed top-0 left-0 right-0 w-full bg-white shadow-md border-b border-neutral-200 z-[100]">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo - Sol taraf */}
           <Link href="/portal" className="flex items-center">
             <Image
               src="/images/logo.png"
-              alt="Değer360 Logo"
+              alt="Değer360 - Araç Değer Kaybı Tazminatı Danışmanlığı Logo"
               width={150}
               height={50}
-              className="h-10 sm:h-12 w-auto"
+              className="h-8 sm:h-10 md:h-12 w-auto"
               priority
             />
           </Link>
 
-          {/* Profile Dropdown - Sağ taraf */}
-          <div className="relative" ref={dropdownRef}>
+          {/* Menu Toggle Button - Mobile */}
+          <button
+            onClick={onMenuToggle}
+            className="lg:hidden p-2 -mr-2 hover:bg-neutral-100 rounded-lg transition-colors"
+            aria-label="Menu"
+          >
+            <User className="w-5 h-5" />
+          </button>
+
+          {/* Profile Dropdown - Desktop */}
+          <div className="hidden lg:block relative" ref={dropdownRef}>
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 transition-colors"
@@ -105,7 +114,7 @@ export function PortalHeader({
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-orange to-primary-blue flex items-center justify-center text-white font-semibold text-sm">
                 {getInitials(customerName)}
               </div>
-              <span className="hidden sm:block text-sm font-medium text-neutral-700">
+              <span className="text-sm font-medium text-neutral-700">
                 {customerName || 'Yükleniyor...'}
               </span>
             </button>

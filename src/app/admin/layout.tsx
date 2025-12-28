@@ -4,11 +4,12 @@ import { ReactNode, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Users, FileText, LogOut, UserPlus, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, LogOut, UserPlus, Shield, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isAdmin, getCurrentAdmin, isSuperAdmin } from '@/lib/supabase/admin-auth';
 import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
+import { adminRoutes, isAdminPath } from '@/lib/config/admin-paths';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [adminUser, setAdminUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -31,8 +33,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const checkAdminAccess = async () => {
     try {
       const adminStatus = await isAdmin();
-      if (!adminStatus && pathname !== '/admin/giris') {
-        router.push('/admin/giris');
+      if (!adminStatus && pathname !== adminRoutes.login) {
+        router.push(adminRoutes.login);
         return;
       }
       
@@ -46,8 +48,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error checking admin access:', error);
-      if (pathname !== '/admin/giris') {
-        router.push('/admin/giris');
+      if (pathname !== adminRoutes.login) {
+        router.push(adminRoutes.login);
       }
     } finally {
       setLoading(false);
@@ -56,11 +58,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/admin/giris');
+    router.push(adminRoutes.login);
   };
 
   // Don't show layout on login page
-  if (pathname === '/admin/giris') {
+  if (pathname === adminRoutes.login) {
     return <>{children}</>;
   }
 
@@ -73,47 +75,69 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/musteriler', label: 'Müşteriler', icon: Users },
-    { href: '/admin/raporlar', label: 'Raporlar', icon: FileText },
+    { href: adminRoutes.dashboard, label: 'Dashboard', icon: LayoutDashboard },
+    { href: adminRoutes.customers, label: 'Müşteriler', icon: Users },
+    { href: adminRoutes.reports, label: 'Raporlar', icon: FileText },
   ];
 
   // Superadmin only items
   const superAdminNavItems = [
-    { href: '/admin/admin-olustur', label: 'Admin Oluştur', icon: UserPlus },
+    { href: adminRoutes.createAdmin, label: 'Admin Oluştur', icon: UserPlus },
   ];
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
       {/* Top Bar */}
       <header className="bg-white border-b border-neutral-200 flex-shrink-0">
-        <div className="px-6 py-3">
+        <div className="px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 -ml-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                aria-label="Menu"
+              >
+                {sidebarOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
               <Image
                 src="/images/logo.png"
                 alt="Değer360 Logo"
                 width={150}
                 height={50}
-                className="h-10 md:h-12 w-auto"
+                className="h-8 sm:h-10 md:h-12 w-auto"
                 priority
               />
-              <h1 className="text-xl font-bold text-primary-blue hidden sm:block">Admin Panel</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-primary-blue hidden sm:block">Admin Panel</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-neutral-600">{adminUser?.email}</span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Çıkış
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="text-xs sm:text-sm text-neutral-600 hidden md:block truncate max-w-[200px]">{adminUser?.email}</span>
+              <Button variant="outline" size="sm" onClick={handleLogout} className="text-xs sm:text-sm">
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Çıkış</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-neutral-200 flex-shrink-0 flex flex-col">
+        <aside className={cn(
+          "fixed lg:static inset-y-0 left-0 z-50 lg:z-auto w-64 bg-white border-r border-neutral-200 flex-shrink-0 flex flex-col transform transition-transform duration-300 ease-in-out",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}>
           <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -122,6 +146,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
                     isActive
@@ -139,10 +164,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             {isSuperAdminUser && (
               <>
                 <Link
-                  href="/admin/adminler"
+                  href={adminRoutes.admins}
+                  onClick={() => setSidebarOpen(false)}
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
-                    pathname === '/admin/adminler'
+                    pathname === adminRoutes.admins
                       ? 'bg-primary-blue text-white'
                       : 'text-neutral-700 hover:bg-neutral-100'
                   )}
@@ -164,6 +190,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => setSidebarOpen(false)}
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
                         isActive
