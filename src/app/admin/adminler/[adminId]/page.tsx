@@ -105,7 +105,7 @@ export default function AdminDetayPage() {
       if (caseAdminsError) throw caseAdminsError;
 
       if (caseAdmins && caseAdmins.length > 0) {
-        const caseIds = caseAdmins.map((ca) => ca.case_id);
+        const caseIds = caseAdmins.map((ca: { case_id: string }) => ca.case_id);
         
         const { data: cases, error: casesError } = await supabase
           .from('cases')
