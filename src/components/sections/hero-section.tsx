@@ -75,7 +75,7 @@ export function HeroSection() {
                     type="text"
                     id="hero-aracMarkaModel"
                     placeholder="Örn: Renault Megane"
-                    className={`w-full px-4 py-3 rounded-lg bg-neutral-50 hover:bg-neutral-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-orange transition-all duration-200 text-base h-[52px] ${
+                    className={`w-full px-4 py-3 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:shadow-md hover:scale-[1.02] hover:border-primary-orange/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-orange transition-all duration-200 text-base h-[52px] cursor-pointer border border-transparent ${
                       errors.aracMarkaModel ? 'bg-red-50 focus:ring-red-500' : ''
                     }`}
                   />
@@ -112,7 +112,7 @@ export function HeroSection() {
                       type="number"
                       id="hero-hasarTutari"
                       placeholder="15000"
-                      className={`w-full pl-12 pr-4 py-3 rounded-lg bg-neutral-50 hover:bg-neutral-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-orange transition-all duration-200 text-base h-[52px] ${
+                      className={`w-full pl-12 pr-4 py-3 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:shadow-md hover:scale-[1.02] hover:border-primary-orange/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-orange transition-all duration-200 text-base h-[52px] cursor-pointer border border-transparent ${
                         errors.hasarTutari ? 'bg-red-50 focus:ring-red-500' : ''
                       }`}
                     />

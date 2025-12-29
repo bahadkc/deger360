@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { captureException } from '@/lib/sentry';
 import { protectAPI, createProtectedResponse } from '@/lib/security/api-protection';
 
 export async function POST(request: NextRequest) {
@@ -51,9 +50,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     logger.error('Contact API error', { error: error.message, stack: error.stack });
-    captureException(error instanceof Error ? error : new Error(error.message), {
-      endpoint: '/api/contact',
-    });
     
     return createProtectedResponse(
       { error: error.message || 'Bir hata oluştu' },

@@ -49,7 +49,7 @@ export function FAQSection() {
             className="text-center mb-8 sm:mb-12"
           >
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-3 sm:mb-4">
-              Merak Ettikleriniz
+              Sıkça Sorulan Sorular
             </h2>
             <p className="text-base sm:text-lg text-neutral-800 px-2">
               Merak ettiklerinizin cevapları

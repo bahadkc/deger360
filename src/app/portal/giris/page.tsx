@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { loginWithCaseNumber } from '@/lib/supabase/auth';
+import { supabase } from '@/lib/supabase/client';
 
 const loginSchema = z.object({
   dosyaTakipNumarasi: z
@@ -28,6 +29,7 @@ export default function GirisPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [portalImageUrl, setPortalImageUrl] = useState<string>('/images/portal_giris.png'); // Fallback
 
   const {
     register,
@@ -36,6 +38,26 @@ export default function GirisPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Supabase'den portal giriş image'ını yükle
+  useEffect(() => {
+    const loadPortalImage = async () => {
+      try {
+        const { data } = supabase.storage
+          .from('public-images')
+          .getPublicUrl('portal_giris.png');
+        
+        if (data?.publicUrl) {
+          setPortalImageUrl(data.publicUrl);
+        }
+      } catch (error) {
+        console.error('Error loading portal image from Supabase:', error);
+        // Fallback to local image if Supabase fails
+      }
+    };
+
+    loadPortalImage();
+  }, []);
 
   // Login sayfasında normal header/footer ve sticky CTA'yı gizle
   useEffect(() => {
@@ -118,12 +140,13 @@ export default function GirisPage() {
               {/* Portal Giriş İllüstrasyonu */}
               <div className="mb-8">
                 <Image
-                  src="/images/portal_giris.png"
+                  src={portalImageUrl}
                   alt="Değer360 Müşteri Portalı Giriş Ekranı - Araç Değer Kaybı Tazminatı Takip Sistemi"
                   width={600}
                   height={450}
                   className="mx-auto w-full max-w-[600px] h-auto"
                   priority
+                  unoptimized={portalImageUrl.startsWith('http')} // Supabase URL'leri için unoptimized
                 />
               </div>
               

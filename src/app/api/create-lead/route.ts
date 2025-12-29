@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
-import { captureException } from '@/lib/sentry';
 import { protectAPI, createProtectedResponse } from '@/lib/security/api-protection';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -214,9 +213,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     logger.error('Error creating lead', { error: error.message, stack: error.stack });
-    captureException(error instanceof Error ? error : new Error(error.message), {
-      endpoint: '/api/create-lead',
-    });
     
     return createProtectedResponse(
       { success: false, error: error.message || 'Bir hata oluştu' },

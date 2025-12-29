@@ -64,7 +64,7 @@ export function ProcessSection() {
           className="text-center mb-8 sm:mb-12"
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-blue mb-3 sm:mb-4">
-            Süreç Nasıl İşliyor
+            Süreç Nasıl İşliyor?
           </h2>
           <p className="text-base sm:text-lg text-neutral-800 px-2">
             Tüm süreci biz yönetiyoruz, siz sadece takip edin
