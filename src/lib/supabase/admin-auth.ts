@@ -197,6 +197,9 @@ export async function loginAsAdmin(email: string, password: string) {
         console.error('Error setting session:', sessionError);
         // Don't throw, session might already be set via cookies
       }
+      
+      // Wait a bit for session to be fully set
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Refresh the session on client side

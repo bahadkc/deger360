@@ -118,7 +118,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Return admin info
+      // Supabase SSR automatically sets cookies via setAll callback
+      // Just return the response - cookies are already set by createServerClient
       return NextResponse.json({
         success: true,
         user: authData.user,
@@ -143,7 +144,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Return admin info
+    // Supabase SSR automatically sets cookies via setAll callback
+    // Just return the response - cookies are already set by createServerClient
     return NextResponse.json({
       success: true,
       user: authData.user,

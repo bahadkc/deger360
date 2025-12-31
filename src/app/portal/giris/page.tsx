@@ -103,8 +103,12 @@ export default function GirisPage() {
       if (result.session) {
         const { error: sessionError } = await supabase.auth.setSession(result.session);
         if (sessionError) {
+          console.error('Session set error:', sessionError);
           throw new Error('Oturum oluşturulamadı. Lütfen sayfayı yenileyin.');
         }
+        
+        // Wait a bit for session to be fully set
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Başarılı giriş sonrası portala yönlendir
@@ -113,7 +117,8 @@ export default function GirisPage() {
         localStorage.setItem('caseNumber', data.dosyaTakipNumarasi);
       }
       
-      // Clear any cached data before redirect
+      // Clear any cached data and redirect
+      // Use window.location.href to ensure full page reload and cookie reading
       window.location.href = '/portal';
     } catch (error: any) {
       console.error('Login error:', error);
