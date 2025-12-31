@@ -172,35 +172,42 @@ export async function getAllAdmins(): Promise<Array<{ id: string; name: string; 
 
 /**
  * Login as admin
+ * Uses API route to handle RLS bypass and user_auth creation
  */
 export async function loginAsAdmin(email: string, password: string) {
-  // Ensure Supabase client is properly initialized
-  if (!supabase) {
-    throw new Error('Supabase client başlatılamadı. Lütfen sayfayı yenileyin.');
-  }
+  try {
+    const response = await fetch('/api/login-admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    const data = await response.json();
 
-  if (error) {
-    console.error('Admin login error details:', error);
-    if (error.message?.includes('Invalid login credentials') || error.message?.includes('Invalid credentials')) {
-      throw new Error('E-posta veya şifre hatalı. Lütfen tekrar deneyin.');
+    if (!response.ok) {
+      throw new Error(data.error || 'Giriş başarısız. Lütfen tekrar deneyin.');
     }
-    if (error.message?.includes('No API key found')) {
-      throw new Error('Sistem hatası: API anahtarı bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.');
+
+    // Set session on client side if provided
+    if (data.session) {
+      const { error: sessionError } = await supabase.auth.setSession(data.session);
+      if (sessionError) {
+        console.error('Error setting session:', sessionError);
+        // Don't throw, session might already be set via cookies
+      }
     }
-    throw new Error(error.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
-  }
 
-  // Verify admin role
-  const admin = await getCurrentAdmin();
-  if (!admin || (admin.role !== 'superadmin' && admin.role !== 'admin' && admin.role !== 'lawyer' && admin.role !== 'acente')) {
-    await supabase.auth.signOut();
-    throw new Error('Bu hesap admin yetkisine sahip değil');
-  }
+    // Refresh the session on client side
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('Oturum oluşturulamadı. Lütfen sayfayı yenileyin.');
+    }
 
-  return { user: data.user, admin };
+    return { user, admin: data.admin };
+  } catch (error: any) {
+    console.error('Admin login error:', error);
+    throw error;
+  }
 }

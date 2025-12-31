@@ -9,7 +9,6 @@ import { Lock, LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { loginWithCaseNumber } from '@/lib/supabase/auth';
 import { supabase } from '@/lib/supabase/client';
 
 const loginSchema = z.object({
@@ -82,8 +81,31 @@ export default function GirisPage() {
     setError(null);
     
     try {
-      // Supabase ile giriş yap
-      await loginWithCaseNumber(data.dosyaTakipNumarasi, data.sifre);
+      // API route ile giriş yap (RLS bypass için)
+      const response = await fetch('/api/login-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dosyaTakipNumarasi: data.dosyaTakipNumarasi,
+          password: data.sifre,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Giriş başarısız. Lütfen tekrar deneyin.');
+      }
+
+      // Session'ı client-side'a set et
+      if (result.session) {
+        const { error: sessionError } = await supabase.auth.setSession(result.session);
+        if (sessionError) {
+          throw new Error('Oturum oluşturulamadı. Lütfen sayfayı yenileyin.');
+        }
+      }
 
       // Başarılı giriş sonrası portala yönlendir
       if (data.beniHatirla) {
