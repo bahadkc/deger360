@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Create a regular client for authentication
-    const { createClient: createClientSSR } = await import('@supabase/ssr');
+    const { createServerClient } = await import('@supabase/ssr');
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
 
-    const supabaseClient = createClientSSR(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
           return cookieStore.getAll();
