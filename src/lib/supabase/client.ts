@@ -19,5 +19,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // createBrowserClient automatically handles cookies in browser environment
 export const supabase = createBrowserClient<Database>(
   supabaseUrl,
-  supabaseAnonKey
+  supabaseAnonKey,
+  {
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    },
+  }
 );

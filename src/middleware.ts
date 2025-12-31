@@ -125,7 +125,7 @@ export async function middleware(req: NextRequest) {
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: https: blob:;
-    connect-src 'self' https://*.supabase.co https://www.google-analytics.com;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com;
     frame-ancestors 'none';
   `.replace(/\s{2,}/g, ' ').trim();
   
