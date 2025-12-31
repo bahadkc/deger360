@@ -97,7 +97,7 @@ export async function getCurrentCustomer(): Promise<any> {
     .from('user_auth')
     .select('customer_id, customers(*)')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -118,7 +118,7 @@ export async function getCurrentUserCases(): Promise<any[]> {
       .from('user_auth')
       .select('customer_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (authError) {
       console.error('getCurrentUserCases: Error fetching user_auth:', authError);

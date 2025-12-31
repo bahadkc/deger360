@@ -24,7 +24,7 @@ export async function isAdmin(): Promise<boolean> {
       .from('user_auth')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error || !data) return false;
     const role = (data as { role: string }).role;
@@ -47,7 +47,7 @@ export async function isSuperAdmin(): Promise<boolean> {
       .from('user_auth')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error || !data) return false;
     return (data as { role: string }).role === 'superadmin';
@@ -69,7 +69,7 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
       .from('user_auth')
       .select('role, customer_id, name')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error || !data) return null;
 
