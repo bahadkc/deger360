@@ -120,11 +120,18 @@ export async function POST(request: NextRequest) {
 
     // Supabase SSR automatically sets cookies via setAll callback
     // Just return the response - cookies are already set by createServerClient
-    return NextResponse.json({
-      success: true,
-      user: authData.user,
-      session: authData.session,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        user: authData.user,
+        session: authData.session,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Error in portal login:', error);
     return NextResponse.json(

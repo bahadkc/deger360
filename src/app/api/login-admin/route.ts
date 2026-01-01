@@ -120,18 +120,25 @@ export async function POST(request: NextRequest) {
 
       // Supabase SSR automatically sets cookies via setAll callback
       // Just return the response - cookies are already set by createServerClient
-      return NextResponse.json({
-        success: true,
-        user: authData.user,
-        session: authData.session,
-        admin: {
-          id: authData.user.id,
-          email: authData.user.email || '',
-          role: 'admin',
-          customer_id: null,
-          name: email.split('@')[0],
+      return NextResponse.json(
+        {
+          success: true,
+          user: authData.user,
+          session: authData.session,
+          admin: {
+            id: authData.user.id,
+            email: authData.user.email || '',
+            role: 'admin',
+            customer_id: null,
+            name: email.split('@')[0],
+          },
         },
-      });
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     }
 
     // Verify admin role
@@ -146,18 +153,25 @@ export async function POST(request: NextRequest) {
 
     // Supabase SSR automatically sets cookies via setAll callback
     // Just return the response - cookies are already set by createServerClient
-    return NextResponse.json({
-      success: true,
-      user: authData.user,
-      session: authData.session,
-      admin: {
-        id: authData.user.id,
-        email: authData.user.email || '',
-        role: role as 'superadmin' | 'admin' | 'lawyer' | 'acente',
-        customer_id: (userAuth as { customer_id: string | null }).customer_id,
-        name: (userAuth as { name: string | null }).name || null,
+    return NextResponse.json(
+      {
+        success: true,
+        user: authData.user,
+        session: authData.session,
+        admin: {
+          id: authData.user.id,
+          email: authData.user.email || '',
+          role: role as 'superadmin' | 'admin' | 'lawyer' | 'acente',
+          customer_id: (userAuth as { customer_id: string | null }).customer_id,
+          name: (userAuth as { name: string | null }).name || null,
+        },
       },
-    });
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Error in admin login:', error);
     return NextResponse.json(
