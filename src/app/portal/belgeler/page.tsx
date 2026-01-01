@@ -58,24 +58,8 @@ export default function BelgelerPage() {
 
   const loadDocuments = async () => {
     try {
-      setLoading(true);
       console.log('Documents: Loading data...');
-      const { data: cases, error: casesError } = await getCurrentUserCases();
-      
-      if (casesError) {
-        console.error('Documents: Error loading cases:', casesError);
-        // Still show expected documents even if error
-        const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => ({
-          key: expectedDoc.key,
-          name: expectedDoc.name,
-          category: expectedDoc.category,
-          description: expectedDoc.description,
-          uploaded: false,
-        }));
-        setDocuments(documentDisplayList);
-        return;
-      }
-      
+      const cases = await getCurrentUserCases();
       console.log('Documents: Cases received:', cases);
       
       if (cases && cases.length > 0) {

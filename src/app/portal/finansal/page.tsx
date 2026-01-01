@@ -19,16 +19,9 @@ export default function FinansalPage() {
 
   const loadFinancialData = useCallback(async () => {
     try {
-      setLoading(true);
       console.log('Financial: Loading data...');
       // Get current user's cases (now includes customer data)
-      const { data: cases, error: casesError } = await getCurrentUserCases();
-      
-      if (casesError) {
-        console.error('Financial: Error loading cases:', casesError);
-        return;
-      }
-      
+      const cases = await getCurrentUserCases();
       console.log('Financial: Cases received:', cases);
       
       if (cases && cases.length > 0) {
