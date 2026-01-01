@@ -18,6 +18,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const checkAdminAccess = useCallback(async () => {
     try {
@@ -46,6 +47,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, [pathname, router]);
 
   useEffect(() => {
+    setMounted(true);
     checkAdminAccess();
     
     // Listen for auth changes
@@ -66,7 +68,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  if (loading) {
+  // Prevent hydration mismatch by only rendering after mount
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-neutral-600">Yükleniyor...</div>

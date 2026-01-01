@@ -104,6 +104,7 @@ export async function getCurrentCustomer(): Promise<any> {
 }
 
 // Get current user's cases with customer data
+// Uses API route to bypass RLS policies
 export async function getCurrentUserCases(): Promise<any[]> {
   try {
     const user = await getCurrentUser();
@@ -114,51 +115,26 @@ export async function getCurrentUserCases(): Promise<any[]> {
 
     console.log('getCurrentUserCases: User found:', user.id);
 
-    // Use maybeSingle to avoid 406 errors
-    const { data: userAuth, error: authError } = await supabase
-      .from('user_auth')
-      .select('customer_id')
-      .eq('id', user.id)
-      .maybeSingle();
+    // Use API route to bypass RLS
+    const response = await fetch('/api/get-user-cases', {
+      method: 'GET',
+      credentials: 'include', // Include cookies for authentication
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    if (authError) {
-      console.error('getCurrentUserCases: Error fetching user_auth:', authError);
-      // Don't throw, return empty array to prevent crash
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('getCurrentUserCases: API error:', errorData.error || response.statusText);
       return [];
     }
 
-    // Check if user_auth exists but has no customer_id
-    if (!userAuth) {
-      console.error('getCurrentUserCases: No user_auth record found for user');
-      return [];
-    }
+    const data = await response.json();
+    const cases = data.cases || [];
 
-    // Type assertion for customer_id
-    const userAuthData = userAuth as { customer_id: string | null } | null;
-    if (!userAuthData || !userAuthData.customer_id) {
-      console.error('getCurrentUserCases: No customer_id found for user');
-      return [];
-    }
-
-    console.log('getCurrentUserCases: Customer ID:', userAuthData.customer_id);
-
-    // Fetch cases with customer data
-    const { data, error } = await supabase
-      .from('cases')
-      .select(`
-        *,
-        customers (*)
-      `)
-      .eq('customer_id', userAuthData.customer_id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('getCurrentUserCases: Error fetching cases:', error);
-      return [];
-    }
-
-    console.log('getCurrentUserCases: Cases found:', data?.length || 0);
-    return data || [];
+    console.log('getCurrentUserCases: Cases found:', cases.length);
+    return cases;
   } catch (error) {
     console.error('getCurrentUserCases: Unexpected error:', error);
     return [];
