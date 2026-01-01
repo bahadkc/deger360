@@ -37,6 +37,7 @@ interface DocumentDisplay {
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [caseData, setCaseData] = useState<any>(null);
   const [customerData, setCustomerData] = useState<any>(null);
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
@@ -48,8 +49,17 @@ export default function DashboardPage() {
 
   const loadDashboardData = useCallback(async () => {
     try {
+      setLoading(true);
+      setError(null);
       console.log('Dashboard: Loading data...');
-      const cases = await getCurrentUserCases();
+      const { data: cases, error: casesError } = await getCurrentUserCases();
+      
+      if (casesError) {
+        console.error('Dashboard: Error loading cases:', casesError);
+        setError(casesError.message || 'Dosyalar yüklenemedi');
+        return;
+      }
+
       console.log('Dashboard: Cases received:', cases);
       
       if (cases && cases.length > 0) {
@@ -207,9 +217,11 @@ export default function DashboardPage() {
 
       } else {
         console.warn('Dashboard: No cases found for current user');
+        setError('Henüz dosyanız bulunmuyor.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Dashboard: Error loading dashboard data:', error);
+      setError(error?.message || 'Beklenmeyen bir hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -335,6 +347,43 @@ export default function DashboardPage() {
     };
   }, [caseId, customerId, loadDashboardData, caseData, customerData]);
 
+  // Error state
+  if (error && !loading) {
+    return (
+      <PortalLayout>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto p-8">
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+              <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h2 className="text-xl font-bold text-red-800 mb-2">Bir Sorun Oluştu</h2>
+              <p className="text-red-600 mb-6">{error}</p>
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => {
+                    setError(null);
+                    loadDashboardData();
+                  }}
+                  className="bg-primary-orange hover:bg-primary-orange-hover text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                >
+                  Tekrar Dene
+                </button>
+                <button 
+                  onClick={() => window.location.href = '/portal/giris'}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-3 rounded-lg transition-colors"
+                >
+                  Giriş Sayfası
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </PortalLayout>
+    );
+  }
+
+  // Loading state
   if (loading) {
     return (
       <PortalLayout>
