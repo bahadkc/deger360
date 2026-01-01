@@ -133,12 +133,14 @@ export async function getCurrentUserCases(): Promise<any[]> {
       return [];
     }
 
-    if (!userAuth.customer_id) {
+    // Type assertion for customer_id
+    const userAuthData = userAuth as { customer_id: string | null } | null;
+    if (!userAuthData || !userAuthData.customer_id) {
       console.error('getCurrentUserCases: No customer_id found for user');
       return [];
     }
 
-    console.log('getCurrentUserCases: Customer ID:', userAuth.customer_id);
+    console.log('getCurrentUserCases: Customer ID:', userAuthData.customer_id);
 
     // Fetch cases with customer data
     const { data, error } = await supabase
@@ -147,7 +149,7 @@ export async function getCurrentUserCases(): Promise<any[]> {
         *,
         customers (*)
       `)
-      .eq('customer_id', userAuth.customer_id)
+      .eq('customer_id', userAuthData.customer_id)
       .order('created_at', { ascending: false });
 
     if (error) {
