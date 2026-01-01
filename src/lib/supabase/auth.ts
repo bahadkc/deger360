@@ -104,91 +104,61 @@ export async function getCurrentCustomer(): Promise<any> {
 }
 
 // Get current user's cases with customer data
-export async function getCurrentUserCases(): Promise<{ data: any[] | null; error: Error | null }> {
+export async function getCurrentUserCases(): Promise<any[]> {
   try {
-    // 1. Current user'ı al
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (userError || !user) {
-      console.error('getCurrentUserCases: No user found', userError);
-      return { data: null, error: userError || new Error('Not authenticated') };
+    const user = await getCurrentUser();
+    if (!user) {
+      console.log('getCurrentUserCases: No user found');
+      return [];
     }
 
     console.log('getCurrentUserCases: User found:', user.id);
 
-    // 2. user_auth'dan customer_id ve role al
-    const { data: userAuth, error: userAuthError } = await supabase
+    // Use maybeSingle to avoid 406 errors
+    const { data: userAuth, error: authError } = await supabase
       .from('user_auth')
-      .select('customer_id, role, name')
+      .select('customer_id')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (userAuthError) {
-      console.error('getCurrentUserCases: Error fetching user_auth:', userAuthError);
-      return { data: null, error: userAuthError };
+    if (authError) {
+      console.error('getCurrentUserCases: Error fetching user_auth:', authError);
+      // Don't throw, return empty array to prevent crash
+      return [];
     }
 
+    // Check if user_auth exists but has no customer_id
     if (!userAuth) {
-      console.error('getCurrentUserCases: No user_auth record found');
-      return { data: null, error: new Error('User auth not found') };
+      console.error('getCurrentUserCases: No user_auth record found for user');
+      return [];
     }
 
-    // 3. Role'e göre işlem yap
-    if (userAuth.role === 'customer') {
-      // Customer_id kontrolü
-      if (!userAuth.customer_id) {
-        console.error('getCurrentUserCases: No customer_id found for user');
-        return { 
-          data: null, 
-          error: new Error('Hesabınız henüz müşteri kaydına bağlanmamış. Lütfen destek ekibiyle iletişime geçin.') 
-        };
-      }
-
-      // Cases'i çek
-      const { data: cases, error: casesError } = await supabase
-        .from('cases')
-        .select(`
-          *,
-          customers (*)
-        `)
-        .eq('customer_id', userAuth.customer_id)
-        .order('created_at', { ascending: false });
-
-      if (casesError) {
-        console.error('getCurrentUserCases: Error fetching cases:', casesError);
-        return { data: null, error: casesError };
-      }
-
-      return { data: cases || [], error: null };
+    if (!userAuth.customer_id) {
+      console.error('getCurrentUserCases: No customer_id found for user');
+      return [];
     }
 
-    // Admin/Avukat/Acente için farklı logic
-    if (userAuth.role === 'superadmin' || userAuth.role === 'admin' || userAuth.role === 'lawyer' || userAuth.role === 'acente') {
-      // Bu roller için tüm dosyaları veya sadece kendilerine atananları getir
-      const { data: cases, error: casesError } = await supabase
-        .from('cases')
-        .select(`
-          *,
-          customers (*)
-        `)
-        .order('created_at', { ascending: false });
+    console.log('getCurrentUserCases: Customer ID:', userAuth.customer_id);
 
-      if (casesError) {
-        console.error('getCurrentUserCases: Error fetching cases:', casesError);
-        return { data: null, error: casesError };
-      }
+    // Fetch cases with customer data
+    const { data, error } = await supabase
+      .from('cases')
+      .select(`
+        *,
+        customers (*)
+      `)
+      .eq('customer_id', userAuth.customer_id)
+      .order('created_at', { ascending: false });
 
-      return { data: cases || [], error: null };
+    if (error) {
+      console.error('getCurrentUserCases: Error fetching cases:', error);
+      return [];
     }
 
-    // Geçersiz role
-    return { data: null, error: new Error('Invalid user role') };
-
+    console.log('getCurrentUserCases: Cases found:', data?.length || 0);
+    return data || [];
   } catch (error) {
     console.error('getCurrentUserCases: Unexpected error:', error);
-    return { 
-      data: null, 
-      error: error instanceof Error ? error : new Error('Unexpected error occurred') 
-    };
+    return [];
   }
 }

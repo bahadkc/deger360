@@ -49,17 +49,9 @@ export default function DashboardPage() {
 
   const loadDashboardData = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
       console.log('Dashboard: Loading data...');
-      const { data: cases, error: casesError } = await getCurrentUserCases();
-      
-      if (casesError) {
-        console.error('Dashboard: Error loading cases:', casesError);
-        setError(casesError.message || 'Dosyalar yüklenemedi');
-        return;
-      }
-
+      const cases = await getCurrentUserCases();
       console.log('Dashboard: Cases received:', cases);
       
       if (cases && cases.length > 0) {
@@ -217,11 +209,11 @@ export default function DashboardPage() {
 
       } else {
         console.warn('Dashboard: No cases found for current user');
-        setError('Henüz dosyanız bulunmuyor.');
+        setError('Hesabınıza bağlı dosya bulunamadı. Lütfen destek ile iletişime geçin.');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Dashboard: Error loading dashboard data:', error);
-      setError(error?.message || 'Beklenmeyen bir hata oluştu');
+      setError('Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.');
     } finally {
       setLoading(false);
     }
@@ -347,48 +339,64 @@ export default function DashboardPage() {
     };
   }, [caseId, customerId, loadDashboardData, caseData, customerData]);
 
-  // Error state
-  if (error && !loading) {
+  if (loading) {
     return (
       <PortalLayout>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center max-w-md mx-auto p-8">
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
-              <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h2 className="text-xl font-bold text-red-800 mb-2">Bir Sorun Oluştu</h2>
-              <p className="text-red-600 mb-6">{error}</p>
-              <div className="flex gap-3 justify-center">
-                <button 
-                  onClick={() => {
-                    setError(null);
-                    loadDashboardData();
-                  }}
-                  className="bg-primary-orange hover:bg-primary-orange-hover text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-                >
-                  Tekrar Dene
-                </button>
-                <button 
-                  onClick={() => window.location.href = '/portal/giris'}
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-3 rounded-lg transition-colors"
-                >
-                  Giriş Sayfası
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
+          <div className="text-neutral-600 text-lg">Verileriniz yükleniyor...</div>
         </div>
       </PortalLayout>
     );
   }
 
-  // Loading state
-  if (loading) {
+  if (error) {
     return (
       <PortalLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-neutral-600">Yükleniyor...</div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <AlertCircle className="w-16 h-16 text-red-500" />
+          <div className="text-neutral-800 text-xl font-semibold text-center">{error}</div>
+          <button
+            onClick={() => {
+              setLoading(true);
+              loadDashboardData();
+            }}
+            className="px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors"
+          >
+            Tekrar Dene
+          </button>
+          <a
+            href="https://wa.me/905057053305"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-blue hover:underline flex items-center gap-2"
+          >
+            <MessageCircle className="w-5 h-5" />
+            Destek ile iletişime geç
+          </a>
+        </div>
+      </PortalLayout>
+    );
+  }
+
+  if (!caseData || !customerData) {
+    return (
+      <PortalLayout>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <AlertCircle className="w-16 h-16 text-yellow-500" />
+          <div className="text-neutral-800 text-xl font-semibold text-center">Dosya bilgileriniz bulunamadı</div>
+          <p className="text-neutral-600 text-center max-w-md">
+            Hesabınıza henüz bir dosya atanmamış olabilir. Lütfen destek ekibi ile iletişime geçin.
+          </p>
+          <a
+            href="https://wa.me/905057053305"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+          >
+            <MessageCircle className="w-5 h-5" />
+            WhatsApp ile Destek Al
+          </a>
         </div>
       </PortalLayout>
     );
