@@ -24,8 +24,15 @@ export default function AyarlarPage() {
 
   const loadAccountData = useCallback(async () => {
     try {
+      setLoading(true);
       console.log('Settings: Loading data...');
-      const cases = await getCurrentUserCases();
+      const { data: cases, error: casesError } = await getCurrentUserCases();
+      
+      if (casesError) {
+        console.error('Settings: Error loading cases:', casesError);
+        return;
+      }
+      
       console.log('Settings: Cases received:', cases);
       
       if (cases && cases.length > 0) {
