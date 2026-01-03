@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
     const { caseId, caseUpdates, customerUpdates } = body;
 
     if (!caseId) {
-      return createResponse(
+      return NextResponse.json(
         { error: 'Case ID is required' },
-        400
+        { status: 400 }
       );
     }
 
@@ -43,6 +43,15 @@ export async function POST(request: NextRequest) {
     
     // Store cookies to be set in response
     const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+    
+    // Helper function to create response with cookies
+    const createResponse = (data: any, status: number = 200) => {
+      const response = NextResponse.json(data, { status });
+      cookiesToSet.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options);
+      });
+      return response;
+    };
     
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
@@ -72,15 +81,6 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    
-    // Helper function to create response with cookies
-    const createResponse = (data: any, status: number = 200) => {
-      const response = NextResponse.json(data, { status });
-      cookiesToSet.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options);
-      });
-      return response;
-    };
 
     let { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -271,9 +271,9 @@ export async function POST(request: NextRequest) {
     return createResponse({ case: updatedCase });
   } catch (error: any) {
     console.error('Error in update-case API:', error);
-    return createResponse(
+    return NextResponse.json(
       { error: error.message || 'Internal server error' },
-      500
+      { status: 500 }
     );
   }
 }
