@@ -71,6 +71,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
 
   // Admin assignment fields
   const [assignedAdmins, setAssignedAdmins] = useState<string[]>([]);
+  const [initialAssignedAdmins, setInitialAssignedAdmins] = useState<string[]>([]);
   const [allAdmins, setAllAdmins] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
@@ -186,7 +187,9 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
           return;
         }
 
-        setAssignedAdmins((data || []).map((item: any) => item.admin_id));
+        const adminIds = (data || []).map((item: any) => item.admin_id);
+        setAssignedAdmins(adminIds);
+        setInitialAssignedAdmins(adminIds);
       } catch (error) {
         console.error('Error loading assigned admins:', error);
       }
@@ -379,8 +382,13 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         }
       }
 
-      // Save admin assignments (only if superadmin) - separate API call
-      if (canAssignAdminsData && assignedAdmins.length >= 0) {
+      // Save admin assignments (only if superadmin and assignments changed) - separate API call
+      // Check if admin assignments have changed by comparing with initial state
+      const adminAssignmentsChanged = 
+        canAssignAdminsData && 
+        JSON.stringify(assignedAdmins.sort()) !== JSON.stringify(initialAssignedAdmins.sort());
+      
+      if (adminAssignmentsChanged) {
         try {
           const assignmentsResponse = await fetch('/api/update-case-assignments', {
             method: 'POST',
@@ -399,6 +407,9 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             throw new Error(errorData.error || 'Admin atama başarısız');
           }
 
+          // Update initial state after successful assignment
+          setInitialAssignedAdmins([...assignedAdmins]);
+          
           // ✅ İşlem başarılı - SAYFAYI YENİLE (onUpdate yerine)
           setSaving(false);
           setIsEditing(false);
@@ -415,7 +426,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
           console.error('Error saving admin assignments:', error);
           alert(`❌ Admin atama başarısız: ${error.message || 'Bilinmeyen hata'}`);
           setSaving(false);
-          return;
+          // Don't return here - continue with normal save flow
+          // This way if admin assignment fails, other changes can still be saved
         }
       }
 

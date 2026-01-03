@@ -43,6 +43,14 @@ export default function MusteriDetayPage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('API error:', errorData.error || response.statusText);
+        
+        // If unauthorized, don't throw - let layout handle it
+        if (response.status === 401) {
+          console.warn('Unauthorized - layout will handle redirect');
+          setLoading(false);
+          return;
+        }
+        
         throw new Error(errorData.error || 'Failed to load case data');
       }
 

@@ -50,19 +50,55 @@ export async function GET(
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+            // Ensure cookies work in production (Vercel)
+            const cookieOptions = {
+              ...options,
+              // Ensure secure cookies in production
+              secure: process.env.NODE_ENV === 'production',
+              // SameSite for cross-site requests
+              sameSite: 'lax' as const,
+              // Path should be root for all cookies
+              path: '/',
+            };
+            cookieStore.set(name, value, cookieOptions);
           });
         },
       },
     });
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    let { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
+    // If getUser fails, try to refresh the session
     if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      console.error('🍪 get-case - getUser error:', {
+        message: userError?.message,
+        status: userError?.status,
+        name: userError?.name,
+        cookieCount: allCookies.length,
+      });
+
+      // Try to get current session first
+      const { data: { session: currentSession } } = await supabaseClient.auth.getSession();
+      
+      // If we have a session, try to refresh it
+      if (currentSession) {
+        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
+        
+        if (!refreshError && session) {
+          // Retry getUser after refresh
+          const retryResult = await supabaseClient.auth.getUser();
+          user = retryResult.data.user;
+          userError = retryResult.error;
+        }
+      }
+
+      if (userError || !user) {
+        console.error('🍪 Cookie var ama getUser başarısız - cookie format sorunu olabilir');
+        return NextResponse.json(
+          { error: 'Unauthorized - Session expired or invalid' },
+          { status: 401 }
+        );
+      }
     }
 
     // Create admin client with service role key to bypass RLS

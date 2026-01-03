@@ -48,7 +48,17 @@ export async function POST(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+            // Ensure cookies work in production (Vercel)
+            const cookieOptions = {
+              ...options,
+              // Ensure secure cookies in production
+              secure: process.env.NODE_ENV === 'production',
+              // SameSite for cross-site requests
+              sameSite: 'lax' as const,
+              // Path should be root for all cookies
+              path: '/',
+            };
+            cookieStore.set(name, value, cookieOptions);
           });
         },
       },
