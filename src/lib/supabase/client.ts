@@ -44,6 +44,7 @@ function getSupabaseClient() {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
+          flowType: 'pkce', // ✅ Secure flow type
         },
         global: {
           headers: {

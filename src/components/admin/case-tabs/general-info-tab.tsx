@@ -724,7 +724,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               Oluşturulma Zamanı
             </label>
             <Input
-              value={new Date(fileData.created_at).toLocaleString('tr-TR')}
+              value={typeof window !== 'undefined' ? new Date(fileData.created_at).toLocaleString('tr-TR') : '--'}
               disabled
             />
           </div>

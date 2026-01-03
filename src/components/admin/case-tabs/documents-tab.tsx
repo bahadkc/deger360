@@ -246,13 +246,13 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
                       <div>
                         Yükleyen: {document.uploaded_by_name || document.uploaded_by}
                       </div>
-                      <div>
+                      <div suppressHydrationWarning>
                         Tarih:{' '}
-                        {new Date(document.uploaded_at).toLocaleDateString('tr-TR', {
+                        {typeof window !== 'undefined' ? new Date(document.uploaded_at).toLocaleDateString('tr-TR', {
                           day: '2-digit',
                           month: 'long',
                           year: 'numeric',
-                        })}
+                        }) : '--'}
                       </div>
                     </div>
                   ) : (

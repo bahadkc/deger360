@@ -218,8 +218,8 @@ export default function BelgelerPage() {
                         <>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-neutral-600 mb-3">
                             {doc.documentData.created_at && (
-                              <span>
-                                Tarih: {new Date(doc.documentData.created_at).toLocaleDateString('tr-TR')}
+                              <span suppressHydrationWarning>
+                                Tarih: {typeof window !== 'undefined' ? new Date(doc.documentData.created_at).toLocaleDateString('tr-TR') : '--'}
                               </span>
                             )}
                             {doc.documentData.file_size && (

@@ -249,8 +249,8 @@ export function ProgressTracker({ steps, orientation = 'vertical', className }: 
                                     {item.title}
                                   </span>
                                   {item.completed && item.completed_at && (
-                                    <p className="text-xs text-neutral-400 mt-0.5">
-                                      Tamamlandı: {new Date(item.completed_at).toLocaleDateString('tr-TR', {
+                                    <p className="text-xs text-neutral-400 mt-0.5" suppressHydrationWarning>
+                                      Tamamlandı: {typeof window !== 'undefined' ? new Date(item.completed_at).toLocaleDateString('tr-TR', {
                                         day: '2-digit',
                                         month: 'short',
                                         year: 'numeric',
