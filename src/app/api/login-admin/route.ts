@@ -47,14 +47,33 @@ export async function POST(request: NextRequest) {
     
     const allCookies = Array.from(allCookiesMap.values());
 
+    // Store cookies to be set
+    const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
           return allCookies;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+        setAll(cookiesToSetArray) {
+          cookiesToSetArray.forEach(({ name, value, options }) => {
+            // Ensure cookies work in production (Vercel)
+            const cookieOptions = {
+              ...options,
+              // Ensure secure cookies in production
+              secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
+              // SameSite for cross-site requests
+              sameSite: 'lax' as const,
+              // Path should be root for all cookies
+              path: '/',
+              // HttpOnly for security (Supabase auth cookies should be httpOnly)
+              httpOnly: options?.httpOnly !== false,
+              // Max age from options or default
+              maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days default
+            };
+            cookieStore.set(name, value, cookieOptions);
+            // Store cookies to be set in response
+            cookiesToSet.push({ name, value, options: cookieOptions });
           });
         },
       },
@@ -152,9 +171,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Supabase SSR automatically sets cookies via setAll callback
-      // Just return the response - cookies are already set by createServerClient
-      return NextResponse.json(
+      // Create response with cookies
+      const successResponse = NextResponse.json(
         {
           success: true,
           user: authData.user,
@@ -173,6 +191,13 @@ export async function POST(request: NextRequest) {
           },
         }
       );
+
+      // Set cookies in response
+      cookiesToSet.forEach(({ name, value, options }) => {
+        successResponse.cookies.set(name, value, options);
+      });
+
+      return successResponse;
     }
 
     // Verify admin role
@@ -186,9 +211,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Supabase SSR automatically sets cookies via setAll callback
-    // Just return the response - cookies are already set by createServerClient
-    return NextResponse.json(
+    // Create response with cookies
+    const successResponse = NextResponse.json(
       {
         success: true,
         user: authData.user,
@@ -207,6 +231,13 @@ export async function POST(request: NextRequest) {
         },
       }
     );
+
+    // Set cookies in response
+    cookiesToSet.forEach(({ name, value, options }) => {
+      successResponse.cookies.set(name, value, options);
+    });
+
+    return successResponse;
   } catch (error: any) {
     console.error('Error in admin login:', error);
     return NextResponse.json(

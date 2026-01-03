@@ -166,15 +166,27 @@ export async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
+          // Ensure cookies work in production (Vercel)
+          const cookieOptions = {
+            ...options,
+            // Ensure secure cookies in production
+            secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
+            // SameSite for cross-site requests
+            sameSite: (options?.sameSite as 'lax' | 'strict' | 'none') || 'lax',
+            // Path should be root for all cookies
+            path: options?.path || '/',
+            // HttpOnly for security (Supabase auth cookies should be httpOnly)
+            httpOnly: options?.httpOnly !== false,
+          };
           req.cookies.set({
             name,
             value,
-            ...options,
+            ...cookieOptions,
           });
           response.cookies.set({
             name,
             value,
-            ...options,
+            ...cookieOptions,
           });
         },
         remove(name: string, options: any) {
