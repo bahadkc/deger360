@@ -43,24 +43,36 @@ export async function GET(
     
     const allCookies = Array.from(allCookiesMap.values());
     
+    // Store cookies to be set in response
+    const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+    
+    // Create response object early to capture cookies
+    const response = NextResponse.json({});
+    
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
           return allCookies;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookiesToSetArray) {
+          cookiesToSetArray.forEach(({ name, value, options }) => {
             // Ensure cookies work in production (Vercel)
             const cookieOptions = {
               ...options,
               // Ensure secure cookies in production
-              secure: process.env.NODE_ENV === 'production',
+              secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
               // SameSite for cross-site requests
               sameSite: 'lax' as const,
               // Path should be root for all cookies
               path: '/',
+              // HttpOnly for security (Supabase auth cookies should be httpOnly)
+              httpOnly: options?.httpOnly !== false,
+              // Max age from options or default
+              maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days default
             };
             cookieStore.set(name, value, cookieOptions);
+            // Store cookies to be set in response
+            cookiesToSet.push({ name, value, options: cookieOptions });
           });
         },
       },
@@ -94,10 +106,17 @@ export async function GET(
 
       if (userError || !user) {
         console.error('🍪 Cookie var ama getUser başarısız - cookie format sorunu olabilir');
-        return NextResponse.json(
+        const unauthorizedResponse = NextResponse.json(
           { error: 'Unauthorized - Session expired or invalid' },
           { status: 401 }
         );
+        
+        // Set cookies in error response too (might help with refresh)
+        cookiesToSet.forEach(({ name, value, options }) => {
+          unauthorizedResponse.cookies.set(name, value, options);
+        });
+        
+        return unauthorizedResponse;
       }
     }
 
@@ -156,13 +175,28 @@ export async function GET(
 
     if (error) {
       console.error('Error fetching case:', error);
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: 'Case not found' },
         { status: 404 }
       );
+      
+      // Set cookies in error response too
+      cookiesToSet.forEach(({ name, value, options }) => {
+        errorResponse.cookies.set(name, value, options);
+      });
+      
+      return errorResponse;
     }
 
-    return NextResponse.json({ case: data });
+    // Create success response with cookies
+    const successResponse = NextResponse.json({ case: data });
+    
+    // Set cookies in response
+    cookiesToSet.forEach(({ name, value, options }) => {
+      successResponse.cookies.set(name, value, options);
+    });
+
+    return successResponse;
   } catch (error: any) {
     console.error('Error in get-case API:', error);
     return NextResponse.json(

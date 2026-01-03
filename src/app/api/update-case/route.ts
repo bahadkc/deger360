@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
     const { caseId, caseUpdates, customerUpdates } = body;
 
     if (!caseId) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Case ID is required' },
-        { status: 400 }
+        400
       );
     }
 
@@ -41,28 +41,46 @@ export async function POST(request: NextRequest) {
     
     const allCookies = Array.from(allCookiesMap.values());
     
+    // Store cookies to be set in response
+    const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+    
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
           return allCookies;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookiesToSetArray) {
+          cookiesToSetArray.forEach(({ name, value, options }) => {
             // Ensure cookies work in production (Vercel)
             const cookieOptions = {
               ...options,
               // Ensure secure cookies in production
-              secure: process.env.NODE_ENV === 'production',
+              secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
               // SameSite for cross-site requests
               sameSite: 'lax' as const,
               // Path should be root for all cookies
               path: '/',
+              // HttpOnly for security (Supabase auth cookies should be httpOnly)
+              httpOnly: options?.httpOnly !== false,
+              // Max age from options or default
+              maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days default
             };
             cookieStore.set(name, value, cookieOptions);
+            // Store cookies to be set in response
+            cookiesToSet.push({ name, value, options: cookieOptions });
           });
         },
       },
     });
+    
+    // Helper function to create response with cookies
+    const createResponse = (data: any, status: number = 200) => {
+      const response = NextResponse.json(data, { status });
+      cookiesToSet.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options);
+      });
+      return response;
+    };
 
     let { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -92,9 +110,9 @@ export async function POST(request: NextRequest) {
 
       if (userError || !user) {
         console.error('🍪 Cookie var ama getUser başarısız - cookie format sorunu olabilir');
-        return NextResponse.json(
+        return createResponse(
           { error: 'Unauthorized - Session expired or invalid' },
-          { status: 401 }
+          401
         );
       }
     }
@@ -115,9 +133,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (authError || !userAuth) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Admin access required' },
-        { status: 403 }
+        403
       );
     }
 
@@ -126,9 +144,9 @@ export async function POST(request: NextRequest) {
     const canEditData = ['superadmin', 'admin', 'lawyer'].includes(role);
 
     if (!canEditData) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'You do not have permission to edit this data' },
-        { status: 403 }
+        403
       );
     }
 
@@ -142,9 +160,9 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
 
       if (caseAdminError || !caseAdmin) {
-        return NextResponse.json(
+        return createResponse(
           { error: 'Access denied. This case is not assigned to you.' },
-          { status: 403 }
+          403
         );
       }
     }
@@ -157,9 +175,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (caseError || !caseData) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Case not found' },
-        { status: 404 }
+        404
       );
     }
 
@@ -210,9 +228,9 @@ export async function POST(request: NextRequest) {
 
       if (customerUpdateError) {
         console.error('Error updating customer:', customerUpdateError);
-        return NextResponse.json(
+        return createResponse(
           { error: 'Failed to update customer' },
-          { status: 500 }
+          500
         );
       }
     }
@@ -226,9 +244,9 @@ export async function POST(request: NextRequest) {
 
       if (caseUpdateError) {
         console.error('Error updating case:', caseUpdateError);
-        return NextResponse.json(
+        return createResponse(
           { error: 'Failed to update case' },
-          { status: 500 }
+          500
         );
       }
     }
@@ -244,18 +262,18 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (fetchError) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Failed to fetch updated case' },
-        { status: 500 }
+        500
       );
     }
 
-    return NextResponse.json({ case: updatedCase });
+    return createResponse({ case: updatedCase });
   } catch (error: any) {
     console.error('Error in update-case API:', error);
-    return NextResponse.json(
+    return createResponse(
       { error: error.message || 'Internal server error' },
-      { status: 500 }
+      500
     );
   }
 }
