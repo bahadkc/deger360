@@ -56,18 +56,25 @@ export default function MusterilerPage() {
       if (!superAdmin) {
         assignedIds = await getAssignedCaseIds();
         setAssignedCaseIds(assignedIds);
+        console.log('Non-superadmin: Assigned case IDs:', assignedIds);
+      } else {
+        console.log('Superadmin: Loading all customers');
       }
 
       // Use optimized API with caching and pagination
+      // For superadmin, pass undefined (not empty array) to see all customers
       const data = await optimizedCustomersApi.getList({
         search: search || undefined,
-        assignedCaseIds: superAdmin ? undefined : assignedIds,
+        assignedCaseIds: superAdmin ? undefined : (assignedIds.length > 0 ? assignedIds : undefined),
         limit: 100, // Limit to prevent excessive data
       });
 
-      setCustomers(data);
+      console.log('Loaded customers:', data?.length || 0);
+      setCustomers(data || []);
     } catch (error) {
       console.error('Error loading customers:', error);
+      // Show error to user
+      setCustomers([]);
     } finally {
       setLoading(false);
     }

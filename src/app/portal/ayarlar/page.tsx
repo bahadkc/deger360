@@ -47,53 +47,60 @@ export default function AyarlarPage() {
   }, []);
 
   useEffect(() => {
+    // Load data once on page entry
     loadAccountData();
 
-    // Real-time subscription for customers table
-    const customerChannel = supabase
-      .channel('settings_customer_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'customers',
-        },
-        (payload) => {
-          if (customerData && payload.new.id === customerData.id) {
-            setCustomerData(payload.new as any);
-          } else {
+    // Set up real-time subscriptions for customer and case updates
+    if (customerId && caseId) {
+      // Subscribe to customer changes
+      const customerChannel = supabase
+        .channel(`customer_updates_settings_${customerId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'customers',
+            filter: `id=eq.${customerId}`,
+          },
+          () => {
+            console.log('Customer data updated in settings page, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
             loadAccountData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    // Real-time subscription for cases table
-    const caseChannel = supabase
-      .channel('settings_case_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-        },
-        (payload) => {
-          if (caseData && payload.new.id === caseData.id) {
-            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-          } else {
+      // Subscribe to case changes
+      const caseChannel = supabase
+        .channel(`case_updates_settings_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'cases',
+            filter: `id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Case data updated in settings page, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
             loadAccountData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(customerChannel);
-      supabase.removeChannel(caseChannel);
-    };
-  }, [customerId, caseId, loadAccountData, customerData, caseData]);
+      // Cleanup subscriptions on unmount
+      return () => {
+        supabase.removeChannel(customerChannel);
+        supabase.removeChannel(caseChannel);
+      };
+    }
+  }, [loadAccountData, customerId, caseId]);
 
   if (loading) {
     return (

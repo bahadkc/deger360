@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { GeneralInfoTab } from './case-tabs/general-info-tab';
 import { DocumentsTab } from './case-tabs/documents-tab';
 import { ChecklistTab } from './case-tabs/checklist-tab';
-import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 interface CaseDetailModalProps {
@@ -27,20 +26,25 @@ export function CaseDetailModal({ caseId, isOpen, onClose }: CaseDetailModalProp
     if (!caseId) return;
     
     try {
-      const { data, error } = await supabase
-        .from('cases')
-        .select(`
-          *,
-          customers (*)
-        `)
-        .eq('id', caseId)
-        .single();
+      // Use API route to bypass RLS
+      const response = await fetch(`/api/get-case/${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) throw error;
-      setCaseData(data);
-    } catch (error) {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to load case data');
+      }
+
+      const data = await response.json();
+      setCaseData(data.case);
+    } catch (error: any) {
       console.error('Error loading case data:', error);
-      alert('Dosya bilgileri yüklenirken bir hata oluştu');
+      alert(error.message || 'Dosya bilgileri yüklenirken bir hata oluştu');
     } finally {
       setLoading(false);
     }

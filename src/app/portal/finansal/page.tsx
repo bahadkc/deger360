@@ -17,6 +17,18 @@ export default function FinansalPage() {
   const customerId = useMemo(() => customerData?.id, [customerData?.id]);
   const caseId = useMemo(() => caseData?.id, [caseData?.id]);
 
+  const loadPaymentsData = useCallback(async (caseId: string) => {
+    const { data: paymentsData, error: paymentsError } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('case_id', caseId)
+      .order('payment_date', { ascending: false }) as { data: any[] | null; error: any };
+
+    if (!paymentsError && paymentsData) {
+      setPayments(paymentsData || []);
+    }
+  }, []);
+
   const loadFinancialData = useCallback(async () => {
     try {
       console.log('Financial: Loading data...');
@@ -35,15 +47,8 @@ export default function FinansalPage() {
         
         console.log('Financial: IBAN:', currentCase.customers?.iban);
 
-        // Get payments
-        const { data: paymentsData, error: paymentsError } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('case_id', currentCase.id)
-          .order('payment_date', { ascending: false }) as { data: any[] | null; error: any };
-
-        if (paymentsError) throw paymentsError;
-        setPayments(paymentsData || []);
+        // Load payments
+        await loadPaymentsData(currentCase.id);
       } else {
         console.warn('Financial: No cases found for current user');
       }
@@ -52,76 +57,84 @@ export default function FinansalPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadPaymentsData]);
 
   useEffect(() => {
+    // Load data once on page entry
     loadFinancialData();
 
-    // Real-time subscription for customers table (IBAN, payment_person_name, etc.)
-    const customerChannel = supabase
-      .channel('customer_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'customers',
-        },
-        (payload) => {
-          // Update customer data if it's the current customer
-          if (customerData && payload.new.id === customerData.id) {
-            setCustomerData(payload.new as any);
-          } else {
-            // Reload if we don't know which customer it is
+    // Set up real-time subscriptions for customer and case updates
+    if (customerId && caseId) {
+      // Subscribe to customer changes
+      const customerChannel = supabase
+        .channel(`customer_updates_financial_${customerId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'customers',
+            filter: `id=eq.${customerId}`,
+          },
+          () => {
+            console.log('Customer data updated in financial page, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
             loadFinancialData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    // Real-time subscription for cases table (financial data)
-    const caseChannel = supabase
-      .channel('case_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-        },
-        (payload) => {
-          // Update case data if it's the current case
-          if (caseData && payload.new.id === caseData.id) {
-            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-          } else {
+      // Subscribe to case changes
+      const caseChannel = supabase
+        .channel(`case_updates_financial_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'cases',
+            filter: `id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Case data updated in financial page, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
             loadFinancialData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    // Real-time subscription for payments table
-    const paymentChannel = supabase
-      .channel('payment_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'payments',
-        },
-        () => {
-          loadFinancialData();
-        }
-      )
-      .subscribe();
+      // Subscribe to payments changes
+      const paymentsChannel = supabase
+        .channel(`payments_updates_financial_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'payments',
+            filter: `case_id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Payments updated in financial page, refreshing...');
+            if (caseId) {
+              loadPaymentsData(caseId);
+            }
+          }
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(customerChannel);
-      supabase.removeChannel(caseChannel);
-      supabase.removeChannel(paymentChannel);
-    };
-  }, [customerId, caseId, loadFinancialData, customerData, caseData]);
+      // Cleanup subscriptions on unmount
+      return () => {
+        supabase.removeChannel(customerChannel);
+        supabase.removeChannel(caseChannel);
+        supabase.removeChannel(paymentsChannel);
+      };
+    }
+  }, [loadFinancialData, customerId, caseId, loadPaymentsData]);
 
   // Calculate values from case data
   const degerKaybi = parseFloat(caseData?.value_loss_amount?.toString() || '0');

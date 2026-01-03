@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { CaseCard } from './case-card';
 import { supabase } from '@/lib/supabase/client';
 import { getAssignedCaseIds, isSuperAdmin } from '@/lib/supabase/admin-auth';
-import { optimizedCasesApi, cacheInvalidation } from '@/lib/supabase/optimized-api';
+import { cacheInvalidation } from '@/lib/supabase/optimized-api';
 
 export interface CaseData {
   id: string;
@@ -37,7 +37,6 @@ const BOARD_STAGES = [
 export function AdminBoard() {
   const [cases, setCases] = useState<CaseData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [draggedCase, setDraggedCase] = useState<string | null>(null);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [assignedCaseIds, setAssignedCaseIds] = useState<string[]>([]);
 
@@ -51,69 +50,10 @@ export function AdminBoard() {
         setAssignedCaseIds(assignedIds);
       }
     };
+    
+    // Load data once on page entry
     checkAdminStatus();
     loadCases();
-    
-    // Real-time subscription for cases
-    const casesChannel = supabase
-      .channel('cases_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cases',
-        },
-        () => {
-          // Invalidate cache and reload
-          cacheInvalidation.invalidateBoard();
-          loadCases();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for admin_checklist (to update board when checklist changes)
-    const checklistChannel = supabase
-      .channel('checklist_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_checklist',
-        },
-        () => {
-          // Invalidate cache and reload
-          cacheInvalidation.invalidateBoard();
-          loadCases();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for case_admins (to update when admin assignments change)
-    const caseAdminsChannel = supabase
-      .channel('case_admins_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'case_admins',
-        },
-        async () => {
-          await checkAdminStatus();
-          // Invalidate cache and reload
-          cacheInvalidation.invalidateBoard();
-          loadCases();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(casesChannel);
-      supabase.removeChannel(checklistChannel);
-      supabase.removeChannel(caseAdminsChannel);
-    };
   }, []);
 
   const loadCases = async () => {
@@ -130,12 +70,24 @@ export function AdminBoard() {
         setAssignedCaseIds(assignedIds);
       }
 
-      // Use optimized API with caching
-      const data = await optimizedCasesApi.getForBoard({
-        assignedTo: superAdmin ? undefined : assignedIds,
+      // Use API route to bypass RLS
+      const response = await fetch('/api/get-cases-board', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      const formattedCases: CaseData[] = (data || []).map((caseItem: any) => ({
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error fetching cases:', errorData.error || response.statusText);
+        setCases([]);
+        return;
+      }
+
+      const data = await response.json();
+      const formattedCases: CaseData[] = (data.cases || []).map((caseItem: any) => ({
         id: caseItem.id,
         case_number: caseItem.case_number,
         customer: {
@@ -157,45 +109,13 @@ export function AdminBoard() {
       setCases(formattedCases);
     } catch (error) {
       console.error('Error loading cases:', error);
+      setCases([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDragStart = (caseId: string) => {
-    setDraggedCase(caseId);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (targetStage: string) => {
-    if (!draggedCase) return;
-
-    try {
-      // Update case board stage
-      const { error } = await (supabase
-        .from('cases') as any)
-        .update({ board_stage: targetStage })
-        .eq('id', draggedCase);
-
-      if (error) throw error;
-
-      // Update local state
-      setCases((prevCases) =>
-        prevCases.map((caseItem) =>
-          caseItem.id === draggedCase
-            ? { ...caseItem, board_stage: targetStage }
-            : caseItem
-        )
-      );
-    } catch (error) {
-      console.error('Error updating case stage:', error);
-    } finally {
-      setDraggedCase(null);
-    }
-  };
+  // Drag and drop removed - board_stage is now automatically updated based on checklist completion
 
   const getCasesForStage = (stageKey: string) => {
     return cases.filter((caseItem) => caseItem.board_stage === stageKey);
@@ -218,8 +138,6 @@ export function AdminBoard() {
             <div
               key={stage.key}
               className={`flex-shrink-0 w-[280px] sm:w-[300px] md:w-80 ${stage.color} rounded-lg p-3 sm:p-4 flex flex-col h-full border-2`}
-              onDragOver={handleDragOver}
-              onDrop={() => handleDrop(stage.key)}
             >
               <div className="mb-3 sm:mb-4 flex-shrink-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -240,7 +158,6 @@ export function AdminBoard() {
                     <CaseCard
                       key={caseItem.id}
                       caseData={caseItem}
-                      onDragStart={handleDragStart}
                     />
                   ))
                 )}

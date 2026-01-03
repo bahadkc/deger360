@@ -22,12 +22,32 @@ export default function AdminGirisPage() {
     setError('');
 
     try {
-      await loginAsAdmin(email, password);
-      // Clear any cached data before redirect
-      window.location.href = adminRoutes.dashboard;
+      // Normalize email (trim and lowercase)
+      const normalizedEmail = email.trim().toLowerCase();
+      
+      if (!normalizedEmail || !password) {
+        setError('Lütfen e-posta ve şifre alanlarını doldurun.');
+        setLoading(false);
+        return;
+      }
+
+      await loginAsAdmin(normalizedEmail, password);
+      // Use router.push instead of window.location.href to preserve session
+      // Small delay to ensure session is fully set
+      await new Promise(resolve => setTimeout(resolve, 200));
+      router.push(adminRoutes.dashboard);
     } catch (err: any) {
       console.error('Admin login error:', err);
-      setError(err.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
+      // More user-friendly error messages
+      let errorMessage = err.message || 'Giriş başarısız. Lütfen tekrar deneyin.';
+      
+      if (err.message?.includes('Invalid login credentials') || 
+          err.message?.includes('Invalid credentials') ||
+          err.message?.includes('E-posta veya şifre hatalı')) {
+        errorMessage = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

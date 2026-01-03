@@ -88,73 +88,25 @@ export function SuperAdminReport({ adminUser, period }: { adminUser: AdminUser; 
           startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       }
 
-      // Load all cases (superadmin sees everything)
-      const { data: casesData, error: casesError } = await supabase
-        .from('cases')
-        .select(`
-          id,
-          case_number,
-          status,
-          board_stage,
-          assigned_lawyer,
-          created_at,
-          start_date,
-          updated_at,
-          value_loss_amount,
-          fault_rate,
-          estimated_compensation,
-          customers (
-            id,
-            full_name,
-            created_at
-          )
-        `)
-        .order('created_at', { ascending: false });
+      // Load data via API route to bypass RLS
+      const response = await fetch(`/api/get-report-data?role=superadmin&period=${period}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (casesError) {
-        console.error('Error loading cases:', casesError);
-        throw casesError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to load report data');
       }
 
-      // Load all admins, lawyers, acentes
-      const { data: adminsData, error: adminsError } = await supabase
-        .from('user_auth')
-        .select(`
-          id,
-          name,
-          role
-        `)
-        .in('role', ['admin', 'lawyer', 'acente']);
-
-      if (adminsError) {
-        console.error('Error loading admins:', adminsError);
-        throw adminsError;
-      }
-
-      // Load case assignments
-      const { data: caseAdminsData, error: caseAdminsError } = await supabase
-        .from('case_admins')
-        .select('*');
-
-      if (caseAdminsError) {
-        console.error('Error loading case_admins:', caseAdminsError);
-        throw caseAdminsError;
-      }
-
-      // Load all checklist items for all cases
-      const { data: checklistData, error: checklistError } = await supabase
-        .from('admin_checklist')
-        .select('case_id, task_key, completed');
-
-      if (checklistError) {
-        console.error('Error loading checklist:', checklistError);
-        throw checklistError;
-      }
-
-      const casesList = casesData || [];
-      const adminsList = adminsData || [];
-      const caseAdminsList = caseAdminsData || [];
-      const checklistList = checklistData || [];
+      const reportData = await response.json();
+      const casesList = reportData.cases || [];
+      const adminsList = reportData.admins || [];
+      const caseAdminsList = reportData.caseAdmins || [];
+      const checklistList = reportData.checklist || [];
 
       // Helper function to check if a case is completed
       const checkCaseCompleted = (caseItem: any): boolean => {

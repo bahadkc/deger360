@@ -51,7 +51,7 @@ export const optimizedCasesApi = {
   },
 
   /**
-   * Get cases for admin board - Optimized with pagination
+   * Get cases for admin board - Uses API route to bypass RLS
    */
   async getForBoard(options?: {
     limit?: number;
@@ -63,54 +63,43 @@ export const optimizedCasesApi = {
     const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
 
-    // Only fetch fields needed for board display
-    let query = supabase
-      .from('cases')
-      .select(`
-        id,
-        case_number,
-        board_stage,
-        status,
-        vehicle_plate,
-        vehicle_brand_model,
-        value_loss_amount,
-        assigned_lawyer,
-        created_at,
-        customer:customers!inner(id, full_name, email, phone)
-      `)
-      .order('created_at', { ascending: false });
+    try {
+      // Use API route to bypass RLS
+      const response = await fetch('/api/get-cases-board', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (options?.stage) {
-      query = query.eq('board_stage', options.stage);
-    }
-
-    // Handle assignedTo filter: if it's an empty array, return no results
-    // If undefined, return all (for superadmin)
-    // If it has values, filter by those IDs
-    if (options?.assignedTo !== undefined) {
-      if (options.assignedTo.length === 0) {
-        // Return empty result for non-superadmin with no assignments
-        // Cache empty result for 30 seconds
-        supabaseCache.set(cacheKey, [], 30000);
-        return [];
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch cases');
       }
-      query = query.in('id', options.assignedTo);
-    }
 
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
-    if (options?.offset) {
-      query = query.range(options.offset, options.offset + (options.limit || 50) - 1);
-    }
+      const data = await response.json();
+      const cases = data.cases || [];
 
-    const { data, error } = await query;
+      // Apply additional filters if needed (stage filter)
+      let filteredCases = cases;
+      if (options?.stage) {
+        filteredCases = filteredCases.filter((c: any) => c.board_stage === options.stage);
+      }
 
-    if (error) throw error;
-    
-    // Cache for 30 seconds (board updates frequently)
-    supabaseCache.set(cacheKey, data, 30000);
-    return data;
+      // Apply pagination if needed
+      if (options?.limit) {
+        const offset = options.offset || 0;
+        filteredCases = filteredCases.slice(offset, offset + options.limit);
+      }
+
+      // Cache for 30 seconds (board updates frequently)
+      supabaseCache.set(cacheKey, filteredCases, 30000);
+      return filteredCases;
+    } catch (error) {
+      console.error('Error in getForBoard:', error);
+      throw error;
+    }
   },
 
   /**
@@ -143,6 +132,7 @@ export const optimizedCasesApi = {
 export const optimizedCustomersApi = {
   /**
    * Get customers list - Optimized with pagination and selective fields
+   * Uses API route to bypass RLS policies
    */
   async getList(options?: {
     limit?: number;
@@ -154,89 +144,43 @@ export const optimizedCustomersApi = {
     const cached = supabaseCache.get<any[]>(cacheKey);
     if (cached) return cached;
 
-    // If assignedCaseIds is explicitly provided as empty array, return empty result
-    // This means non-superadmin with no assignments should see nothing
-    if (options?.assignedCaseIds !== undefined && options.assignedCaseIds.length === 0) {
-      supabaseCache.set(cacheKey, [], 60000);
-      return [];
-    }
-
-    // If filtering by assigned case IDs, first get customer IDs from those cases
-    let customerIds: string[] | undefined = undefined;
-    if (options?.assignedCaseIds && options.assignedCaseIds.length > 0) {
-      const { data: casesData, error: casesError } = await supabase
-        .from('cases')
-        .select('customer_id')
-        .in('id', options.assignedCaseIds);
-      
-      if (casesError) throw casesError;
-      customerIds = (casesData || []).map((c: any) => c.customer_id).filter((id: string | null) => id !== null) as string[];
-      
-      // If no customers found, return empty array
-      if (customerIds.length === 0) {
-        supabaseCache.set(cacheKey, [], 60000);
-        return [];
+    try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (options?.search) {
+        params.append('search', options.search);
       }
+      if (options?.limit) {
+        params.append('limit', options.limit.toString());
+      }
+
+      // Use API route to bypass RLS
+      const response = await fetch(`/api/get-customers?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error fetching customers from API:', errorData.error || response.statusText);
+        throw new Error(errorData.error || 'Failed to fetch customers');
+      }
+
+      const data = await response.json();
+      const customers = data.customers || [];
+
+      console.log('Fetched customers from API:', customers.length);
+
+      // Cache for 1 minute
+      supabaseCache.set(cacheKey, customers, 60000);
+      return customers;
+    } catch (error) {
+      console.error('Error in getList:', error);
+      throw error;
     }
-
-    // Only fetch essential fields
-    let query = supabase
-      .from('customers')
-      .select(`
-        id,
-        full_name,
-        email,
-        phone,
-        dosya_takip_numarasi,
-        created_at,
-        cases!inner(
-          id,
-          case_number,
-          status,
-          vehicle_plate,
-          vehicle_brand_model,
-          value_loss_amount,
-          board_stage,
-          assigned_lawyer,
-          created_at
-        )
-      `)
-      .order('created_at', { ascending: false });
-
-    // Filter by customer IDs if we have them (from assigned cases)
-    if (customerIds && customerIds.length > 0) {
-      query = query.in('id', customerIds);
-    }
-
-    if (options?.search) {
-      query = query.or(`full_name.ilike.%${options.search}%,email.ilike.%${options.search}%,phone.ilike.%${options.search}%`);
-    }
-
-    // Also filter cases by assigned IDs to ensure we only get the right cases
-    if (options?.assignedCaseIds && options.assignedCaseIds.length > 0) {
-      query = query.in('cases.id', options.assignedCaseIds);
-    }
-
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
-    if (options?.offset) {
-      query = query.range(options.offset, options.offset + (options.limit || 50) - 1);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    // Transform data to match expected format
-    const transformed = (data || []).map((customer: any) => ({
-      ...customer,
-      case: customer.cases && customer.cases.length > 0 ? customer.cases[0] : null,
-    }));
-
-    // Cache for 1 minute
-    supabaseCache.set(cacheKey, transformed, 60000);
-    return transformed;
   },
 
   /**

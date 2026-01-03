@@ -34,29 +34,25 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
 
   const loadChecklist = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_checklist')
-        .select('*')
-        .eq('case_id', caseId) as { data: any[] | null; error: any };
-
-      if (error) throw error;
-
-      // Merge with default checklist items
-      const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
-        const existing = data?.find((c) => c.task_key === item.key);
-        return existing || {
-          id: '',
-          task_key: item.key,
-          title: item.title,
-          completed: false,
-          completed_at: null,
-          completed_by: null,
-        };
+      // Use API route to bypass RLS
+      const response = await fetch(`/api/get-checklist?caseId=${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      setChecklist(mergedChecklist);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to load checklist');
+      }
+
+      const data = await response.json();
+      setChecklist(data.checklist || []);
     } catch (error) {
       console.error('Error loading checklist:', error);
+      setChecklist([]);
     } finally {
       setLoading(false);
     }
@@ -70,164 +66,53 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
     };
     checkPermissions();
 
-    // Real-time subscription for admin_checklist changes
-    const checklistChannel = supabase
-      .channel(`checklist_changes_${caseId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_checklist',
-          filter: `case_id=eq.${caseId}`,
-        },
-        () => {
-          loadChecklist();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for cases table (board_stage changes)
-    const caseChannel = supabase
-      .channel(`case_changes_${caseId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-          filter: `id=eq.${caseId}`,
-        },
-        () => {
-          // Board stage değiştiğinde checklist'i yeniden yükle
-          loadChecklist();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(checklistChannel);
-      supabase.removeChannel(caseChannel);
-    };
+    // Note: Real-time subscriptions removed - using API routes instead
+    // If needed, can be re-added with proper authentication
   }, [caseId, loadChecklist]);
 
 
-  // Section tamamlandığında bir sonraki sectiona geçiş yap
-  const checkAndAdvanceSection = async (checklistItems: ChecklistItem[]) => {
-    try {
-      // Mevcut section'ı bul
-      const currentSectionIndex = CHECKLIST_SECTIONS.findIndex(
-        (section) => !isSectionCompleted(section, checklistItems.map((item) => ({ task_key: item.task_key, completed: item.completed })))
-      );
-
-      // Eğer tüm sectionlar tamamlandıysa, son section'a geç
-      if (currentSectionIndex === -1) {
-        const lastSection = CHECKLIST_SECTIONS[CHECKLIST_SECTIONS.length - 1];
-        const { error } = await (supabase
-          .from('cases') as any)
-          .update({ board_stage: lastSection.boardStage })
-          .eq('id', caseId);
-        if (error) console.error('Error updating board stage:', error);
-        return;
-      }
-
-      // Mevcut section'dan önceki sectionları kontrol et
-      // Eğer bir önceki section tamamlandıysa ve mevcut section tamamlanmamışsa,
-      // mevcut section'a geç
-      if (currentSectionIndex > 0) {
-        const previousSection = CHECKLIST_SECTIONS[currentSectionIndex - 1];
-        const currentSection = CHECKLIST_SECTIONS[currentSectionIndex];
-        
-        // Önceki section tamamlandıysa, mevcut section'a geç
-        if (isSectionCompleted(previousSection, checklistItems.map((item) => ({ task_key: item.task_key, completed: item.completed })))) {
-          const { error } = await (supabase
-            .from('cases') as any)
-            .update({ board_stage: currentSection.boardStage })
-            .eq('id', caseId);
-
-          if (error) {
-            console.error('Error updating board stage:', error);
-          }
-        }
-      } else {
-        // İlk section ise, eğer tamamlandıysa bir sonraki sectiona geç
-        const firstSection = CHECKLIST_SECTIONS[0];
-        if (isSectionCompleted(firstSection, checklistItems.map((item) => ({ task_key: item.task_key, completed: item.completed }))) && CHECKLIST_SECTIONS.length > 1) {
-          const nextSection = CHECKLIST_SECTIONS[1];
-          const { error } = await (supabase
-            .from('cases') as any)
-            .update({ board_stage: nextSection.boardStage })
-            .eq('id', caseId);
-
-          if (error) {
-            console.error('Error updating board stage:', error);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error checking section completion:', error);
-    }
-  };
+  // Section advancement is now handled by the API route
 
   const toggleItem = async (taskKey: string, currentCompleted: boolean) => {
+    if (!canEditData) {
+      alert('Bu işlem için yetkiniz bulunmamaktadır.');
+      return;
+    }
+
     try {
-      const existingItem = checklist.find((item) => item.task_key === taskKey);
+      // Use API route to update checklist
+      const response = await fetch('/api/update-checklist', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId,
+          taskKey,
+          completed: !currentCompleted,
+        }),
+      });
 
-      if (existingItem?.id) {
-        // Update existing
-        const { error } = await (supabase
-          .from('admin_checklist') as any)
-          .update({
-            completed: !currentCompleted,
-            completed_at: !currentCompleted ? new Date().toISOString() : null,
-            completed_by: !currentCompleted ? 'Admin' : null, // TODO: Get actual admin name
-          })
-          .eq('id', existingItem.id);
-
-        if (error) throw error;
-      } else {
-        // Create new
-        const { error } = await (supabase.from('admin_checklist') as any).insert({
-          case_id: caseId,
-          task_key: taskKey,
-          title: CHECKLIST_ITEMS.find((item) => item.key === taskKey)?.title || '',
-          completed: true,
-          completed_at: new Date().toISOString(),
-          completed_by: 'Admin', // TODO: Get actual admin name
-        });
-
-        if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update checklist');
       }
 
+      const data = await response.json();
+
+      // Reload checklist to get updated data
       await loadChecklist();
-      
-      // Yeni checklist'i al ve section kontrolü yap
-      const { data: updatedChecklist } = await (supabase
-        .from('admin_checklist')
-        .select('*')
-        .eq('case_id', caseId) as any);
 
-      if (updatedChecklist) {
-        const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
-          const existing = updatedChecklist.find((c: any) => c.task_key === item.key);
-          return existing || {
-            id: '',
-            task_key: item.key,
-            title: item.title,
-            completed: false,
-            completed_at: null,
-            completed_by: null,
-          };
-        });
-
-        // Section tamamlandı mı kontrol et ve ilerle
-        await checkAndAdvanceSection(mergedChecklist);
+      // Update board stage if changed (API already updated it)
+      if (data.boardStage) {
+        onUpdate();
       }
 
       onUpdate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling checklist item:', error);
-      alert('Güncelleme sırasında bir hata oluştu');
+      alert(`Görev durumu güncellenirken bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
     }
   };
 

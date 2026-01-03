@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { GeneralInfoTab } from '@/components/admin/case-tabs/general-info-tab';
 import { DocumentsTab } from '@/components/admin/case-tabs/documents-tab';
 import { ChecklistTab } from '@/components/admin/case-tabs/checklist-tab';
-import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { adminRoutes } from '@/lib/config/admin-paths';
 
@@ -32,21 +31,24 @@ export default function MusteriDetayPage() {
     
     console.log('Loading case data for caseId:', caseId);
     try {
-      const { data, error } = await supabase
-        .from('cases')
-        .select(`
-          *,
-          customers (*)
-        `)
-        .eq('id', caseId)
-        .single();
+      // Use API route to bypass RLS
+      const response = await fetch(`/api/get-case/${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API error:', errorData.error || response.statusText);
+        throw new Error(errorData.error || 'Failed to load case data');
       }
-      console.log('Case data loaded:', data);
-      setCaseData(data);
+
+      const data = await response.json();
+      console.log('Case data loaded:', data.case);
+      setCaseData(data.case);
     } catch (error) {
       console.error('Error loading case data:', error);
     } finally {

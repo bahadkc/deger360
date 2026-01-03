@@ -44,16 +44,25 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
   const loadDocuments = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select('*')
-        .eq('case_id', caseId)
-        .order('uploaded_at', { ascending: false });
+      // Use API route to bypass RLS
+      const response = await fetch(`/api/get-documents?caseId=${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) throw error;
-      setDocuments(data || []);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to load documents');
+      }
+
+      const data = await response.json();
+      setDocuments(data.documents || []);
     } catch (error) {
       console.error('Error loading documents:', error);
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -81,40 +90,62 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
     setUploading(true);
     try {
-      // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${caseId}/${category}_${Date.now()}.${fileExt}`;
-      const filePath = `documents/${fileName}`;
+      // Get admin name for upload - use API route to avoid RLS issues
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      let uploadedByName = 'Admin';
+      if (user?.id) {
+        try {
+          // Try to get name from API route instead of direct query
+          const response = await fetch('/api/check-admin-status', {
+            method: 'GET',
+            credentials: 'include',
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            uploadedByName = data.admin?.name || 'Admin';
+          }
+        } catch (error) {
+          console.error('Error getting admin name:', error);
+          // Fallback to 'Admin' if API call fails
+        }
+      }
 
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file);
+      // Use API route to upload document
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('caseId', caseId);
+      formData.append('category', category);
+      formData.append('uploadedByName', uploadedByName);
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('documents').getPublicUrl(filePath);
-
-      // Save document record
-      const { error: dbError } = await (supabase.from('documents') as any).insert({
-        case_id: caseId,
-        name: file.name,
-        file_path: filePath,
-        file_size: file.size,
-        file_type: fileExt,
-        category: category,
-        uploaded_by: 'admin',
-        uploaded_by_name: 'Admin', // TODO: Get actual admin name
+      const response = await fetch('/api/upload-document', {
+        method: 'POST',
+        credentials: 'include', // Important: Include cookies
+        headers: {
+          // Don't set Content-Type header - browser will set it automatically with boundary for FormData
+        },
+        body: formData,
       });
 
-      if (dbError) throw dbError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || 'Failed to upload document';
+        
+        // If unauthorized, don't throw - just show error message
+        // Don't redirect or sign out - let user try again
+        if (response.status === 401) {
+          throw new Error('Oturum süreniz dolmuş olabilir. Lütfen sayfayı yenileyip tekrar deneyin.');
+        }
+        
+        throw new Error(errorMessage);
+      }
 
       await loadDocuments();
-    } catch (error) {
+      onUpdate();
+    } catch (error: any) {
       console.error('Error uploading file:', error);
-      alert('Dosya yükleme sırasında bir hata oluştu');
+      alert(`Dosya yükleme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
     } finally {
       setUploading(false);
       e.target.value = ''; // Reset input
@@ -123,13 +154,23 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
   const handleDownload = async (doc: Document) => {
     try {
-      const { data, error } = await supabase.storage
-        .from('documents')
-        .download(doc.file_path);
+      // Use API route to download document
+      const response = await fetch(`/api/download-document?documentId=${doc.id}&filePath=${encodeURIComponent(doc.file_path)}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to download document');
+      }
 
-      const url = window.URL.createObjectURL(data);
+      // Get blob from response
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = doc.name;
@@ -137,9 +178,9 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error downloading file:', error);
-      alert('Dosya indirme sırasında bir hata oluştu');
+      alert(`Dosya indirme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
     }
   };
 
@@ -147,22 +188,25 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
     if (!confirm('Bu belgeyi silmek istediğinize emin misiniz?')) return;
 
     try {
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('documents')
-        .remove([filePath]);
+      // Use API route to delete document
+      const response = await fetch(`/api/delete-document?documentId=${documentId}&filePath=${encodeURIComponent(filePath)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (storageError) throw storageError;
-
-      // Delete from database
-      const { error: dbError } = await supabase.from('documents').delete().eq('id', documentId);
-
-      if (dbError) throw dbError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete document');
+      }
 
       await loadDocuments();
-    } catch (error) {
+      onUpdate();
+    } catch (error: any) {
       console.error('Error deleting document:', error);
-      alert('Belge silme sırasında bir hata oluştu');
+      alert(`Belge silme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
     }
   };
 

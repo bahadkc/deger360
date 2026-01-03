@@ -54,30 +54,55 @@ export async function protectAPI(
     }
   }
 
-  // 2. Rate Limiting
-  const identifier = getClientIdentifier(request);
-  const blockCheck = shouldBlockRequest(
-    identifier,
-    userAgent,
-    pathname
-  );
+  // 2. Rate Limiting (skip for admin panel routes)
+  const isAdminApiRoute = pathname.startsWith('/api/get-customers') ||
+    pathname.startsWith('/api/get-cases-board') ||
+    pathname.startsWith('/api/update-case') ||
+    pathname.startsWith('/api/get-case/') ||
+    pathname.startsWith('/api/get-checklist') ||
+    pathname.startsWith('/api/update-checklist') ||
+    pathname.startsWith('/api/get-documents') ||
+    pathname.startsWith('/api/upload-document') ||
+    pathname.startsWith('/api/get-dashboard-stats') ||
+    pathname.startsWith('/api/get-admin-assigned-customers') ||
+    pathname.startsWith('/api/update-case-board-stage') ||
+    pathname.startsWith('/api/update-case-assignments') ||
+    pathname.startsWith('/api/create-customer') ||
+    pathname.startsWith('/api/delete-customer') ||
+    pathname.startsWith('/api/login-admin') ||
+    pathname.startsWith('/api/check-admin-status') ||
+    pathname.startsWith('/api/get-admins') ||
+    pathname.startsWith('/api/create-admin') ||
+    pathname.startsWith('/api/delete-admin') ||
+    pathname.startsWith('/api/create-superadmin') ||
+    pathname.startsWith('/api/reset-superadmin-password');
   
-  if (blockCheck.blocked) {
-    logger.warn('Request blocked by rate limit', {
+  // Skip rate limiting for admin API routes
+  if (!isAdminApiRoute) {
+    const identifier = getClientIdentifier(request);
+    const blockCheck = shouldBlockRequest(
       identifier,
-      pathname,
-      reason: blockCheck.reason,
-    });
-    
-    return NextResponse.json(
-      { error: blockCheck.reason || 'Too many requests' },
-      { 
-        status: 429,
-        headers: {
-          'Retry-After': '60',
-        },
-      }
+      userAgent,
+      pathname
     );
+    
+    if (blockCheck.blocked) {
+      logger.warn('Request blocked by rate limit', {
+        identifier,
+        pathname,
+        reason: blockCheck.reason,
+      });
+      
+      return NextResponse.json(
+        { error: blockCheck.reason || 'Too many requests' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
   }
 
   // 3. Request Size Validation

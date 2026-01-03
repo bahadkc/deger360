@@ -22,20 +22,39 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const checkAdminAccess = useCallback(async () => {
     try {
-      const adminStatus = await isAdmin();
-      if (!adminStatus && pathname !== adminRoutes.login) {
-        router.push(adminRoutes.login);
+      // Don't check admin status on login page
+      if (pathname === adminRoutes.login) {
+        setLoading(false);
         return;
       }
-      
-      if (adminStatus) {
-        const admin = await getCurrentAdmin();
-        setAdminUser(admin);
-        
-        // Check if user is superadmin
-        const superAdmin = await isSuperAdmin();
-        setIsSuperAdminUser(superAdmin);
+
+      const adminStatus = await isAdmin();
+      if (!adminStatus) {
+        // Admin değil - ama önce client-side session kontrolü yap
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          // Gerçekten logout olmuş
+          router.push(adminRoutes.login);
+          setLoading(false);
+          return;
+        }
+        // Client-side session var ama admin değil - belki cache sorunu
+        // Force refresh dene
+        const refreshedStatus = await isAdmin(true);
+        if (!refreshedStatus) {
+          router.push(adminRoutes.login);
+          setLoading(false);
+          return;
+        }
       }
+      
+      // User is admin, get admin details from cache
+      const admin = await getCurrentAdmin();
+      setAdminUser(admin);
+      
+      // Check if user is superadmin from cache
+      const superAdmin = await isSuperAdmin();
+      setIsSuperAdminUser(superAdmin);
     } catch (error) {
       console.error('Error checking admin access:', error);
       if (pathname !== adminRoutes.login) {
@@ -44,21 +63,31 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [pathname, router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     setMounted(true);
     checkAdminAccess();
     
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      checkAdminAccess();
+    // Listen for auth changes (only on sign out, not on sign in or token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        // Clear cache on sign out and redirect to login
+        import('@/lib/supabase/admin-auth').then(({ clearAdminStatusCache }) => {
+          clearAdminStatusCache();
+        });
+        router.push(adminRoutes.login);
+      }
+      // SIGNED_IN ve TOKEN_REFRESHED event'lerinde cache'i kullan, API'ye istek atma
     });
 
     return () => subscription.unsubscribe();
-  }, [checkAdminAccess]);
+  }, [checkAdminAccess, router]);
 
   const handleLogout = async () => {
+    // Clear admin status cache on logout
+    const { clearAdminStatusCache } = await import('@/lib/supabase/admin-auth');
+    clearAdminStatusCache();
     await supabase.auth.signOut();
     router.push(adminRoutes.login);
   };

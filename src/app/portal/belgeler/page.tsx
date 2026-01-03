@@ -3,7 +3,7 @@
 import { PortalLayout } from '@/components/portal/portal-layout';
 import { Card } from '@/components/ui/card';
 import { Download, Eye, FileText, CheckCircle2, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentUserCases } from '@/lib/supabase/auth';
@@ -31,32 +31,9 @@ export default function BelgelerPage() {
   const [activeCategory, setActiveCategory] = useState<DocumentCategory>('all');
   const [documents, setDocuments] = useState<DocumentDisplay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [caseId, setCaseId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadDocuments();
-
-    // Real-time subscription for documents
-    const documentsChannel = supabase
-      .channel('portal_documents_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'documents',
-        },
-        () => {
-          loadDocuments();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(documentsChannel);
-    };
-  }, []);
-
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     try {
       console.log('Documents: Loading data...');
       const cases = await getCurrentUserCases();
@@ -65,16 +42,27 @@ export default function BelgelerPage() {
       if (cases && cases.length > 0) {
         const currentCase = cases[0];
         console.log('Documents: Current case:', currentCase);
+        console.log('Documents: Documents data from API:', currentCase.documents);
+        setCaseId(currentCase.id);
         
-        // Load uploaded documents
-        const { data: docsData, error } = await supabase
-          .from('documents')
-          .select('*')
-          .eq('case_id', currentCase.id)
-          .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
+        // Use documents data from API if available, otherwise load separately
+        let docsData: any[] | null = null;
+        if (currentCase.documents && Array.isArray(currentCase.documents) && currentCase.documents.length >= 0) {
+          console.log('Documents: Using documents data from API');
+          docsData = currentCase.documents;
+        } else {
+          console.log('Documents: Loading documents data separately');
+          const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .eq('case_id', currentCase.id)
+            .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
 
-        if (error) {
-          console.error('Documents: Error loading documents:', error);
+          if (error) {
+            console.error('Documents: Error loading documents:', error);
+          } else {
+            docsData = data;
+          }
         }
 
         // Create document display list from expected documents
@@ -103,6 +91,7 @@ export default function BelgelerPage() {
         setDocuments(documentDisplayList);
       } else {
         console.warn('Documents: No cases found for current user');
+        setCaseId(null);
         // Still show expected documents even if no case
         const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => ({
           key: expectedDoc.key,
@@ -118,7 +107,40 @@ export default function BelgelerPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Load data once on page entry
+    loadDocuments();
+
+    // Set up real-time subscription for documents updates
+    if (caseId) {
+      const documentsChannel = supabase
+        .channel(`documents_updates_belgeler_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'documents',
+            filter: `case_id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Documents updated in belgeler page, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
+            loadDocuments();
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscription on unmount
+      return () => {
+        supabase.removeChannel(documentsChannel);
+      };
+    }
+  }, [caseId, loadDocuments]);
 
   return (
     <PortalLayout>
@@ -215,12 +237,25 @@ export default function BelgelerPage() {
                               className="px-3 sm:px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                               onClick={async () => {
                                 if (doc.documentData?.file_path) {
-                                  const { data, error } = await supabase.storage
-                                    .from('documents')
-                                    .download(doc.documentData.file_path);
-                                  if (!error && data) {
-                                    const url = URL.createObjectURL(data);
+                                  // Use API route for viewing to handle authentication and path conversion
+                                  try {
+                                    const response = await fetch(`/api/download-document?documentId=${doc.documentData.id}&filePath=${encodeURIComponent(doc.documentData.file_path)}`, {
+                                      method: 'GET',
+                                      credentials: 'include',
+                                    });
+
+                                    if (!response.ok) {
+                                      throw new Error('View failed');
+                                    }
+
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
                                     window.open(url, '_blank');
+                                    // Clean up URL after a delay
+                                    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+                                  } catch (error) {
+                                    console.error('Error viewing file:', error);
+                                    alert('Dosya görüntüleme sırasında bir hata oluştu.');
                                   }
                                 }
                               }}
@@ -232,15 +267,29 @@ export default function BelgelerPage() {
                               className="px-3 sm:px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                               onClick={async () => {
                                 if (doc.documentData?.file_path) {
-                                  const { data, error } = await supabase.storage
-                                    .from('documents')
-                                    .download(doc.documentData.file_path);
-                                  if (!error && data) {
-                                    const url = URL.createObjectURL(data);
+                                  // Use API route for download to handle both URL and path formats
+                                  try {
+                                    const response = await fetch(`/api/download-document?documentId=${doc.documentData.id}&filePath=${encodeURIComponent(doc.documentData.file_path)}`, {
+                                      method: 'GET',
+                                      credentials: 'include',
+                                    });
+
+                                    if (!response.ok) {
+                                      throw new Error('Download failed');
+                                    }
+
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
                                     const a = document.createElement('a');
                                     a.href = url;
                                     a.download = doc.documentData.file_name || doc.name;
+                                    document.body.appendChild(a);
                                     a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    document.body.removeChild(a);
+                                  } catch (error) {
+                                    console.error('Error downloading file:', error);
+                                    alert('Dosya indirme sırasında bir hata oluştu.');
                                   }
                                 }
                               }}

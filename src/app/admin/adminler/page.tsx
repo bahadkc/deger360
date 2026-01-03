@@ -32,45 +32,10 @@ export default function AdminlerPage() {
       const superAdmin = await isSuperAdmin();
       setIsSuperAdminUser(superAdmin);
     };
+    
+    // Load data once on page entry
     checkSuperAdmin();
     loadAdmins();
-
-    // Real-time subscription for user_auth changes (when new admins are created)
-    const userAuthChannel = supabase
-      .channel('adminler_user_auth_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_auth',
-        },
-        () => {
-          loadAdmins();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for case_admins changes (when admin assignments change)
-    const caseAdminsChannel = supabase
-      .channel('adminler_case_admins_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'case_admins',
-        },
-        () => {
-          loadAdmins();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(userAuthChannel);
-      supabase.removeChannel(caseAdminsChannel);
-    };
   }, []);
 
   const loadAdmins = async () => {
@@ -113,10 +78,16 @@ export default function AdminlerPage() {
     );
   };
 
-  const handleDeleteAdmin = async (adminId: string, adminName: string, e: React.MouseEvent) => {
+  const handleDeleteAdmin = async (adminId: string, adminName: string, adminRole: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
+    // Prevent deleting superadmin
+    if (adminRole === 'superadmin') {
+      alert('Superadmin hesabı asla silinemez!');
+      return;
+    }
+
     if (!confirm(`"${adminName}" adlı admini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)) {
       return;
     }
@@ -125,6 +96,10 @@ export default function AdminlerPage() {
       setDeletingId(adminId);
       const response = await fetch(`/api/delete-admin?id=${adminId}`, {
         method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       const data = await response.json();
@@ -197,9 +172,9 @@ export default function AdminlerPage() {
                           <span className="font-semibold text-blue-600">{admin.assignedCaseCount || 0}</span>
                         </div>
                       </div>
-                      {isSuperAdminUser && (
+                      {isSuperAdminUser && admin.role !== 'superadmin' && (
                         <button
-                          onClick={(e) => handleDeleteAdmin(admin.id, admin.name || admin.email, e)}
+                          onClick={(e) => handleDeleteAdmin(admin.id, admin.name || admin.email, admin.role, e)}
                           disabled={deletingId === admin.id}
                           className="ml-2 p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Admini Sil"
@@ -241,9 +216,9 @@ export default function AdminlerPage() {
                           <span className="font-semibold text-purple-600">{lawyer.assignedCaseCount || 0}</span>
                         </div>
                       </div>
-                      {isSuperAdminUser && (
+                      {isSuperAdminUser && lawyer.role !== 'superadmin' && (
                         <button
-                          onClick={(e) => handleDeleteAdmin(lawyer.id, lawyer.name || lawyer.email, e)}
+                          onClick={(e) => handleDeleteAdmin(lawyer.id, lawyer.name || lawyer.email, lawyer.role, e)}
                           disabled={deletingId === lawyer.id}
                           className="ml-2 p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Avukatı Sil"
@@ -285,9 +260,9 @@ export default function AdminlerPage() {
                           <span className="font-semibold text-green-600">{acente.assignedCaseCount || 0}</span>
                         </div>
                       </div>
-                      {isSuperAdminUser && (
+                      {isSuperAdminUser && acente.role !== 'superadmin' && (
                         <button
-                          onClick={(e) => handleDeleteAdmin(acente.id, acente.name || acente.email, e)}
+                          onClick={(e) => handleDeleteAdmin(acente.id, acente.name || acente.email, acente.role, e)}
                           disabled={deletingId === acente.id}
                           className="ml-2 p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Acenteyi Sil"

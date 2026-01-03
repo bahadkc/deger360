@@ -47,6 +47,155 @@ export default function DashboardPage() {
   const customerId = useMemo(() => customerData?.id, [customerData?.id]);
   const caseId = useMemo(() => caseData?.id, [caseData?.id]);
 
+  const loadChecklistData = useCallback(async (caseId: string) => {
+    const { data: checklistData, error: checklistError } = await supabase
+      .from('admin_checklist')
+      .select('*')
+      .eq('case_id', caseId) as { data: any[] | null; error: any };
+
+    if (!checklistError && checklistData) {
+      // Merge with default checklist items
+      const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
+        const existing = checklistData.find((c) => c.task_key === item.key);
+        return existing || {
+          id: '',
+          task_key: item.key,
+          title: item.title,
+          completed: false,
+          completed_at: null,
+          completed_by: null,
+        };
+      });
+
+      // Mevcut section'ı belirle
+      const currentSection = getCurrentSection(
+        mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
+      );
+
+      // Section'ları ProgressStep formatına dönüştür (Tamamlandı section'ını müşteri portalında gizle)
+      const formattedSteps: ProgressStep[] = CHECKLIST_SECTIONS.filter(
+        (section) => section.title !== 'Tamamlandı'
+      ).map((section) => {
+        const sectionItems = mergedChecklist.filter((item) =>
+          section.taskKeys.includes(item.task_key)
+        );
+        const sectionCompleted = isSectionCompleted(
+          section,
+          mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
+        );
+        const isCurrentSection = currentSection?.id === section.id;
+
+        // Status belirleme
+        let status: 'completed' | 'active' | 'waiting' = 'waiting';
+        if (sectionCompleted) {
+          status = 'completed';
+        } else if (isCurrentSection) {
+          status = 'active';
+        }
+
+        // İlk tamamlanan item'ın tarihini al
+        const firstCompletedItem = sectionItems.find((item) => item.completed && item.completed_at);
+        const date = firstCompletedItem?.completed_at
+          ? new Date(firstCompletedItem.completed_at).toLocaleDateString('tr-TR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            })
+          : undefined;
+
+        // Tamamlanan item'ları al
+        const completedItems = sectionItems
+          .filter((item) => item.completed)
+          .map((item) => item.title);
+
+        return {
+          id: `section-${section.id}`,
+          title: `${section.emoji} ${section.title}`,
+          status,
+          date,
+          description: sectionCompleted
+            ? 'Bu aşama tamamlandı'
+            : isCurrentSection
+            ? 'Bu aşamada çalışılıyor'
+            : undefined,
+          completedTasks: completedItems.length > 0 ? completedItems : undefined,
+          checklistItems: sectionItems.map((item) => ({
+            task_key: item.task_key,
+            title: item.title,
+            completed: item.completed,
+            completed_at: item.completed_at,
+          })),
+          expandable: true,
+        };
+      });
+
+      setProgressSteps(formattedSteps);
+    }
+  }, []);
+
+  const loadDocumentsData = useCallback(async (caseId: string) => {
+    const { data: documentsData, error: docsError } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('case_id', caseId)
+      .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
+
+    if (!docsError && documentsData) {
+      // Create document display list from expected documents
+      const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => {
+        const uploadedDoc = documentsData.find((doc) => doc.category === expectedDoc.key);
+        return {
+          key: expectedDoc.key,
+          name: expectedDoc.name,
+          category: expectedDoc.category,
+          description: expectedDoc.description,
+          uploaded: !!uploadedDoc,
+          documentData: uploadedDoc ? {
+            id: uploadedDoc.id,
+            file_path: uploadedDoc.file_path,
+            file_name: uploadedDoc.name,
+            file_size: uploadedDoc.file_size,
+            created_at: uploadedDoc.created_at,
+            uploaded_by_name: uploadedDoc.uploaded_by_name,
+          } : undefined,
+        };
+      });
+      setDocuments(documentDisplayList);
+
+      // Add documents to relevant steps
+      setProgressSteps((prevSteps) =>
+        prevSteps.map((step) => {
+          const stepDocs = documentsData.filter((doc) => {
+            if (step.title.includes('Ekspertiz') && doc.category === 'bilir_kisi_raporu')
+              return true;
+            if (step.title.includes('Kaza') && doc.category === 'kaza_tespit_tutanagi')
+              return true;
+            return false;
+          });
+          return {
+            ...step,
+            documents: stepDocs.map((doc) => ({
+              name: doc.name,
+              type: doc.file_type || 'pdf',
+            })),
+          };
+        })
+      );
+    }
+  }, []);
+
+  const loadPaymentsData = useCallback(async (caseId: string) => {
+    const { data: paymentsData, error: paymentsError } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('case_id', caseId)
+      .order('payment_date', { ascending: false });
+
+    if (!paymentsError && paymentsData) {
+      setPayments(paymentsData || []);
+    }
+  }, []);
+
   const loadDashboardData = useCallback(async () => {
     try {
       setError(null);
@@ -58,35 +207,32 @@ export default function DashboardPage() {
         const currentCase = cases[0];
         console.log('Dashboard: Current case:', currentCase);
         console.log('Dashboard: Customer data:', currentCase.customers);
+        console.log('Dashboard: Checklist data:', currentCase.admin_checklist);
+        console.log('Dashboard: Documents data:', currentCase.documents);
+        
         setCaseData(currentCase);
         setCustomerData(currentCase.customers);
 
-        // Load admin checklist
-        const { data: checklistData, error: checklistError } = await supabase
-          .from('admin_checklist')
-          .select('*')
-          .eq('case_id', currentCase.id) as { data: any[] | null; error: any };
-
-        if (!checklistError && checklistData) {
-          // Merge with default checklist items
+        // Use checklist data from API if available, otherwise load separately
+        if (currentCase.admin_checklist && Array.isArray(currentCase.admin_checklist) && currentCase.admin_checklist.length > 0) {
+          console.log('Dashboard: Using checklist data from API');
+          // Process checklist data directly
           const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
-            const existing = checklistData.find((c) => c.task_key === item.key);
+            const existing = currentCase.admin_checklist.find((c: any) => c.task_key === item.key);
             return existing || {
               id: '',
               task_key: item.key,
               title: item.title,
-    completed: false,
+              completed: false,
               completed_at: null,
               completed_by: null,
             };
           });
 
-          // Mevcut section'ı belirle
           const currentSection = getCurrentSection(
             mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
           );
 
-          // Section'ları ProgressStep formatına dönüştür (Tamamlandı section'ını müşteri portalında gizle)
           const formattedSteps: ProgressStep[] = CHECKLIST_SECTIONS.filter(
             (section) => section.title !== 'Tamamlandı'
           ).map((section) => {
@@ -99,7 +245,6 @@ export default function DashboardPage() {
             );
             const isCurrentSection = currentSection?.id === section.id;
 
-            // Status belirleme
             let status: 'completed' | 'active' | 'waiting' = 'waiting';
             if (sectionCompleted) {
               status = 'completed';
@@ -107,7 +252,6 @@ export default function DashboardPage() {
               status = 'active';
             }
 
-            // İlk tamamlanan item'ın tarihini al
             const firstCompletedItem = sectionItems.find((item) => item.completed && item.completed_at);
             const date = firstCompletedItem?.completed_at
               ? new Date(firstCompletedItem.completed_at).toLocaleDateString('tr-TR', {
@@ -117,7 +261,6 @@ export default function DashboardPage() {
                 })
               : undefined;
 
-            // Tamamlanan item'ları al
             const completedItems = sectionItems
               .filter((item) => item.completed)
               .map((item) => item.title);
@@ -131,7 +274,7 @@ export default function DashboardPage() {
                 ? 'Bu aşama tamamlandı'
                 : isCurrentSection
                 ? 'Bu aşamada çalışılıyor'
-              : undefined,
+                : undefined,
               completedTasks: completedItems.length > 0 ? completedItems : undefined,
               checklistItems: sectionItems.map((item) => ({
                 task_key: item.task_key,
@@ -144,19 +287,17 @@ export default function DashboardPage() {
           });
 
           setProgressSteps(formattedSteps);
+        } else {
+          console.log('Dashboard: Loading checklist data separately');
+          await loadChecklistData(currentCase.id);
         }
 
-        // Load documents
-        const { data: documentsData, error: docsError } = await supabase
-          .from('documents')
-          .select('*')
-          .eq('case_id', currentCase.id)
-          .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
-
-        if (!docsError && documentsData) {
-          // Create document display list from expected documents
+        // Use documents data from API if available, otherwise load separately
+        if (currentCase.documents && Array.isArray(currentCase.documents) && currentCase.documents.length >= 0) {
+          console.log('Dashboard: Using documents data from API');
+          // Process documents data directly
           const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => {
-            const uploadedDoc = documentsData.find((doc) => doc.category === expectedDoc.key);
+            const uploadedDoc = currentCase.documents.find((doc: any) => doc.category === expectedDoc.key);
             return {
               key: expectedDoc.key,
               name: expectedDoc.name,
@@ -178,7 +319,7 @@ export default function DashboardPage() {
           // Add documents to relevant steps
           setProgressSteps((prevSteps) =>
             prevSteps.map((step) => {
-              const stepDocs = documentsData.filter((doc) => {
+              const stepDocs = currentCase.documents.filter((doc: any) => {
                 if (step.title.includes('Ekspertiz') && doc.category === 'bilir_kisi_raporu')
                   return true;
                 if (step.title.includes('Kaza') && doc.category === 'kaza_tespit_tutanagi')
@@ -187,25 +328,20 @@ export default function DashboardPage() {
               });
               return {
                 ...step,
-                documents: stepDocs.map((doc) => ({
+                documents: stepDocs.map((doc: any) => ({
                   name: doc.name,
                   type: doc.file_type || 'pdf',
                 })),
               };
             })
           );
+        } else {
+          console.log('Dashboard: Loading documents data separately');
+          await loadDocumentsData(currentCase.id);
         }
 
-        // Load payments
-        const { data: paymentsData, error: paymentsError } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('case_id', currentCase.id)
-          .order('payment_date', { ascending: false });
-
-        if (!paymentsError && paymentsData) {
-          setPayments(paymentsData || []);
-        }
+        // Load payments (not included in API response yet)
+        await loadPaymentsData(currentCase.id);
 
       } else {
         console.warn('Dashboard: No cases found for current user');
@@ -217,127 +353,107 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadChecklistData, loadDocumentsData, loadPaymentsData]);
 
   useEffect(() => {
+    // Load data once on page entry
     loadDashboardData();
 
-    // Real-time subscription for cases table
-    const caseChannel = supabase
-      .channel('dashboard_case_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-        },
-        (payload) => {
-          if (caseData && payload.new.id === caseData.id) {
-            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-          } else {
+    // Set up real-time subscriptions for customer and case updates
+    if (customerId && caseId) {
+      // Subscribe to customer changes
+      const customerChannel = supabase
+        .channel(`customer_updates_${customerId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'customers',
+            filter: `id=eq.${customerId}`,
+          },
+          () => {
+            console.log('Customer data updated, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
             loadDashboardData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    // Real-time subscription for admin_checklist
-    const checklistChannel = supabase
-      .channel('dashboard_checklist_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_checklist',
-        },
-        () => {
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for cases (board_stage changes)
-    const casesChannel2 = supabase
-      .channel('dashboard_cases_board_stage_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'cases',
-        },
-        (payload) => {
-          if (caseData && payload.new.id === caseData.id) {
-            setCaseData((prev: any) => ({ ...prev, ...payload.new }));
-          loadDashboardData();
-        }
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for documents
-    const documentsChannel = supabase
-      .channel('dashboard_documents_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'documents',
-        },
-        () => {
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for payments
-    const paymentsChannel = supabase
-      .channel('dashboard_payments_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'payments',
-  },
-        () => {
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    // Real-time subscription for customers
-    const customersChannel = supabase
-      .channel('dashboard_customers_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'customers',
-        },
-        (payload) => {
-          if (customerData && payload.new.id === customerData.id) {
-            setCustomerData(payload.new as any);
-          } else {
+      // Subscribe to case changes
+      const caseChannel = supabase
+        .channel(`case_updates_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'cases',
+            filter: `id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Case data updated, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
             loadDashboardData();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(caseChannel);
-      supabase.removeChannel(checklistChannel);
-      supabase.removeChannel(casesChannel2);
-      supabase.removeChannel(documentsChannel);
-      supabase.removeChannel(paymentsChannel);
-      supabase.removeChannel(customersChannel);
-    };
-  }, [caseId, customerId, loadDashboardData, caseData, customerData]);
+      // Subscribe to checklist changes (for progress tracker)
+      const checklistChannel = supabase
+        .channel(`checklist_updates_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'admin_checklist',
+            filter: `case_id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Checklist updated, refreshing progress tracker...');
+            // Reload checklist data
+            if (caseId) {
+              loadChecklistData(caseId);
+            }
+          }
+        )
+        .subscribe();
+
+      // Subscribe to documents changes
+      const documentsChannel = supabase
+        .channel(`documents_updates_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'documents',
+            filter: `case_id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Documents updated, refreshing...');
+            // Reload documents data
+            if (caseId) {
+              loadDocumentsData(caseId);
+            }
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions on unmount
+      return () => {
+        supabase.removeChannel(customerChannel);
+        supabase.removeChannel(caseChannel);
+        supabase.removeChannel(checklistChannel);
+        supabase.removeChannel(documentsChannel);
+      };
+    }
+  }, [loadDashboardData, customerId, caseId, loadChecklistData, loadDocumentsData]);
 
   if (loading) {
     return (
@@ -575,12 +691,25 @@ export default function DashboardPage() {
                                   className="px-3 py-1.5 bg-primary-blue text-white text-xs rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center gap-1"
                                   onClick={async () => {
                                     if (doc.documentData?.file_path) {
-                                      const { data, error } = await supabase.storage
-                                        .from('documents')
-                                        .download(doc.documentData.file_path);
-                                      if (!error && data) {
-                                        const url = URL.createObjectURL(data);
+                                      // Use API route for viewing to handle authentication and path conversion
+                                      try {
+                                        const response = await fetch(`/api/download-document?documentId=${doc.documentData.id}&filePath=${encodeURIComponent(doc.documentData.file_path)}`, {
+                                          method: 'GET',
+                                          credentials: 'include',
+                                        });
+
+                                        if (!response.ok) {
+                                          throw new Error('View failed');
+                                        }
+
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
                                         window.open(url, '_blank');
+                                        // Clean up URL after a delay
+                                        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+                                      } catch (error) {
+                                        console.error('Error viewing file:', error);
+                                        alert('Dosya görüntüleme sırasında bir hata oluştu.');
                                       }
                                     }
                                   }}
@@ -592,15 +721,29 @@ export default function DashboardPage() {
                                   className="px-3 py-1.5 bg-neutral-200 text-neutral-700 text-xs rounded-lg hover:bg-neutral-300 transition-colors flex items-center gap-1"
                                   onClick={async () => {
                                     if (doc.documentData?.file_path) {
-                                      const { data, error } = await supabase.storage
-                                        .from('documents')
-                                        .download(doc.documentData.file_path);
-                                      if (!error && data) {
-                                        const url = URL.createObjectURL(data);
+                                      // Use API route for download to handle both URL and path formats
+                                      try {
+                                        const response = await fetch(`/api/download-document?documentId=${doc.documentData.id}&filePath=${encodeURIComponent(doc.documentData.file_path)}`, {
+                                          method: 'GET',
+                                          credentials: 'include',
+                                        });
+
+                                        if (!response.ok) {
+                                          throw new Error('Download failed');
+                                        }
+
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
                                         const a = document.createElement('a');
                                         a.href = url;
                                         a.download = doc.documentData.file_name || doc.name;
+                                        document.body.appendChild(a);
                                         a.click();
+                                        window.URL.revokeObjectURL(url);
+                                        document.body.removeChild(a);
+                                      } catch (error) {
+                                        console.error('Error downloading file:', error);
+                                        alert('Dosya indirme sırasında bir hata oluştu.');
                                       }
                                     }
                                   }}

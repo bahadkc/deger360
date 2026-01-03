@@ -264,165 +264,36 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
     
     setSaving(true);
     try {
-      // Update customer
       const customerId = caseData.customers?.id || caseData.customer_id;
       if (!customerId) {
         throw new Error('Customer ID not found');
       }
 
-      // Check if email changed
-      const oldEmail = caseData.customers?.email;
-      const newEmail = customerData.email;
-      const emailChanged = oldEmail !== newEmail;
-
       // Ensure dosya takip numarası is not empty - generate if needed
       let dosyaTakipNo = customerData.dosya_takip_numarasi?.trim();
       if (!dosyaTakipNo) {
-        // Generate new tracking number if empty
-        const { data: existingCustomers } = await (supabase
-          .from('customers')
-          .select('dosya_takip_numarasi')
-          .not('dosya_takip_numarasi', 'is', null) as any);
-
-        const existingNumbers = (existingCustomers || [])
-          .map((c: any) => parseInt(c.dosya_takip_numarasi || '0'))
-          .filter((n: number) => !isNaN(n) && n >= 546178);
-
-        dosyaTakipNo =
-          existingNumbers.length === 0 ? '546179' : (Math.max(...existingNumbers) + 1).toString();
-      }
-
-      const { error: customerError } = await (supabase
-        .from('customers') as any)
-        .update({
-          full_name: customerData.full_name,
-          phone: customerData.phone,
-          email: customerData.email,
-          address: customerData.address,
-          tc_kimlik: customerData.tc_kimlik,
-          iban: customerData.iban,
-          payment_person_name: customerData.payment_person_name,
-          dosya_takip_numarasi: dosyaTakipNo,
-          insurance_company: customerData.insurance_company,
-        })
-        .eq('id', customerId);
-
-      if (customerError) throw customerError;
-
-      // Update email in Supabase Auth if email changed
-      if (emailChanged && newEmail) {
-        try {
-          // Get auth user ID from user_auth table
-          const { data: userAuth, error: userAuthError } = await supabase
-            .from('user_auth')
-            .select('id')
-            .eq('customer_id', customerId)
-            .single();
-
-          if (!userAuthError && userAuth && (userAuth as { id: string }).id) {
-            // Update email via API
-            const response = await fetch('/api/update-user-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: (userAuth as { id: string }).id,
-                newEmail: newEmail.trim(),
-              }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-              console.warn('Email update in auth failed:', data.error);
-              // Don't throw error, customer update was successful
-            } else {
-              console.log('Email updated successfully in auth');
-            }
-          }
-        } catch (error: any) {
-          console.warn('Error updating email in auth:', error);
-          // Don't throw error, customer update was successful
-        }
-      }
-
-      // Update local state with generated number if it was empty
-      if (!customerData.dosya_takip_numarasi?.trim()) {
-        setCustomerData({ ...customerData, dosya_takip_numarasi: dosyaTakipNo });
-      }
-
-      // Update password if provided (and not empty)
-      let passwordUpdateSuccess = true;
-      let passwordUpdateError = null;
-      
-      if (passwordData.newPassword && passwordData.newPassword.trim().length >= 6) {
-        try {
-          // Get auth user ID from user_auth table
-          const { data: userAuth, error: userAuthError } = await supabase
-            .from('user_auth')
-            .select('id')
-            .eq('customer_id', customerId)
-            .single();
-
-          if (userAuthError || !userAuth) {
-            passwordUpdateSuccess = false;
-            passwordUpdateError = 'Kullanıcı kimlik doğrulama bilgisi bulunamadı';
-          } else {
-            // Update password via API
-            const response = await fetch('/api/update-password', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: (userAuth as { id: string }).id,
-                newPassword: passwordData.newPassword.trim(),
-              }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-              passwordUpdateSuccess = false;
-              passwordUpdateError = data.error || 'Şifre güncellenirken bir hata oluştu';
-              console.error('Password update error:', data.error);
-              setPasswordWasUpdated(false);
-              setUpdatedPassword('');
-            } else {
-              // Password updated successfully - save the new password for display and clear the input field
-              const newPasswordValue = passwordData.newPassword.trim();
-              const customerId = caseData.customers?.id || caseData.customer_id || '';
-              
-              setUpdatedPassword(newPasswordValue);
-              setPasswordData({ newPassword: '' });
-              setPasswordWasUpdated(true);
-              
-              // Save to localStorage so it persists after page refresh
-              if (customerId && typeof window !== 'undefined') {
-                localStorage.setItem(`updated_password_${customerId}`, newPasswordValue);
-              }
-            }
-          }
-        } catch (error: any) {
-          passwordUpdateSuccess = false;
-          passwordUpdateError = error.message || 'Şifre güncellenirken bir hata oluştu';
-          console.error('Error updating password:', error);
-        }
-      } else if (passwordData.newPassword && passwordData.newPassword.trim().length > 0 && passwordData.newPassword.trim().length < 6) {
-        // If password is provided but too short, show warning but don't block save
-        passwordUpdateSuccess = false;
-        passwordUpdateError = 'Şifre en az 6 karakter olmalıdır';
-      }
-
-      // If password update failed, show error but continue with other updates
-      if (!passwordUpdateSuccess && passwordUpdateError) {
-        console.warn('Password update failed:', passwordUpdateError);
-        // Don't throw - continue with other updates, but we'll show a warning
+        // Generate new tracking number if empty - this will be handled by API
+        dosyaTakipNo = 'AUTO_GENERATE';
       }
 
       // Calculate financial values
       const expectedNet = calculateExpectedNet();
       const totalPayment = calculateTotalPayment();
 
-      // Update case
-      const caseUpdateData: any = {
+      // Prepare updates
+      const customerUpdates: any = {
+        full_name: customerData.full_name,
+        phone: customerData.phone,
+        email: customerData.email,
+        address: customerData.address,
+        tc_kimlik: customerData.tc_kimlik,
+        iban: customerData.iban,
+        payment_person_name: customerData.payment_person_name,
+        dosya_takip_numarasi: dosyaTakipNo === 'AUTO_GENERATE' ? null : dosyaTakipNo,
+        insurance_company: customerData.insurance_company,
+      };
+
+      const caseUpdates: any = {
         vehicle_plate: vehicleData.vehicle_plate,
         vehicle_brand_model: vehicleData.vehicle_brand_model,
         accident_date: vehicleData.accident_date,
@@ -434,72 +305,121 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         assigned_lawyer: fileData.assigned_lawyer,
       };
 
-      // Try to include notary_and_file_expenses if column exists
-      // If column doesn't exist, it will be skipped gracefully
+      // Try to include notary_and_file_expenses if it exists
       try {
         const notaryExpenses = parseFloat(financialData.notary_and_file_expenses?.toString() || '0');
-        caseUpdateData.notary_and_file_expenses = notaryExpenses;
+        if (notaryExpenses > 0) {
+          caseUpdates.notary_and_file_expenses = notaryExpenses;
+        }
       } catch (error) {
-        console.warn('notary_and_file_expenses column may not exist, skipping...');
+        // Ignore if column doesn't exist
       }
-      
-      const { error: caseError } = await (supabase as any)
-        .from('cases')
-        .update(caseUpdateData)
-        .eq('id', caseData.id);
 
-      if (caseError) {
-        // If error is about missing column, try again without it
-        if (caseError.message?.includes('notary_and_file_expenses')) {
-          console.warn('notary_and_file_expenses column not found, retrying without it...');
-          const { notary_and_file_expenses, ...caseUpdateDataWithoutNotary } = caseUpdateData;
-          const { error: retryError } = await (supabase as any)
-            .from('cases')
-            .update(caseUpdateDataWithoutNotary)
-            .eq('id', caseData.id);
-          
-          if (retryError) throw retryError;
-        } else {
-          throw caseError;
+      // Use API route to update case and customer
+      const response = await fetch('/api/update-case', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId: caseData.id,
+          caseUpdates,
+          customerUpdates,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update case');
+      }
+
+      const data = await response.json();
+
+      // Update password if provided
+      let passwordUpdateSuccess = true;
+      let passwordUpdateError = null;
+      
+      if (passwordData.newPassword && passwordData.newPassword.trim().length >= 6) {
+        try {
+          // Get user ID from auth
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (!authUser) {
+            passwordUpdateSuccess = false;
+            passwordUpdateError = 'Kullanıcı kimlik doğrulama bilgisi bulunamadı';
+          } else {
+            const passwordResponse = await fetch('/api/update-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: authUser.id,
+                newPassword: passwordData.newPassword.trim(),
+              }),
+            });
+
+            const passwordData_result = await passwordResponse.json();
+
+            if (!passwordResponse.ok || !passwordData_result.success) {
+              passwordUpdateSuccess = false;
+              passwordUpdateError = passwordData_result.error || 'Şifre güncellenirken bir hata oluştu';
+            } else {
+              const newPasswordValue = passwordData.newPassword.trim();
+              setUpdatedPassword(newPasswordValue);
+              setPasswordData({ newPassword: '' });
+              setPasswordWasUpdated(true);
+              
+              if (customerId && typeof window !== 'undefined') {
+                localStorage.setItem(`updated_password_${customerId}`, newPasswordValue);
+              }
+            }
+          }
+        } catch (error: any) {
+          passwordUpdateSuccess = false;
+          passwordUpdateError = error.message || 'Şifre güncellenirken bir hata oluştu';
         }
       }
 
-      // Save admin assignments (only if superadmin)
-      if (canAssignAdminsData) {
+      // Save admin assignments (only if superadmin) - separate API call
+      if (canAssignAdminsData && assignedAdmins.length >= 0) {
         try {
-          // Delete existing assignments
-          const { error: deleteError } = await supabase
-            .from('case_admins')
-            .delete()
-            .eq('case_id', caseData.id);
+          const assignmentsResponse = await fetch('/api/update-case-assignments', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              caseId: caseData.id,
+              adminIds: assignedAdmins,
+            }),
+          });
 
-          if (deleteError) {
-            console.error('Error deleting existing admin assignments:', deleteError);
+          if (!assignmentsResponse.ok) {
+            const errorData = await assignmentsResponse.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Admin atama başarısız');
           }
 
-          // Insert new assignments
-          if (assignedAdmins.length > 0) {
-            const assignments = assignedAdmins.map((adminId) => ({
-              case_id: caseData.id,
-              admin_id: adminId,
-            }));
+          // ✅ İşlem başarılı - SAYFAYI YENİLE (onUpdate yerine)
+          setSaving(false);
+          setIsEditing(false);
+          alert('✅ Admin atama başarılı! Sayfa yenileniyor...');
+          
+          // 500ms bekle, sonra sayfayı yenile
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+          
+          return; // ← Burada durdur, onUpdate çağırma
 
-            const { error: insertError } = await (supabase as any)
-              .from('case_admins')
-              .insert(assignments);
-
-            if (insertError) {
-              console.error('Error inserting admin assignments:', insertError);
-            }
-          }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error saving admin assignments:', error);
-          // Don't throw - admin assignment errors shouldn't block other saves
+          alert(`❌ Admin atama başarısız: ${error.message || 'Bilinmeyen hata'}`);
+          setSaving(false);
+          return;
         }
       }
 
       setIsEditing(false);
-      // After save, load the updated password (or current format) into input for next edit
       const currentPassword = updatedPassword || getCurrentPasswordFormat();
       setPasswordData({ newPassword: currentPassword });
       
@@ -514,6 +434,14 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         alert('Bilgiler başarıyla kaydedildi');
       }
       
+      // Clear cache to ensure fresh data is loaded
+      // This ensures that if customer portal is open, it will get fresh data
+      if (typeof window !== 'undefined') {
+        // Clear any localStorage cache if exists
+        localStorage.removeItem('cases_cache');
+      }
+      
+      // Reload case data via onUpdate callback
       onUpdate();
     } catch (error: any) {
       console.error('Error saving data:', error);

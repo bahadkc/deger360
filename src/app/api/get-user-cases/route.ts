@@ -13,15 +13,34 @@ export async function GET(request: NextRequest) {
   try {
     // Get authenticated user from session
     const cookieStore = await cookies();
+    
+    // Also get cookies from request headers (for better compatibility)
+    const requestCookies = request.cookies.getAll();
+    
+    // Merge cookies from both sources
+    const allCookiesMap = new Map<string, { name: string; value: string }>();
+    
+    // Add cookies from cookieStore
+    cookieStore.getAll().forEach(c => {
+      allCookiesMap.set(c.name, { name: c.name, value: c.value });
+    });
+    
+    // Add cookies from request (override if exists)
+    requestCookies.forEach(c => {
+      allCookiesMap.set(c.name, { name: c.name, value: c.value });
+    });
+    
+    const allCookies = Array.from(allCookiesMap.values());
+
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
-          return cookieStore.getAll();
+          return allCookies;
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
         },
       },
     });
@@ -65,12 +84,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch cases with customer data using service role to bypass RLS
+    // Fetch cases with customer data, admin_checklist, and documents using service role to bypass RLS
     const { data, error } = await supabaseAdmin
       .from('cases')
       .select(`
         *,
-        customers (*)
+        customers (*),
+        admin_checklist (*),
+        documents (*)
       `)
       .eq('customer_id', userAuth.customer_id)
       .order('created_at', { ascending: false });

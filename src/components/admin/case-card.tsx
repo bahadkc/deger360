@@ -9,7 +9,7 @@ import { adminRoutes } from '@/lib/config/admin-paths';
 
 interface CaseCardProps {
   caseData: CaseData;
-  onDragStart: (caseId: string) => void;
+  onDragStart?: (caseId: string) => void;
 }
 
 // Board stage'e göre section mapping
@@ -30,7 +30,7 @@ export function CaseCard({ caseData, onDragStart }: CaseCardProps) {
 
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
-    onDragStart(caseData.id);
+    onDragStart?.(caseData.id);
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -62,12 +62,8 @@ export function CaseCard({ caseData, onDragStart }: CaseCardProps) {
   const isNew = isNewCustomer();
 
   return (
-    <Link href={adminRoutes.customerDetail(caseData.id)} onClick={handleLinkClick}>
-      <div
-        draggable
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
+    <Link href={adminRoutes.customerDetail(caseData.id)}>
+      <div>
         <Card
           className={`p-2 sm:p-3 cursor-pointer hover:shadow-md transition-all bg-white border ${
             isNew ? 'border-orange-300 border-2' : 'border-neutral-200'

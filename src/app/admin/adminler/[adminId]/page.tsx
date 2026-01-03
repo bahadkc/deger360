@@ -52,49 +52,21 @@ export default function AdminDetayPage() {
 
       setAdminInfo(admin);
 
-      // Load assigned customers
-      const { data: caseAdmins, error: caseAdminsError } = await supabase
-        .from('case_admins')
-        .select('case_id')
-        .eq('admin_id', adminId);
+      // Load assigned customers via API route
+      const response = await fetch(`/api/get-admin-assigned-customers?adminId=${adminId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (caseAdminsError) throw caseAdminsError;
-
-      if (caseAdmins && caseAdmins.length > 0) {
-        const caseIds = caseAdmins.map((ca: { case_id: string }) => ca.case_id);
-        
-        const { data: cases, error: casesError } = await supabase
-          .from('cases')
-          .select(`
-            id,
-            case_number,
-            vehicle_plate,
-            status,
-            customers (
-              id,
-              full_name,
-              email,
-              phone,
-              dosya_takip_numarasi
-            )
-          `)
-          .in('id', caseIds);
-
-        if (casesError) throw casesError;
-
-        const customersList: AssignedCustomer[] = (cases || []).map((caseItem: any) => ({
-          id: caseItem.customers?.id || '',
-          full_name: caseItem.customers?.full_name || '',
-          email: caseItem.customers?.email || '',
-          phone: caseItem.customers?.phone || '',
-          dosya_takip_numarasi: caseItem.customers?.dosya_takip_numarasi || '',
-          case_id: caseItem.id,
-          case_number: caseItem.case_number || '',
-          vehicle_plate: caseItem.vehicle_plate || '',
-          status: caseItem.status || 'active',
-        }));
-
-        setAssignedCustomers(customersList);
+      if (response.ok) {
+        const data = await response.json();
+        setAssignedCustomers(data.customers || []);
+      } else {
+        console.error('Error loading assigned customers');
+        setAssignedCustomers([]);
       }
     } catch (error) {
       console.error('Error loading admin data:', error);
