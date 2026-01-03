@@ -476,6 +476,11 @@ export async function getAllAdmins(): Promise<Array<{ id: string; name: string; 
  */
 export async function loginAsAdmin(email: string, password: string) {
   try {
+    // Only run on client-side
+    if (typeof window === 'undefined') {
+      throw new Error('Login can only be performed on client-side');
+    }
+
     // Clear cache on login
     clearAdminStatusCache();
 
@@ -495,13 +500,19 @@ export async function loginAsAdmin(email: string, password: string) {
     }
 
     // Set session on client side if provided
-    if (data.session) {
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
-      });
-      if (sessionError) {
-        console.error('Error setting session:', sessionError);
+    // Only set if supabase client is available
+    if (data.session && supabase && typeof supabase.auth !== 'undefined') {
+      try {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        if (sessionError) {
+          console.error('Error setting session:', sessionError);
+          // Don't throw, session might already be set via cookies
+        }
+      } catch (sessionErr) {
+        console.error('Error in setSession:', sessionErr);
         // Don't throw, session might already be set via cookies
       }
     }

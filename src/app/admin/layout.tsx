@@ -28,15 +28,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Only run on client-side
+      if (typeof window === 'undefined') {
+        return;
+      }
+
       const adminStatus = await isAdmin();
       if (!adminStatus) {
         // Admin değil - ama önce client-side session kontrolü yap
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          // Gerçekten logout olmuş
-          router.push(adminRoutes.login);
-          setLoading(false);
-          return;
+        // Only check if supabase client is available
+        if (typeof window !== 'undefined' && supabase) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            // Gerçekten logout olmuş
+            router.push(adminRoutes.login);
+            setLoading(false);
+            return;
+          }
         }
         // Client-side session var ama admin değil - belki cache sorunu
         // Force refresh dene
@@ -67,21 +75,30 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
+    
+    // Only run on client-side
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     checkAdminAccess();
     
     // Listen for auth changes (only on sign out, not on sign in or token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        // Clear cache on sign out and redirect to login
-        import('@/lib/supabase/admin-auth').then(({ clearAdminStatusCache }) => {
-          clearAdminStatusCache();
-        });
-        router.push(adminRoutes.login);
-      }
-      // SIGNED_IN ve TOKEN_REFRESHED event'lerinde cache'i kullan, API'ye istek atma
-    });
+    // Only subscribe if supabase client is available
+    if (supabase && typeof supabase.auth !== 'undefined') {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT') {
+          // Clear cache on sign out and redirect to login
+          import('@/lib/supabase/admin-auth').then(({ clearAdminStatusCache }) => {
+            clearAdminStatusCache();
+          });
+          router.push(adminRoutes.login);
+        }
+        // SIGNED_IN ve TOKEN_REFRESHED event'lerinde cache'i kullan, API'ye istek atma
+      });
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    }
   }, [checkAdminAccess, router]);
 
   const handleLogout = async () => {
