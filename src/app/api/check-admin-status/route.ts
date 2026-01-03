@@ -31,28 +31,46 @@ export async function GET(request: NextRequest) {
     
     const allCookies = Array.from(allCookiesMap.values());
     
+    // Cookie'leri toplamak için array
+    const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+    
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
           return allCookies;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookiesToSetArray) {
+          cookiesToSetArray.forEach(({ name, value, options }) => {
             // Ensure cookies work in production (Vercel)
             const cookieOptions = {
               ...options,
               // Ensure secure cookies in production
-              secure: process.env.NODE_ENV === 'production',
+              secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
               // SameSite for cross-site requests
               sameSite: 'lax' as const,
               // Path should be root for all cookies
               path: '/',
+              // HttpOnly for security (Supabase auth cookies should be httpOnly)
+              httpOnly: options?.httpOnly !== false,
+              // Max age from options or default
+              maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days default
             };
             cookieStore.set(name, value, cookieOptions);
+            // Store cookies to be set in response
+            cookiesToSet.push({ name, value, options: cookieOptions });
           });
         },
       },
     });
+    
+    // Helper function to create response with cookies
+    const createResponse = (data: any, status: number = 200) => {
+      const response = NextResponse.json(data, { status });
+      cookiesToSet.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options);
+      });
+      return response;
+    };
 
     let { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -81,9 +99,9 @@ export async function GET(request: NextRequest) {
       }
 
       if (userError || !user) {
-        return NextResponse.json(
+        return createResponse(
           { error: 'Unauthorized', isAdmin: false, admin: null },
-          { status: 401 }
+          401
         );
       }
     }
@@ -104,9 +122,9 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (authError || !userAuth) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Admin access required', isAdmin: false, admin: null },
-        { status: 403 }
+        403
       );
     }
 
@@ -115,13 +133,13 @@ export async function GET(request: NextRequest) {
     const isSuperAdmin = role === 'superadmin';
 
     if (!isAdmin) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Admin access required', isAdmin: false, admin: null },
-        { status: 403 }
+        403
       );
     }
 
-    return NextResponse.json({
+    return createResponse({
       isAdmin: true,
       isSuperAdmin,
       admin: {
@@ -134,6 +152,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error in check-admin-status:', error);
+    // In catch block, cookies might not be available, so use regular NextResponse
     return NextResponse.json(
       { error: 'Internal server error', isAdmin: false, admin: null },
       { status: 500 }

@@ -41,28 +41,46 @@ export async function POST(request: NextRequest) {
     
     const allCookies = Array.from(allCookiesMap.values());
     
+    // Cookie'leri toplamak için array
+    const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+    
     const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       cookies: {
         getAll() {
           return allCookies;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookiesToSetArray) {
+          cookiesToSetArray.forEach(({ name, value, options }) => {
             // Ensure cookies work in production (Vercel)
             const cookieOptions = {
               ...options,
               // Ensure secure cookies in production
-              secure: process.env.NODE_ENV === 'production',
+              secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
               // SameSite for cross-site requests
               sameSite: 'lax' as const,
               // Path should be root for all cookies
               path: '/',
+              // HttpOnly for security (Supabase auth cookies should be httpOnly)
+              httpOnly: options?.httpOnly !== false,
+              // Max age from options or default
+              maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days default
             };
             cookieStore.set(name, value, cookieOptions);
+            // Store cookies to be set in response
+            cookiesToSet.push({ name, value, options: cookieOptions });
           });
         },
       },
     });
+    
+    // Helper function to create response with cookies
+    const createResponse = (data: any, status: number = 200) => {
+      const response = NextResponse.json(data, { status });
+      cookiesToSet.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options);
+      });
+      return response;
+    };
 
     let { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -92,9 +110,9 @@ export async function POST(request: NextRequest) {
 
       if (userError || !user) {
         console.error('🍪 Cookie var ama getUser başarısız - cookie format sorunu olabilir');
-        return NextResponse.json(
+        return createResponse(
           { error: 'Unauthorized - Session expired or invalid' },
-          { status: 401 }
+          401
         );
       }
     }
@@ -115,9 +133,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (authError || !userAuth) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Admin access required' },
-        { status: 403 }
+        403
       );
     }
 
@@ -126,9 +144,9 @@ export async function POST(request: NextRequest) {
 
     // Only superadmin can assign admins
     if (!isSuperAdmin) {
-      return NextResponse.json(
+      return createResponse(
         { error: 'Only superadmin can assign admins to cases' },
-        { status: 403 }
+        403
       );
     }
 
@@ -140,9 +158,9 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       console.error('Error deleting existing admin assignments:', deleteError);
-      return NextResponse.json(
+      return createResponse(
         { error: 'Failed to delete existing assignments' },
-        { status: 500 }
+        500
       );
     }
 
@@ -159,16 +177,21 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         console.error('Error inserting admin assignments:', insertError);
-        return NextResponse.json(
+        return createResponse(
           { error: 'Failed to insert admin assignments' },
-          { status: 500 }
+          500
         );
       }
     }
 
-    return NextResponse.json({ success: true });
+    // Success response with cookies
+    return createResponse({ 
+      success: true,
+      message: 'Case assignments updated successfully'
+    });
   } catch (error: any) {
     console.error('Error in update-case-assignments API:', error);
+    // In catch block, cookies might not be available, so use regular NextResponse
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
