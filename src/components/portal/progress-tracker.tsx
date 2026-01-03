@@ -254,7 +254,7 @@ export function ProgressTracker({ steps, orientation = 'vertical', className }: 
                                         day: '2-digit',
                                         month: 'short',
                                         year: 'numeric',
-                                      })}
+                                      }) : '--'}
                                     </p>
                                   )}
                                 </div>
