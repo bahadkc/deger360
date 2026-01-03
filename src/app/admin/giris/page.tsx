@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,12 @@ export default function AdminGirisPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,21 +59,30 @@ export default function AdminGirisPage() {
     }
   };
 
+  // Prevent hydration mismatch - only render after mount
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-blue to-primary-orange p-4">
+        <div className="text-white">Yükleniyor...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-blue to-primary-orange p-4">
-      <Card className="w-full max-w-md p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-blue to-primary-orange p-4" suppressHydrationWarning>
+      <Card className="w-full max-w-md p-8" suppressHydrationWarning>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-neutral-800 mb-2">Admin Girişi</h1>
           <p className="text-neutral-600">Yönetim paneline erişmek için giriş yapın</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg" suppressHydrationWarning>
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" suppressHydrationWarning>
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               E-posta

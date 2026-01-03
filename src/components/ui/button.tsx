@@ -1,3 +1,5 @@
+'use client';
+
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +34,7 @@ export function Button({
     <button
       className={cn(baseStyles, variants[variant], sizes[size], className)}
       {...props}
+      suppressHydrationWarning
     >
       {children}
     </button>
