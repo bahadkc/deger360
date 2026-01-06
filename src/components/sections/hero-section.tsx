@@ -38,7 +38,7 @@ export function HeroSection() {
   };
 
   return (
-    <section id="contact-form" className="relative min-h-screen bg-white pt-20 sm:pt-24 pb-8 sm:pb-12 flex items-center">
+    <section id="contact-form" className="relative min-h-screen bg-white pt-8 sm:pt-24 pb-8 sm:pb-12 flex items-center">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -47,7 +47,7 @@ export function HeroSection() {
             transition={{ duration: 0.6 }}
             className="text-center mb-6 sm:mb-8"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-dark-blue mb-3 sm:mb-4 leading-tight px-2">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-bold text-dark-blue mb-3 sm:mb-4 leading-tight px-2">
               Değer Kaybınızı{' '}
               <span className="text-primary-orange">Hesaplayın</span>
             </h1>

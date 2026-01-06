@@ -4,10 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [companyMenuOpen, setCompanyMenuOpen] = useState(false);
+  const isTeklifPage = pathname === '/teklif';
 
   const scrollToSection = (sectionId: string | null) => {
     if (!sectionId) {
@@ -114,20 +117,22 @@ export function Header() {
           </nav>
 
           {/* CTA Buttons - Right Aligned */}
-          <div className="hidden lg:flex items-center gap-2 flex-shrink-0 w-[200px] justify-end ml-4">
-            <Link
-              href="/teklif"
-              className="bg-primary-orange hover:bg-primary-orange-hover text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap inline-block text-center"
-            >
-              Hemen Başvur
-            </Link>
-            <Link
-              href="/portal/giris"
-              className="bg-primary-orange hover:bg-primary-orange-hover text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap inline-block"
-            >
-              Dosyam Nerede?
-            </Link>
-          </div>
+          {!isTeklifPage && (
+            <div className="hidden lg:flex items-center gap-2 flex-shrink-0 w-[200px] justify-end ml-4">
+              <Link
+                href="/teklif"
+                className="bg-primary-orange hover:bg-primary-orange-hover text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap inline-block text-center"
+              >
+                Hemen Başvur
+              </Link>
+              <Link
+                href="/portal/giris"
+                className="bg-primary-orange hover:bg-primary-orange-hover text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap inline-block"
+              >
+                Dosyam Nerede?
+              </Link>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -173,20 +178,22 @@ export function Header() {
             >
               SSS
             </button>
-            <div className="mt-4 space-y-2">
-              <Link
-                href="/teklif"
-                className="w-full bg-primary-orange text-white font-bold px-6 py-3 rounded-lg inline-block text-center"
-              >
-                Hemen Başvur
-              </Link>
-              <Link
-                href="/portal/giris"
-                className="w-full bg-primary-orange text-white font-bold px-6 py-3 rounded-lg inline-block text-center"
-              >
-                Dosyam Nerede?
-              </Link>
-            </div>
+            {!isTeklifPage && (
+              <div className="mt-4 space-y-2">
+                <Link
+                  href="/teklif"
+                  className="w-full bg-primary-orange text-white font-bold px-6 py-3 rounded-lg inline-block text-center"
+                >
+                  Hemen Başvur
+                </Link>
+                <Link
+                  href="/portal/giris"
+                  className="w-full bg-primary-orange text-white font-bold px-6 py-3 rounded-lg inline-block text-center"
+                >
+                  Dosyam Nerede?
+                </Link>
+              </div>
+            )}
           </nav>
         )}
       </div>

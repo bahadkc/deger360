@@ -1,12 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export function StickyMobileCTA() {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Teklif sayfasında butonu gösterme
+    if (pathname === '/teklif') {
+      setIsVisible(false);
+      return;
+    }
+
     const handleScroll = () => {
       // Hero section'ı (contact-form) bul
       const heroSection = document.getElementById('contact-form');
@@ -35,9 +43,10 @@ export function StickyMobileCTA() {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, []);
+  }, [pathname]);
 
-  if (!isVisible) {
+  // Teklif sayfasında veya görünür değilse butonu gösterme
+  if (pathname === '/teklif' || !isVisible) {
     return null;
   }
 

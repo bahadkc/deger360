@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Phone, Mail, MapPin } from 'lucide-react';
 
 export function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -26,20 +26,9 @@ export function Footer() {
               className="h-10 w-auto mb-4"
               loading="lazy"
             />
-            <p className="text-neutral-200 mb-4">
+            <p className="text-neutral-200">
               Aracınızın değer kaybı tazminatını almak için yanınızdayız. Profesyonel ekibimizle haklarınızı koruyoruz.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-primary-orange transition-colors" aria-label="Facebook">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-primary-orange transition-colors" aria-label="Instagram">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-primary-orange transition-colors" aria-label="LinkedIn">
-                <Linkedin className="w-5 h-5" />
-              </a>
-            </div>
           </div>
 
           {/* Hızlı Linkler */}

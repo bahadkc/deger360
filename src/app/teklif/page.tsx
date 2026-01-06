@@ -48,9 +48,9 @@ export default function TeklifPage() {
     resolver: zodResolver(vehicleInfoSchema)
   });
 
-  // Load vehicle data from localStorage on mount (only if exists and came from hero form)
+  // Load vehicle data from localStorage on mount and when step changes to 2
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && currentStep === 2) {
       const fromHeroForm = localStorage.getItem('fromHeroForm');
       const heroData = localStorage.getItem('heroFormData');
       
@@ -73,8 +73,7 @@ export default function TeklifPage() {
             vehicleForm.setValue('aracMarkaModel', data.aracMarkaModel);
             vehicleForm.setValue('hasarTutari', data.hasarTutari);
           }
-          // Remove the flag after using it
-          localStorage.removeItem('fromHeroForm');
+          // Don't remove the flag yet - keep it until form is submitted
         } catch (e) {
           console.error('Error loading hero form data:', e);
           localStorage.removeItem('fromHeroForm');
@@ -82,7 +81,7 @@ export default function TeklifPage() {
       }
       // If no heroData or no flag, vehicle form stays empty (default state)
     }
-  }, [vehicleForm]);
+  }, [currentStep, vehicleForm]);
 
   const onPersonalSubmit = (data: PersonalInfoData) => {
     setCurrentStep(2);
@@ -112,6 +111,7 @@ export default function TeklifPage() {
         // Clear localStorage
         if (typeof window !== 'undefined') {
           localStorage.removeItem('heroFormData');
+          localStorage.removeItem('fromHeroForm');
         }
         
         // Show success modal
@@ -347,7 +347,14 @@ export default function TeklifPage() {
                   <div className="flex items-center justify-between pt-6">
                     <button
                       type="button"
-                      onClick={() => router.push('/')}
+                      onClick={() => {
+                        // Clear localStorage when going back to home
+                        if (typeof window !== 'undefined') {
+                          localStorage.removeItem('heroFormData');
+                          localStorage.removeItem('fromHeroForm');
+                        }
+                        router.push('/');
+                      }}
                       className="text-primary-blue hover:text-primary-orange transition-colors flex items-center gap-2 text-base"
                     >
                       <ArrowLeft className="w-4 h-4" />
