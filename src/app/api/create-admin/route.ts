@@ -9,7 +9,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export async function POST(request: NextRequest) {
   try {
     // Create server-side Supabase client to get current user
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient(
       supabaseUrl,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

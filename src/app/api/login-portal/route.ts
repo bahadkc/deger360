@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getCookieOptions } from '@/lib/utils/cookie-utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -53,20 +54,11 @@ export async function POST(request: NextRequest) {
         },
         setAll(cookiesToSetArray) {
           cookiesToSetArray.forEach(({ name, value, options }) => {
-            // Ensure cookies work in production (Vercel)
-            const cookieOptions = {
-              ...options,
-              // Ensure secure cookies in production
-              secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
-              // SameSite for cross-site requests
-              sameSite: 'lax' as const,
-              // Path should be root for all cookies
-              path: '/',
-              // HttpOnly for security (Supabase auth cookies should be httpOnly)
-              httpOnly: options?.httpOnly !== false,
-              // Max age from options or default
-              maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days default
-            };
+            // Use cookie utils to determine secure flag based on actual protocol
+            const cookieOptions = getCookieOptions(
+              { url: request.url, headers: request.headers },
+              options
+            );
             cookieStore.set(name, value, cookieOptions);
             // Store cookies to be set in response
             cookiesToSet.push({ name, value, options: cookieOptions });

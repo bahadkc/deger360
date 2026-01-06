@@ -6,7 +6,7 @@ import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 
 export function FinalCTASection() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   const scrollToForm = () => {
@@ -16,7 +16,7 @@ export function FinalCTASection() {
   };
 
   return (
-    <section ref={ref} className="py-20 bg-white">
+    <section ref={ref as React.RefObject<HTMLElement>} className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div

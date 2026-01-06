@@ -65,7 +65,7 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -73,7 +73,7 @@ export function TestimonialsSection() {
   const duplicatedTestimonials = [...testimonials, ...testimonials, ...testimonials];
 
   return (
-    <section ref={ref} className="py-12 sm:py-16 md:py-20 bg-white overflow-hidden">
+    <section ref={ref as React.RefObject<HTMLElement>} className="py-12 sm:py-16 md:py-20 bg-white overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}

@@ -35,11 +35,11 @@ const faqs = [
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="sss" className="py-12 sm:py-16 md:py-20 bg-white">
+    <section ref={ref as React.RefObject<HTMLElement>} id="sss" className="py-12 sm:py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div

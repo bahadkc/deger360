@@ -14,8 +14,8 @@ type Tables = Database['public']['Tables'];
  * Server-side database operations
  * Use this in Server Components and API routes
  */
-export function getServerDb() {
-  const supabase = createServerSupabaseClient();
+export async function getServerDb() {
+  const supabase = await createServerSupabaseClient();
   
   return {
     customers: {

@@ -39,11 +39,11 @@ const benefits = [
 ];
 
 export function WhyUsSection() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="neden-biz" className="py-12 sm:py-16 md:py-20 bg-white">
+    <section ref={ref as React.RefObject<HTMLElement>} id="neden-biz" className="py-12 sm:py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}

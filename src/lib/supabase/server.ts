@@ -3,8 +3,8 @@ import { createServerClient } from '@supabase/ssr';
 import { Database } from './database.types';
 
 // Server-side Supabase client for Server Components
-export function createServerSupabaseClient() {
-  const cookieStore = cookies();
+export async function createServerSupabaseClient() {
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

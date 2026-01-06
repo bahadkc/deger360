@@ -6,6 +6,7 @@ import { shouldBlockRequest, getClientIdentifier } from '@/lib/security/advanced
 import { validateRequestSize } from '@/lib/security/request-limits';
 import { logger } from '@/lib/logger';
 import { ADMIN_PATH, isAdminPath } from '@/lib/config/admin-paths';
+import { getCookieOptions } from '@/lib/utils/cookie-utils';
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl;
@@ -166,18 +167,11 @@ export async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          // Ensure cookies work in production (Vercel)
-          const cookieOptions = {
-            ...options,
-            // Ensure secure cookies in production
-            secure: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1',
-            // SameSite for cross-site requests
-            sameSite: (options?.sameSite as 'lax' | 'strict' | 'none') || 'lax',
-            // Path should be root for all cookies
-            path: options?.path || '/',
-            // HttpOnly for security (Supabase auth cookies should be httpOnly)
-            httpOnly: options?.httpOnly !== false,
-          };
+          // Use cookie utils to determine secure flag based on actual protocol
+          const cookieOptions = getCookieOptions(
+            { url: req.url, headers: req.headers },
+            options
+          );
           req.cookies.set({
             name,
             value,
