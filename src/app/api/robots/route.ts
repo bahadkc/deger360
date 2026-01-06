@@ -8,7 +8,7 @@ export async function GET() {
 Allow: /
 Disallow: ${ADMIN_PATH}/
 Disallow: /admin/
-Disallow: /portal/
+Allow: /portal/
 Disallow: /api/
 Disallow: /debug/
 Disallow: /test/
