@@ -56,7 +56,8 @@ export default function MusteriDetayPage() {
 
       const data = await response.json();
       console.log('Case data loaded:', data.case);
-      setCaseData(data.case);
+      // Include assignedAdminIds in caseData for use in components
+      setCaseData({ ...data.case, assignedAdminIds: data.assignedAdminIds || [] });
     } catch (error) {
       console.error('Error loading case data:', error);
     } finally {

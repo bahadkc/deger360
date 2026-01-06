@@ -119,8 +119,24 @@ export async function GET(
       );
     }
 
+    // Fetch assigned admins for this case
+    const { data: caseAdminsData, error: caseAdminsError } = await supabaseAdmin
+      .from('case_admins')
+      .select('admin_id')
+      .eq('case_id', caseId);
+
+    if (caseAdminsError) {
+      console.error('Error fetching case admins:', caseAdminsError);
+      // Don't fail the request, just log the error
+    }
+
+    const assignedAdminIds = (caseAdminsData || []).map((ca: any) => ca.admin_id);
+
     // Success response
-    return NextResponse.json({ case: data });
+    return NextResponse.json({ 
+      case: data,
+      assignedAdminIds: assignedAdminIds || []
+    });
   } catch (error: any) {
     console.error('Error in get-case API:', error);
     return NextResponse.json(

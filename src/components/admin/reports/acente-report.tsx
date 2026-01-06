@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { AdminUser } from '@/lib/supabase/admin-auth';
-import { supabase } from '@/lib/supabase/client';
-import { getAssignedCaseIds } from '@/lib/supabase/admin-auth';
 import { StatusBadge } from './common/status-badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, FileText, CheckCircle, UserPlus } from 'lucide-react';
 import { CHECKLIST_ITEMS } from '@/lib/checklist-sections';
 import { DateDisplay } from '@/components/ui/date-display';
+import { getReportData } from '@/lib/cache/report-data-cache';
 
 interface ReportSection {
   period: string;
@@ -37,8 +36,12 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [sections, setSections] = useState<ReportSection[]>([]);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple calls
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
     loadReportData();
   }, []);
 
@@ -46,11 +49,16 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
     try {
       setLoading(true);
       console.log('Acente Report: Starting to load data...');
-      
-      const assignedIds = await getAssignedCaseIds();
-      console.log('Acente Report: Assigned IDs:', assignedIds);
 
-      if (assignedIds.length === 0) {
+      // Load data via cache (will fetch from API only once)
+      const reportData = await getReportData('acente');
+      const casesData = reportData.cases || [];
+      const checklistList = reportData.checklist || [];
+
+      console.log('Acente Report: Cases loaded:', casesData?.length || 0);
+      console.log('Acente Report: Checklist items loaded:', checklistList.length);
+
+      if (casesData.length === 0) {
         console.log('Acente Report: No assigned cases, creating empty report sections');
         setTotalEarnings(0);
         setTotalCustomers(0);
@@ -96,47 +104,8 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
         setLoading(false);
         return;
       }
-
-      // Load all cases
-      const { data: casesData, error: casesError } = await supabase
-        .from('cases')
-        .select(`
-          id,
-          status,
-          board_stage,
-          created_at,
-          start_date,
-          customers (
-            id,
-            full_name,
-            dosya_takip_numarasi
-          )
-        `)
-        .in('id', assignedIds)
-        .order('created_at', { ascending: false });
-
-      if (casesError) {
-        console.error('Acente Report: Error loading cases:', casesError);
-        throw casesError;
-      }
-
-      console.log('Acente Report: Cases loaded:', casesData?.length || 0);
-
-      // Load checklist data
-      const { data: checklistData, error: checklistError } = await supabase
-        .from('admin_checklist')
-        .select('case_id, task_key, completed')
-        .in('case_id', assignedIds.length > 0 ? assignedIds : ['00000000-0000-0000-0000-000000000000']);
-
-      if (checklistError) {
-        console.error('Acente Report: Error loading checklist:', checklistError);
-        // Don't throw, continue without checklist data
-      }
-
-      const checklistList = checklistData || [];
-      console.log('Acente Report: Checklist items loaded:', checklistList.length);
       
-      const cases = casesData || [];
+      const cases = casesData;
       const now = new Date();
       const estimatedEarningsPerCustomer = 15000;
 
@@ -163,6 +132,7 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
       // Prepare customer list for all periods
       const allCustomers = cases.map((caseItem: any) => ({
         id: caseItem.customers?.id || '',
+        case_id: caseItem.id || '',
         full_name: caseItem.customers?.full_name || '',
         dosya_takip_numarasi: caseItem.customers?.dosya_takip_numarasi || '',
         status: caseItem.status || 'active',

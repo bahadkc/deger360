@@ -19,7 +19,15 @@ export function Header() {
     if (window.location.pathname === '/') {
       const element = document.getElementById(sectionId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+        const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerHeight - offset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
       }
     } else {
       // Başka sayfadaysak ana sayfaya yönlendir
@@ -37,7 +45,7 @@ export function Header() {
 
   const companyMenuItems = [
     { label: 'Hakkımızda', sectionId: 'hakkimizda' },
-    { label: 'İletişim', sectionId: 'hakkimizda' },
+    { label: 'İletişim', sectionId: 'iletisim' },
     { label: 'SSS', sectionId: 'sss' },
   ];
 
@@ -154,7 +162,7 @@ export function Header() {
               Hakkımızda
             </button>
             <button
-              onClick={() => scrollToSection('hakkimizda')}
+              onClick={() => scrollToSection('iletisim')}
               className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
             >
               İletişim

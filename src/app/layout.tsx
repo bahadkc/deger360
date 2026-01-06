@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   authors: [{ name: 'DeğerKaybım' }],
   creator: 'DeğerKaybım',
   publisher: 'DeğerKaybım',
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
   formatDetection: {
     email: false,
     address: false,

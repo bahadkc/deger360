@@ -454,13 +454,14 @@ export async function canAssignAdmins(): Promise<boolean> {
  * Get all admin users (for admin assignment dropdown)
  * Uses API route since auth.admin is server-side only
  */
-export async function getAllAdmins(): Promise<Array<{ id: string; name: string; email: string; role: string }>> {
+export async function getAllAdmins(): Promise<Array<{ id: string; name: string; email: string; role: string; assignedCaseCount?: number }>> {
   try {
     const response = await fetch('/api/get-admins', {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
       },
+      credentials: 'include',
     });
     if (!response.ok) {
       console.error('Failed to get admins');

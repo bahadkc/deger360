@@ -119,6 +119,7 @@ export async function GET(request: NextRequest) {
         customers (
           id,
           full_name,
+          dosya_takip_numarasi,
           created_at
         )
       `)

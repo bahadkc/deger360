@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { AdminUser } from '@/lib/supabase/admin-auth';
-import { supabase } from '@/lib/supabase/client';
-import { getAssignedCaseIds } from '@/lib/supabase/admin-auth';
 import { StatusBadge } from './common/status-badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { FileText, Target, CheckCircle2, Clock } from 'lucide-react';
 import { CHECKLIST_ITEMS } from '@/lib/checklist-sections';
+import { getReportData } from '@/lib/cache/report-data-cache';
 
 interface ReportSection {
   period: string;
@@ -34,6 +33,7 @@ export function AvukatReport({ adminUser }: { adminUser: AdminUser }) {
   const [loading, setLoading] = useState(true);
   const [sections, setSections] = useState<ReportSection[]>([]);
   const [checklistList, setChecklistList] = useState<any[]>([]);
+  const hasLoadedRef = useRef(false);
 
   // Helper function to check if a case is completed
   const checkCaseCompleted = useCallback((caseItem: any): boolean => {
@@ -49,37 +49,23 @@ export function AvukatReport({ adminUser }: { adminUser: AdminUser }) {
   }, [checklistList]);
 
   const loadReportData = useCallback(async () => {
+    // Prevent multiple calls
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     try {
       setLoading(true);
-      const assignedIds = await getAssignedCaseIds();
 
-      if (assignedIds.length === 0) {
+      // Load data via cache (will fetch from API only once)
+      const reportData = await getReportData('lawyer');
+      const casesList = reportData.cases || [];
+      const checklistListData = reportData.checklist || [];
+      setChecklistList(checklistListData);
+
+      if (casesList.length === 0) {
         setSections([]);
         return;
       }
-
-      // Load all cases
-      const { data: casesData, error: casesError } = await supabase
-        .from('cases')
-        .select(`
-          id,
-          case_number,
-          status,
-          board_stage,
-          created_at,
-          start_date,
-          updated_at,
-          customers (
-            id,
-            full_name
-          )
-        `)
-        .in('id', assignedIds)
-        .order('created_at', { ascending: false });
-
-      if (casesError) throw casesError;
-
-      const casesList = casesData || [];
       const now = new Date();
 
       const calculateSection = (startDate: Date, endDate: Date, period: string): ReportSection => {
@@ -197,7 +183,8 @@ export function AvukatReport({ adminUser }: { adminUser: AdminUser }) {
 
   useEffect(() => {
     loadReportData();
-  }, [loadReportData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getStatusType = (status: string, boardStage: string, caseItem?: any): string => {
     if (caseItem && checkCaseCompleted && checkCaseCompleted(caseItem)) return 'completed';

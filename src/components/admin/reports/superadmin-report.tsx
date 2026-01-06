@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { AdminUser } from '@/lib/supabase/admin-auth';
 import { supabase } from '@/lib/supabase/client';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, FileText, CheckCircle, Clock, Trophy, AlertTriangle } from 'lucide-react';
 import { isCaseCompleted, CHECKLIST_ITEMS } from '@/lib/checklist-sections';
+import { getReportData } from '@/lib/cache/report-data-cache';
 
 type ReportPeriod = '1_month' | '3_months' | '1_year' | 'all_time';
 
@@ -60,8 +61,15 @@ interface ReportData {
 export function SuperAdminReport({ adminUser, period }: { adminUser: AdminUser; period: ReportPeriod }) {
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const lastPeriodRef = useRef<ReportPeriod | null>(null);
 
   const loadReportData = useCallback(async () => {
+    // Prevent multiple calls for the same period
+    if (lastPeriodRef.current === period && reportData !== null) {
+      return;
+    }
+    lastPeriodRef.current = period;
+
     try {
       setLoading(true);
       console.log('SuperAdmin Report: Loading data for period:', period);
@@ -88,21 +96,8 @@ export function SuperAdminReport({ adminUser, period }: { adminUser: AdminUser; 
           startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       }
 
-      // Load data via API route to bypass RLS
-      const response = await fetch(`/api/get-report-data?role=superadmin&period=${period}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to load report data');
-      }
-
-      const reportData = await response.json();
+      // Load data via cache (will fetch from API only once per period)
+      const reportData = await getReportData('superadmin', period);
       const casesList = reportData.cases || [];
       const adminsList = reportData.admins || [];
       const caseAdminsList = reportData.caseAdmins || [];
@@ -356,7 +351,8 @@ export function SuperAdminReport({ adminUser, period }: { adminUser: AdminUser; 
 
   useEffect(() => {
     loadReportData();
-  }, [period, loadReportData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
 
   const getPeriodLabel = () => {
     switch (period) {

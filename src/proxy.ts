@@ -12,9 +12,21 @@ export default async function proxy(req: NextRequest) {
   const url = req.nextUrl;
   const pathname = url.pathname;
   
+  // Handle admin panel hidden path rewrite (including RSC requests)
+  // This handles both page routes and React Server Component requests (_rsc parameter)
+  if (pathname.startsWith(ADMIN_PATH)) {
+    // Rewrite hidden path to internal /admin path
+    // This includes RSC requests which Next.js rewrites don't handle
+    const adminPath = pathname.replace(ADMIN_PATH, '/admin');
+    const rewriteUrl = new URL(adminPath, req.url);
+    // Preserve query parameters (including _rsc)
+    rewriteUrl.search = url.search;
+    
+    return NextResponse.rewrite(rewriteUrl);
+  }
+  
   // Block direct /admin access - redirect to 404 page
   // Admin panel is only accessible via hidden path: /sys-admin-panel-secure-7x9k2m/*
-  // Check if request is coming from hidden path (via referer or direct check)
   if (pathname.startsWith('/admin')) {
     // Rewrite to not-found page to show custom 404
     return NextResponse.rewrite(new URL('/not-found', req.url));
@@ -75,7 +87,8 @@ export default async function proxy(req: NextRequest) {
         pathname.startsWith('/api/create-admin') ||
         pathname.startsWith('/api/delete-admin') ||
         pathname.startsWith('/api/create-superadmin') ||
-        pathname.startsWith('/api/reset-superadmin-password');
+        pathname.startsWith('/api/reset-superadmin-password') ||
+        pathname.startsWith('/api/get-report-data');
       
       // Skip rate limiting for admin API routes
       if (!isAdminApiRoute) {
@@ -229,6 +242,7 @@ export default async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
+    '/sys-admin-panel-secure-7x9k2m/:path*',
     '/admin/:path*',
     '/portal/:path*',
     '/api/:path*',

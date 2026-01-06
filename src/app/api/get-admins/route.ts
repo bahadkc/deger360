@@ -33,7 +33,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to get admin emails' }, { status: 500 });
     }
 
-    // Map admin IDs to emails and names
+    // Get assigned case counts for each admin
+    const { data: caseAdminsData, error: caseAdminsError } = await supabaseAdmin
+      .from('case_admins')
+      .select('admin_id')
+      .in('admin_id', adminIds.length > 0 ? adminIds : ['00000000-0000-0000-0000-000000000000']); // Dummy ID if no admins
+
+    if (caseAdminsError) {
+      console.error('Error getting case_admins:', caseAdminsError);
+    }
+
+    // Count cases per admin
+    const caseCounts: Record<string, number> = {};
+    (caseAdminsData || []).forEach((ca: { admin_id: string }) => {
+      caseCounts[ca.admin_id] = (caseCounts[ca.admin_id] || 0) + 1;
+    });
+
+    // Map admin IDs to emails and names with assigned case counts
     const admins = (userAuthData || []).map((admin) => {
       const authUser = authUsers?.users.find((u) => u.id === admin.id);
       return {
@@ -41,6 +57,7 @@ export async function GET(request: NextRequest) {
         name: admin.name || authUser?.email || 'Unknown',
         email: authUser?.email || 'Unknown',
         role: admin.role,
+        assignedCaseCount: caseCounts[admin.id] || 0,
       };
     });
 

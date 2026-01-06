@@ -42,25 +42,11 @@ export default function AdminlerPage() {
     try {
       const allAdmins = await getAllAdmins();
       
-      // Get assigned case counts for each admin
-      const adminsWithCounts = await Promise.all(
-        allAdmins.map(async (admin) => {
-          const { count } = await supabase
-            .from('case_admins')
-            .select('*', { count: 'exact', head: true })
-            .eq('admin_id', admin.id);
-          
-          return {
-            ...admin,
-            assignedCaseCount: count || 0,
-          };
-        })
-      );
-
+      // getAllAdmins already returns assignedCaseCount from API
       // Separate by role (exclude superadmin)
-      setAdmins(adminsWithCounts.filter((a) => a.role === 'admin'));
-      setLawyers(adminsWithCounts.filter((a) => a.role === 'lawyer'));
-      setAcentes(adminsWithCounts.filter((a) => a.role === 'acente'));
+      setAdmins(allAdmins.filter((a) => a.role === 'admin'));
+      setLawyers(allAdmins.filter((a) => a.role === 'lawyer'));
+      setAcentes(allAdmins.filter((a) => a.role === 'acente'));
     } catch (error) {
       console.error('Error loading admins:', error);
     } finally {

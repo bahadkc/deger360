@@ -174,31 +174,40 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
     }
   }, [isAdminDropdownOpen]);
 
-  // Load assigned admins for this case
+  // Load assigned admins for this case from caseData
   useEffect(() => {
-    const loadAssignedAdmins = async () => {
-      if (!caseData?.id) return;
-      
-      try {
-        const { data, error } = await (supabase
-          .from('case_admins')
-          .select('admin_id')
-          .eq('case_id', caseData.id) as any);
+    if (caseData?.assignedAdminIds) {
+      const adminIds = caseData.assignedAdminIds;
+      setAssignedAdmins(adminIds);
+      setInitialAssignedAdmins(adminIds);
+    } else if (caseData?.id) {
+      // Fallback: Load from API if not in caseData
+      const loadAssignedAdmins = async () => {
+        try {
+          const response = await fetch(`/api/get-case/${caseData.id}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (error) {
+          if (!response.ok) {
+            console.error('Error loading case data:', response.statusText);
+            return;
+          }
+
+          const result = await response.json();
+          const adminIds = result.assignedAdminIds || [];
+          setAssignedAdmins(adminIds);
+          setInitialAssignedAdmins(adminIds);
+        } catch (error) {
           console.error('Error loading assigned admins:', error);
-          return;
         }
-
-        const adminIds = (data || []).map((item: any) => item.admin_id);
-        setAssignedAdmins(adminIds);
-        setInitialAssignedAdmins(adminIds);
-      } catch (error) {
-        console.error('Error loading assigned admins:', error);
-      }
-    };
-    loadAssignedAdmins();
-  }, [caseData?.id]);
+      };
+      loadAssignedAdmins();
+    }
+  }, [caseData?.id, caseData?.assignedAdminIds]);
 
   // Update state when caseData changes
   useEffect(() => {
@@ -812,6 +821,40 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               </p>
             </div>
           </div>
+          
+          {/* Atanmış Adminler Listesi (Sadece Superadmin) */}
+          {isSuperAdminUser && assignedAdmins.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-neutral-200">
+              <h4 className="text-sm font-semibold text-neutral-700 mb-3">📋 Atanmış Adminler</h4>
+              <div className="space-y-2">
+                {assignedAdmins.map((adminId) => {
+                  const admin = allAdmins.find((a) => a.id === adminId);
+                  if (!admin) return null;
+                  return (
+                    <div
+                      key={adminId}
+                      className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-neutral-800 truncate">
+                          {admin.name || admin.email}
+                        </div>
+                        <div className="text-xs text-neutral-500 mt-1">
+                          {admin.role === 'superadmin' ? 'Superadmin' : 
+                           admin.role === 'admin' ? 'Admin' : 
+                           admin.role === 'lawyer' ? 'Avukat' : 
+                           admin.role === 'acente' ? 'Acente' : admin.role}
+                          {admin.email && admin.name && (
+                            <span className="ml-2">• {admin.email}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </Card>
       )}
 
