@@ -20,7 +20,7 @@ export const MAX_HEADERS_SIZE = 8192; // 8KB
 /**
  * Validate request size
  */
-export function validateRequestSize(request: Request): {
+export function validateRequestSize(request: Request | { url: string; headers: Headers }): {
   valid: boolean;
   error?: string;
 } {

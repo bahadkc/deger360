@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Save, Edit2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { getAllAdmins, isSuperAdmin, canEdit, canAssignAdmins } from '@/lib/supabase/admin-auth';
+import { DateDisplay } from '@/components/ui/date-display';
 
 interface GeneralInfoTabProps {
   caseData: any;
@@ -14,6 +16,7 @@ interface GeneralInfoTabProps {
 }
 
 export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -318,7 +321,13 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         // Ignore if column doesn't exist
       }
 
-      // Use API route to update case and customer
+      // Check if admin assignments have changed (only for superadmin)
+      const adminAssignmentsChanged = 
+        canAssignAdminsData && 
+        JSON.stringify(assignedAdmins.sort()) !== JSON.stringify(initialAssignedAdmins.sort());
+
+      // Use API route to update case, customer, and admin assignments in ONE request
+      // This prevents race condition and token conflicts
       const response = await fetch('/api/update-case', {
         method: 'POST',
         credentials: 'include',
@@ -329,6 +338,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
           caseId: caseData.id,
           caseUpdates,
           customerUpdates,
+          // Include adminIds only if superadmin and assignments changed
+          ...(adminAssignmentsChanged ? { adminIds: assignedAdmins } : {}),
         }),
       });
 
@@ -345,17 +356,18 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       
       if (passwordData.newPassword && passwordData.newPassword.trim().length >= 6) {
         try {
-          // Get user ID from auth
-          const { data: { user: authUser } } = await supabase.auth.getUser();
-          if (!authUser) {
+          // ⚠️ KRİTİK DÜZELTME: Müşterinin email'ini gönderiyoruz, admin'in değil!
+          // API müşterinin email'inden auth user ID'sini bulacak
+          const customerEmail = caseData.customers?.email || customerData.email;
+          if (!customerEmail) {
             passwordUpdateSuccess = false;
-            passwordUpdateError = 'Kullanıcı kimlik doğrulama bilgisi bulunamadı';
+            passwordUpdateError = 'Müşteri email bilgisi bulunamadı';
           } else {
             const passwordResponse = await fetch('/api/update-password', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                userId: authUser.id,
+                customerEmail: customerEmail, // Müşterinin email'i
                 newPassword: passwordData.newPassword.trim(),
               }),
             });
@@ -382,53 +394,10 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         }
       }
 
-      // Save admin assignments (only if superadmin and assignments changed) - separate API call
-      // Check if admin assignments have changed by comparing with initial state
-      const adminAssignmentsChanged = 
-        canAssignAdminsData && 
-        JSON.stringify(assignedAdmins.sort()) !== JSON.stringify(initialAssignedAdmins.sort());
-      
+      // Admin assignments are now handled in the same API call above
+      // Update initial state if admin assignments were changed
       if (adminAssignmentsChanged) {
-        try {
-          const assignmentsResponse = await fetch('/api/update-case-assignments', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              caseId: caseData.id,
-              adminIds: assignedAdmins,
-            }),
-          });
-
-          if (!assignmentsResponse.ok) {
-            const errorData = await assignmentsResponse.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Admin atama başarısız');
-          }
-
-          // Update initial state after successful assignment
-          setInitialAssignedAdmins([...assignedAdmins]);
-          
-          // ✅ İşlem başarılı - SAYFAYI YENİLE (onUpdate yerine)
-          setSaving(false);
-          setIsEditing(false);
-          alert('✅ Admin atama başarılı! Sayfa yenileniyor...');
-          
-          // 500ms bekle, sonra sayfayı yenile
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
-          
-          return; // ← Burada durdur, onUpdate çağırma
-
-        } catch (error: any) {
-          console.error('Error saving admin assignments:', error);
-          alert(`❌ Admin atama başarısız: ${error.message || 'Bilinmeyen hata'}`);
-          setSaving(false);
-          // Don't return here - continue with normal save flow
-          // This way if admin assignment fails, other changes can still be saved
-        }
+        setInitialAssignedAdmins([...assignedAdmins]);
       }
 
       setIsEditing(false);
@@ -453,8 +422,9 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         localStorage.removeItem('cases_cache');
       }
       
-      // Reload case data via onUpdate callback
-      onUpdate();
+      // Use Next.js router.refresh() instead of manual onUpdate()
+      // This ensures the server's new cookies are automatically used
+      router.refresh();
     } catch (error: any) {
       console.error('Error saving data:', error);
       alert(`Kaydetme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
@@ -723,10 +693,9 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Oluşturulma Zamanı
             </label>
-            <Input
-              value={typeof window !== 'undefined' ? new Date(fileData.created_at).toLocaleString('tr-TR') : '--'}
-              disabled
-            />
+            <div className="px-4 py-2 border border-neutral-300 rounded-lg bg-neutral-50 text-neutral-700">
+              <DateDisplay date={fileData.created_at} format="datetime" />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">

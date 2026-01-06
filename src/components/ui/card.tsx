@@ -16,7 +16,6 @@ export function Card({ children, className, ...props }: CardProps) {
         className
       )}
       {...props}
-      suppressHydrationWarning
     >
       {children}
     </div>

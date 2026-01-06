@@ -44,7 +44,13 @@ export function DateDisplay({
       ? { hour: '2-digit', minute: '2-digit' }
       : { year: 'numeric', month: '2-digit', day: '2-digit' };
 
-  return <span suppressHydrationWarning>{dateObj.toLocaleDateString(locale, options || defaultOptions)}</span>;
+  const formattedDate = format === 'datetime' 
+    ? dateObj.toLocaleString(locale, options || defaultOptions)
+    : format === 'time'
+    ? dateObj.toLocaleTimeString(locale, options || defaultOptions)
+    : dateObj.toLocaleDateString(locale, options || defaultOptions);
+
+  return <span suppressHydrationWarning>{formattedDate}</span>;
 }
 
 interface NumberDisplayProps {

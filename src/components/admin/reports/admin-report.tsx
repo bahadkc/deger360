@@ -9,6 +9,7 @@ import { StatusBadge } from './common/status-badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, FileText, CheckCircle, UserPlus } from 'lucide-react';
 import { CHECKLIST_ITEMS } from '@/lib/checklist-sections';
+import { DateDisplay } from '@/components/ui/date-display';
 
 interface ReportSection {
   period: string;
@@ -271,7 +272,7 @@ export function AdminReport({ adminUser }: { adminUser: AdminUser }) {
                         <StatusBadge status={getStatusType(customer.status, customer.board_stage, { id: customer.case_id, board_stage: customer.board_stage })} />
                       </td>
                       <td className="py-3 px-4">
-                        {new Date(customer.start_date).toLocaleDateString('tr-TR')}
+                        <DateDisplay date={customer.start_date} format="date" />
                       </td>
                     </tr>
                   ))

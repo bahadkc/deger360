@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CaseData } from './admin-board';
 import { Card } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
 import { adminRoutes } from '@/lib/config/admin-paths';
+import { NumberDisplay } from '@/components/ui/date-display';
 
 interface CaseCardProps {
   caseData: CaseData;
@@ -27,6 +28,20 @@ const getSectionInfo = (boardStage: string) => {
 
 export function CaseCard({ caseData, onDragStart }: CaseCardProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isNew, setIsNew] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Check if customer is new (created within last 24 hours) AND in basvuru_alindi stage
+    // Only check on client to prevent hydration mismatch
+    if (caseData.board_stage === 'basvuru_alindi' && caseData.created_at) {
+      const createdAt = new Date(caseData.created_at);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+      setIsNew(hoursDiff <= 24);
+    }
+  }, [caseData.board_stage, caseData.created_at]);
 
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
@@ -48,18 +63,6 @@ export function CaseCard({ caseData, onDragStart }: CaseCardProps) {
   };
 
   const sectionInfo = getSectionInfo(caseData.board_stage);
-
-  // Check if customer is new (created within last 24 hours) AND in basvuru_alindi stage
-  const isNewCustomer = () => {
-    if (caseData.board_stage !== 'basvuru_alindi') return false;
-    if (!caseData.created_at) return false;
-    const createdAt = new Date(caseData.created_at);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
-    return hoursDiff <= 24;
-  };
-
-  const isNew = isNewCustomer();
 
   return (
     <Link href={adminRoutes.customerDetail(caseData.id)}>
@@ -100,7 +103,11 @@ export function CaseCard({ caseData, onDragStart }: CaseCardProps) {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="text-sm sm:text-base">💸</span>
               <span className="text-xs sm:text-sm font-medium text-primary-blue truncate">
-                {caseData.value_loss_amount.toLocaleString('tr-TR')} TL
+                {mounted ? (
+                  <NumberDisplay value={caseData.value_loss_amount} suffix=" TL" />
+                ) : (
+                  '-- TL'
+                )}
               </span>
             </div>
           )}

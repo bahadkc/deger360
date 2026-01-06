@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger';
 import { ADMIN_PATH, isAdminPath } from '@/lib/config/admin-paths';
 import { getCookieOptions } from '@/lib/utils/cookie-utils';
 
-export async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const url = req.nextUrl;
   const pathname = url.pathname;
   

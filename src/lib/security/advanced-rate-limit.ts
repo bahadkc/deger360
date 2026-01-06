@@ -139,7 +139,7 @@ export function advancedRateLimit(
 /**
  * Get client identifier from request
  */
-export function getClientIdentifier(request: Request): string {
+export function getClientIdentifier(request: Request | { headers: Headers }): string {
   const forwarded = request.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';

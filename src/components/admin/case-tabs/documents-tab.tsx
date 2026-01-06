@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, FileText, Download, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { canEdit } from '@/lib/supabase/admin-auth';
+import { DateDisplay } from '@/components/ui/date-display';
 
 interface DocumentsTabProps {
   caseId: string;
@@ -246,13 +247,17 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
                       <div>
                         Yükleyen: {document.uploaded_by_name || document.uploaded_by}
                       </div>
-                      <div suppressHydrationWarning>
+                      <div>
                         Tarih:{' '}
-                        {typeof window !== 'undefined' ? new Date(document.uploaded_at).toLocaleDateString('tr-TR', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                        }) : '--'}
+                        <DateDisplay 
+                          date={document.uploaded_at} 
+                          format="date"
+                          options={{
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                          }}
+                        />
                       </div>
                     </div>
                   ) : (

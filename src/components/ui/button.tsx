@@ -34,7 +34,6 @@ export function Button({
     <button
       className={cn(baseStyles, variants[variant], sizes[size], className)}
       {...props}
-      suppressHydrationWarning
     >
       {children}
     </button>

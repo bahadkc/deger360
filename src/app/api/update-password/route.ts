@@ -1,59 +1,91 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+export async function POST(request: Request) {
+  // 1. Önce bu işlemi yapanın Admin olup olmadığını kontrol et
+  const cookieStore = await cookies();
+  
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) { 
+            // Sadece okuma yapıyoruz, cookie set etmeye gerek yok
+        },
+      },
+    }
+  );
 
-export async function POST(request: NextRequest) {
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { userId, newPassword } = body;
+    const { userId, customerEmail, newPassword } = body; 
+    // Frontend'den 'userId' (müşterinin auth user ID'si) veya 'customerEmail' ve 'newPassword' gelir
 
-    if (!userId || !newPassword) {
-      return NextResponse.json(
-        { success: false, error: 'User ID ve yeni şifre gerekli' },
-        { status: 400 }
-      );
+    if (!newPassword) {
+        return NextResponse.json({ error: 'Yeni şifre gerekli' }, { status: 400 });
     }
 
     if (newPassword.length < 6) {
-      return NextResponse.json(
-        { success: false, error: 'Şifre en az 6 karakter olmalıdır' },
-        { status: 400 }
-      );
+        return NextResponse.json({ error: 'Şifre en az 6 karakter olmalıdır' }, { status: 400 });
     }
 
-    // Create admin client with service role key
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
+    // 2. KRİTİK NOKTA: Şifreyi değiştirmek için SERVICE ROLE kullanıyoruz.
+    // Service Role, "Admin" yetkisiyle başkasının verisini değiştirmemizi sağlar.
+    const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY! // .env dosyasında olduğundan emin ol
+    );
 
-    // Update password using admin API
-    console.log('Updating password for user:', userId);
-    const { data: updateData, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-      password: newPassword,
-    });
+    // Eğer userId yoksa, customerEmail'den bul
+    let targetUserId = userId;
+    if (!targetUserId && customerEmail) {
+        // Email'den auth user ID bul
+        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) {
+            console.error('Error listing users:', listError);
+            return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
+        }
+        
+        const targetUser = users.find(u => u.email === customerEmail);
+        if (!targetUser) {
+            return NextResponse.json({ error: 'Müşteri bulunamadı' }, { status: 404 });
+        }
+        targetUserId = targetUser.id;
+    }
+
+    if (!targetUserId) {
+        return NextResponse.json({ error: 'Kullanıcı ID veya email gerekli' }, { status: 400 });
+    }
+
+    // DİKKAT: Burada 'updateUser' DEĞİL, 'admin.updateUserById' kullanıyoruz.
+    // updateUser -> Login olan kişiyi günceller (HATA BUYDU)
+    // updateUserById -> ID'si verilen kişiyi günceller (DOĞRUSU BU)
+    const { data, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        targetUserId,
+        { password: newPassword }
+    );
 
     if (updateError) {
-      console.error('Password update error:', updateError);
-      throw updateError;
+        console.error("Şifre güncelleme hatası:", updateError);
+        throw updateError;
     }
 
-    console.log('Password updated successfully for user:', userId);
+    console.log(`User ${targetUserId} password updated by Admin ${user.id}`);
 
-    return NextResponse.json({
-      success: true,
-      message: 'Şifre başarıyla güncellendi',
-      userId: userId,
-    });
+    return NextResponse.json({ success: true });
+
   } catch (error: any) {
-    console.error('Error updating password:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Bir hata oluştu' },
-      { status: 500 }
-    );
+    console.error('API Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

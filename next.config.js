@@ -1,3 +1,5 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
@@ -19,13 +21,21 @@ const nextConfig = {
   // Production optimizations
   poweredByHeader: false,
   reactStrictMode: true,
+  // Enable better hydration error messages in production
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
   // Output configuration
   output: 'standalone',
+  // Set workspace root to silence lockfile warning
+  outputFileTracingRoot: path.join(__dirname),
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts'],
   },
   // Rewrites for admin panel security
+  // Note: Proxy is automatically detected from src/proxy.ts in Next.js 16
   async rewrites() {
     return [
       {

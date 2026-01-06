@@ -45,35 +45,39 @@ export async function isAdmin(forceRefresh = false): Promise<boolean> {
       const { data: { user } } = await supabase.auth.getUser();
       if (user && adminStatusCache.userId === user.id) {
         // Client-side session exists, use expired cache (stale-while-revalidate pattern)
-        // Update cache in background (non-blocking)
+        // ⚠️ TEMPORARILY DISABLED: Background refresh can cause token race condition
+        // Update cache in background (non-blocking) - DISABLED TO PREVENT RACE CONDITION
+        // if (cacheAge < ADMIN_CACHE_STALE_DURATION) {
+        //   // Silently refresh cache in background
+        //   fetch('/api/check-admin-status', {
+        //     method: 'GET',
+        //     credentials: 'include',
+        //     headers: { 'Content-Type': 'application/json' },
+        //   })
+        //     .then(async (res) => {
+        //       if (res.ok) {
+        //         const data = await res.json();
+        //         const { data: { user: currentUser } } = await supabase.auth.getUser();
+        //         if (currentUser && currentUser.id === adminStatusCache?.userId) {
+        //           adminStatusCache = {
+        //             userId: currentUser.id,
+        //             status: {
+        //               isAdmin: data.isAdmin === true,
+        //               isSuperAdmin: data.isSuperAdmin === true,
+        //               admin: data.admin || null,
+        //             },
+        //             timestamp: Date.now(),
+        //           };
+        //         }
+        //       }
+        //     })
+        //     .catch(() => {
+        //       // Ignore background refresh errors
+        //     });
+        // }
+        
+        // Return cached value even if expired (better than causing race condition)
         if (cacheAge < ADMIN_CACHE_STALE_DURATION) {
-          // Silently refresh cache in background
-          fetch('/api/check-admin-status', {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-          })
-            .then(async (res) => {
-              if (res.ok) {
-                const data = await res.json();
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-                if (currentUser && currentUser.id === adminStatusCache?.userId) {
-                  adminStatusCache = {
-                    userId: currentUser.id,
-                    status: {
-                      isAdmin: data.isAdmin === true,
-                      isSuperAdmin: data.isSuperAdmin === true,
-                      admin: data.admin || null,
-                    },
-                    timestamp: Date.now(),
-                  };
-                }
-              }
-            })
-            .catch(() => {
-              // Ignore background refresh errors
-            });
-          
           return adminStatusCache.status.isAdmin;
         }
       }

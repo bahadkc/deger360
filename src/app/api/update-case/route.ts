@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { getCookieOptions } from '@/lib/utils/cookie-utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -12,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { caseId, caseUpdates, customerUpdates } = body;
+    const { caseId, caseUpdates, customerUpdates, adminIds } = body;
 
     if (!caseId) {
       return NextResponse.json(
@@ -24,89 +23,36 @@ export async function POST(request: NextRequest) {
     // Get authenticated user from session
     const cookieStore = await cookies();
     
-    // Also get cookies from request headers (for better compatibility)
-    const requestCookies = request.cookies.getAll();
-    
-    // Merge cookies from both sources
-    const allCookiesMap = new Map<string, { name: string; value: string }>();
-    
-    // Add cookies from cookieStore
-    cookieStore.getAll().forEach(c => {
-      allCookiesMap.set(c.name, { name: c.name, value: c.value });
-    });
-    
-    // Add cookies from request (override if exists)
-    requestCookies.forEach(c => {
-      allCookiesMap.set(c.name, { name: c.name, value: c.value });
-    });
-    
-    const allCookies = Array.from(allCookiesMap.values());
-    
-    // Store cookies to be set in response
-    const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
-    
-    // Helper function to create response with cookies
-    const createResponse = (data: any, status: number = 200) => {
-      const response = NextResponse.json(data, { status });
-      cookiesToSet.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options);
-      });
-      return response;
-    };
-    
-    const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-      cookies: {
-        getAll() {
-          return allCookies;
+    // Standart Supabase SSR Kurulumu - Supabase'e güveniyoruz, manuel parsing yapmıyoruz
+    const supabaseClient = createServerClient(
+      supabaseUrl,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+              });
+            } catch (error) {
+              // Server Component değil API Route olduğu için burası güvenlidir,
+              // ama yine de try-catch'te kalması iyidir.
+            }
+          },
         },
-        setAll(cookiesToSetArray) {
-          cookiesToSetArray.forEach(({ name, value, options }) => {
-            // Use cookie utils to determine secure flag based on actual protocol
-            const cookieOptions = getCookieOptions(
-              { url: request.url, headers: request.headers },
-              options
-            );
-            cookieStore.set(name, value, cookieOptions);
-            // Store cookies to be set in response
-            cookiesToSet.push({ name, value, options: cookieOptions });
-          });
-        },
-      },
-    });
+      }
+    );
 
-    let { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
-    // If getUser fails, try to refresh the session
     if (userError || !user) {
-      console.error('🍪 update-case - getUser error:', {
-        message: userError?.message,
-        status: userError?.status,
-        name: userError?.name,
-        cookieCount: allCookies.length,
-      });
-
-      // Try to get current session first
-      const { data: { session: currentSession } } = await supabaseClient.auth.getSession();
-      
-      // If we have a session, try to refresh it
-      if (currentSession) {
-        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
-        
-        if (!refreshError && session) {
-          // Retry getUser after refresh
-          const retryResult = await supabaseClient.auth.getUser();
-          user = retryResult.data.user;
-          userError = retryResult.error;
-        }
-      }
-
-      if (userError || !user) {
-        console.error('🍪 Cookie var ama getUser başarısız - cookie format sorunu olabilir');
-        return createResponse(
-          { error: 'Unauthorized - Session expired or invalid' },
-          401
-        );
-      }
+      return NextResponse.json(
+        { error: 'Unauthorized - Session expired or invalid' },
+        { status: 401 }
+      );
     }
 
     // Create admin client with service role key to bypass RLS
@@ -125,9 +71,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (authError || !userAuth) {
-      return createResponse(
+      return NextResponse.json(
         { error: 'Admin access required' },
-        403
+        { status: 403 }
       );
     }
 
@@ -136,9 +82,9 @@ export async function POST(request: NextRequest) {
     const canEditData = ['superadmin', 'admin', 'lawyer'].includes(role);
 
     if (!canEditData) {
-      return createResponse(
+      return NextResponse.json(
         { error: 'You do not have permission to edit this data' },
-        403
+        { status: 403 }
       );
     }
 
@@ -152,9 +98,9 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
 
       if (caseAdminError || !caseAdmin) {
-        return createResponse(
+        return NextResponse.json(
           { error: 'Access denied. This case is not assigned to you.' },
-          403
+          { status: 403 }
         );
       }
     }
@@ -167,9 +113,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (caseError || !caseData) {
-      return createResponse(
+      return NextResponse.json(
         { error: 'Case not found' },
-        404
+        { status: 404 }
       );
     }
 
@@ -220,9 +166,9 @@ export async function POST(request: NextRequest) {
 
       if (customerUpdateError) {
         console.error('Error updating customer:', customerUpdateError);
-        return createResponse(
+        return NextResponse.json(
           { error: 'Failed to update customer' },
-          500
+          { status: 500 }
         );
       }
     }
@@ -236,12 +182,52 @@ export async function POST(request: NextRequest) {
 
       if (caseUpdateError) {
         console.error('Error updating case:', caseUpdateError);
-        return createResponse(
+        return NextResponse.json(
           { error: 'Failed to update case' },
-          500
+          { status: 500 }
         );
       }
     }
+
+    // --- YENİ EKLENEN KISIM: ADMIN ATAMA MANTIĞI ---
+    // Eğer adminIds gönderilmişse (boş array olsa bile), güncelleme yapalım.
+    // Sadece superadmin admin atayabilir
+    if (Array.isArray(adminIds) && isSuperAdmin) {
+      // Eski atamaları temizle
+      const { error: deleteError } = await supabaseAdmin
+        .from('case_admins')
+        .delete()
+        .eq('case_id', caseId);
+      
+      if (deleteError) {
+        console.error('Error deleting existing admin assignments:', deleteError);
+        return NextResponse.json(
+          { error: 'Failed to delete existing admin assignments' },
+          { status: 500 }
+        );
+      }
+
+      // Yeni adminleri ekle
+      if (adminIds.length > 0) {
+        const assignments = adminIds.map((adminId: string) => ({
+          case_id: caseId,
+          admin_id: adminId,
+        }));
+
+        const { error: insertError } = await supabaseAdmin
+          .from('case_admins')
+          .insert(assignments);
+
+        if (insertError) {
+          console.error('Error inserting admin assignments:', insertError);
+          return NextResponse.json(
+            { error: 'Failed to insert admin assignments' },
+            { status: 500 }
+          );
+        }
+      }
+    }
+    // ------------------------------------------------
 
     // Return updated case with customer data
     const { data: updatedCase, error: fetchError } = await supabaseAdmin
@@ -254,13 +240,13 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (fetchError) {
-      return createResponse(
+      return NextResponse.json(
         { error: 'Failed to fetch updated case' },
-        500
+        { status: 500 }
       );
     }
 
-    return createResponse({ case: updatedCase });
+    return NextResponse.json({ case: updatedCase });
   } catch (error: any) {
     console.error('Error in update-case API:', error);
     return NextResponse.json(

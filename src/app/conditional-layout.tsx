@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { StickyMobileCTA } from '@/components/ui/sticky-mobile-cta';
@@ -10,6 +11,17 @@ import { isAdminPath } from '@/lib/config/admin-paths';
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // During SSR and initial hydration, always render children to prevent mismatch
+  // The actual conditional rendering happens after mount
+  if (!mounted) {
+    return <>{children}</>;
+  }
   
   // Admin route'larında header/footer gösterme
   if (pathname && isAdminPath(pathname)) {
