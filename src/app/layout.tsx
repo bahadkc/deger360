@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     description: 'Kaza yaptınız ama aracınız değerini kayıp mı etti? Değer360 ile aracınızın kaza sonrası değer kaybını tazminat olarak alabilirsiniz. Ücretsiz değer kaybınızı hesaplayın, uzman ekibimiz bütün süreci sizin için yönetsin.',
     images: [
       {
-        url: 'https://metatags.io/images/meta-tags.png',
+        url: `${siteUrl}/images/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'Değer360',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Değer360 - Araç Değer Kaybı Danışmanlığı',
     description: 'Kaza yaptınız ama aracınız değerini kayıp mı etti? Değer360 ile aracınızın kaza sonrası değer kaybını tazminat olarak alabilirsiniz. Ücretsiz değer kaybınızı hesaplayın, uzman ekibimiz bütün süreci sizin için yönetsin.',
-    images: ['https://metatags.io/images/meta-tags.png'],
+    images: [`${siteUrl}/images/og-image.png`],
   },
   robots: {
     index: true,
