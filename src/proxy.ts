@@ -217,8 +217,24 @@ export default async function proxy(req: NextRequest) {
     }
   );
 
-  // Refresh session if expired
-  await supabase.auth.getUser();
+  // Refresh session if expired - handle refresh token errors gracefully
+  try {
+    const { error: getUserError } = await supabase.auth.getUser();
+    
+    // If refresh token is invalid or missing, silently handle it
+    // This prevents "Invalid Refresh Token" errors from breaking the app
+    if (getUserError && getUserError.message?.includes('Refresh Token')) {
+      // Clear invalid session cookies
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutError) {
+        // Ignore sign out errors
+      }
+    }
+  } catch (error) {
+    // Silently handle auth errors in proxy - let individual routes handle auth
+    // This prevents refresh token errors from breaking the entire app
+  }
 
   // Portal sayfaları için auth kontrolü
   if (req.nextUrl.pathname.startsWith('/portal')) {
@@ -227,12 +243,18 @@ export default async function proxy(req: NextRequest) {
       return response;
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+        error: portalAuthError,
+      } = await supabase.auth.getUser();
 
-    // Eğer kullanıcı yoksa login'e yönlendir
-    if (!user) {
+      // Eğer kullanıcı yoksa veya refresh token hatası varsa login'e yönlendir
+      if (!user || (portalAuthError && portalAuthError.message?.includes('Refresh Token'))) {
+        return NextResponse.redirect(new URL('/portal/giris', req.url));
+      }
+    } catch (error) {
+      // Auth error durumunda login'e yönlendir
       return NextResponse.redirect(new URL('/portal/giris', req.url));
     }
   }

@@ -46,7 +46,7 @@ if (botDetection.isSuspicious && !botDetection.isLegitimateBot) {
 ### 3. Request Size Limits
 
 **Limitler:**
-- Maximum request body: 1MB
+- Maximum request body: 10MB
 - Maximum file upload: 10MB
 - Maximum files per request: 5
 - Maximum query string: 2KB
@@ -277,7 +277,7 @@ allowBots: true
 
 **Koruma:**
 - File size limits (10MB)
-- Request size limits (1MB)
+- Request size limits (10MB)
 - File type validation
 - Number of files limit (5)
 
@@ -324,7 +324,7 @@ RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX_REQUESTS=20
 
 # Request size limits
-MAX_REQUEST_SIZE=1048576
+MAX_REQUEST_SIZE=10485760
 MAX_FILE_SIZE=10485760
 ```
 

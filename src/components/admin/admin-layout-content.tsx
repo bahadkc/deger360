@@ -77,9 +77,18 @@ export function AdminLayoutContent({ children }: AdminLayoutContentProps) {
     // Listen for auth changes (only on sign out, not on sign in or token refresh)
     // Only subscribe if supabase client is available
     if (supabase && typeof supabase.auth !== 'undefined') {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT') {
           // Clear cache on sign out and redirect to login
+          import('@/lib/supabase/admin-auth').then(({ clearAdminStatusCache }) => {
+            clearAdminStatusCache();
+          });
+          router.push(adminRoutes.login);
+        }
+        
+        // Handle token refresh errors - if session is null after refresh, user is logged out
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          // Refresh token is invalid or expired - clear cache and redirect to login
           import('@/lib/supabase/admin-auth').then(({ clearAdminStatusCache }) => {
             clearAdminStatusCache();
           });

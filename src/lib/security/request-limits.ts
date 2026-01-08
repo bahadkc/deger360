@@ -3,7 +3,7 @@
  */
 
 // Maximum request body size (in bytes)
-export const MAX_REQUEST_SIZE = 1024 * 1024; // 1MB
+export const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
 
 // Maximum file upload size (in bytes)
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

@@ -54,6 +54,18 @@ function getSupabaseClient() {
         },
       }
     );
+
+    // Set up error handler for refresh token errors
+    // This prevents "Invalid Refresh Token" errors from breaking the app
+    if (typeof window !== 'undefined') {
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        // If token refresh fails and session is null, clear invalid session
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          // Silently handle invalid refresh token - user will be redirected on next auth check
+          console.warn('Refresh token is invalid or expired. Session cleared.');
+        }
+      });
+    }
   }
 
   return supabaseClient;
