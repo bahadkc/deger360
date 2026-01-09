@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -9,6 +11,49 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { customerData, vehicleData, documents } = body;
 
+    // Get authenticated user from session
+    const cookieStore = await cookies();
+    
+    // Also get cookies from request headers (for better compatibility)
+    const requestCookies = request.cookies.getAll();
+    
+    // Merge cookies from both sources
+    const allCookiesMap = new Map<string, { name: string; value: string }>();
+    
+    // Add cookies from cookieStore
+    cookieStore.getAll().forEach(c => {
+      allCookiesMap.set(c.name, { name: c.name, value: c.value });
+    });
+    
+    // Add cookies from request (override if exists)
+    requestCookies.forEach(c => {
+      allCookiesMap.set(c.name, { name: c.name, value: c.value });
+    });
+    
+    const allCookies = Array.from(allCookiesMap.values());
+
+    const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      cookies: {
+        getAll() {
+          return allCookies;
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
+      },
+    });
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     // Create admin client with service role key
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -16,6 +61,23 @@ export async function POST(request: NextRequest) {
         persistSession: false,
       },
     });
+
+    // Get user_auth to check role
+    const { data: userAuth, error: userAuthError } = await supabaseAdmin
+      .from('user_auth')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (userAuthError || !userAuth) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const role = (userAuth as { role: string }).role;
+    const isAdminOrLawyer = role === 'admin' || role === 'lawyer';
 
     // Generate tracking number
     const { data: existingCustomers } = await supabaseAdmin
@@ -73,14 +135,29 @@ export async function POST(request: NextRequest) {
 
     if (caseError) throw caseError;
 
+    // Auto-assign case to admin/lawyer if they created it
+    if (isAdminOrLawyer) {
+      const { error: assignmentError } = await supabaseAdmin
+        .from('case_admins')
+        .insert({
+          case_id: caseData.id,
+          admin_id: user.id,
+        });
+
+      if (assignmentError) {
+        console.error('Error assigning case to admin/lawyer:', assignmentError);
+        // Don't fail the request, just log the error
+      }
+    }
+
     // Create auth user
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
       email: customerData.email,
       password: password,
       email_confirm: true,
     });
 
-    if (authError) throw authError;
+    if (createAuthError) throw createAuthError;
 
     // Create user_auth record
     if (authData.user) {

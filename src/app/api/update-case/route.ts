@@ -79,7 +79,9 @@ export async function POST(request: NextRequest) {
 
     const role = (userAuth as { role: string }).role;
     const isSuperAdmin = role === 'superadmin';
+    const isAdmin = role === 'admin';
     const canEditData = ['superadmin', 'admin', 'lawyer'].includes(role);
+    const canAssignAdmins = isSuperAdmin || isAdmin;
 
     if (!canEditData) {
       return NextResponse.json(
@@ -191,39 +193,172 @@ export async function POST(request: NextRequest) {
 
     // --- YENİ EKLENEN KISIM: ADMIN ATAMA MANTIĞI ---
     // Eğer adminIds gönderilmişse (boş array olsa bile), güncelleme yapalım.
-    // Sadece superadmin admin atayabilir
-    if (Array.isArray(adminIds) && isSuperAdmin) {
-      // Eski atamaları temizle
-      const { error: deleteError } = await supabaseAdmin
-        .from('case_admins')
-        .delete()
-        .eq('case_id', caseId);
-      
-      if (deleteError) {
-        console.error('Error deleting existing admin assignments:', deleteError);
-        return NextResponse.json(
-          { error: 'Failed to delete existing admin assignments' },
-          { status: 500 }
-        );
-      }
-
-      // Yeni adminleri ekle
-      if (adminIds.length > 0) {
-        const assignments = adminIds.map((adminId: string) => ({
-          case_id: caseId,
-          admin_id: adminId,
-        }));
-
-        const { error: insertError } = await supabaseAdmin
+    // Superadmin ve admin admin atayabilir (admin sadece acentelere)
+    if (Array.isArray(adminIds) && canAssignAdmins) {
+      if (isAdmin) {
+        // Admin rolü için: mevcut admin/avukat atamalarını koru, sadece acenteleri güncelle
+        // Önce mevcut atamaları al
+        const { data: existingAssignments, error: fetchError } = await supabaseAdmin
           .from('case_admins')
-          .insert(assignments);
+          .select('admin_id')
+          .eq('case_id', caseId);
 
-        if (insertError) {
-          console.error('Error inserting admin assignments:', insertError);
+        if (fetchError) {
+          console.error('Error fetching existing assignments:', fetchError);
           return NextResponse.json(
-            { error: 'Failed to insert admin assignments' },
+            { error: 'Failed to fetch existing assignments' },
             { status: 500 }
           );
+        }
+
+        const existingAdminIds = (existingAssignments || []).map((a: any) => a.admin_id);
+        
+        // Mevcut atamaların rollerini kontrol et
+        const { data: existingUserAuths, error: existingAuthError } = await supabaseAdmin
+          .from('user_auth')
+          .select('id, role')
+          .in('id', existingAdminIds.length > 0 ? existingAdminIds : ['00000000-0000-0000-0000-000000000000']);
+
+        if (existingAuthError) {
+          console.error('Error fetching existing user auths:', existingAuthError);
+          return NextResponse.json(
+            { error: 'Failed to verify existing assignments' },
+            { status: 500 }
+          );
+        }
+
+        // Admin/avukat/superadmin atamalarını koru (acente olmayanlar)
+        const nonAcenteAssignments = (existingUserAuths || [])
+          .filter((ua: any) => ua.role !== 'acente')
+          .map((ua: any) => ua.id);
+
+        // Yeni gönderilen adminIds'lerden mevcut non-acente atamalarını ve admin'in kendisini çıkar
+        // Sadece yeni eklenen ID'leri kontrol et
+        const newAdminIds = adminIds.filter((adminId: string) => 
+          adminId !== user.id && !nonAcenteAssignments.includes(adminId)
+        );
+        
+        let assignedUserAuths: any[] = [];
+        if (newAdminIds.length > 0) {
+          const { data: checkUserAuths, error: checkError } = await supabaseAdmin
+            .from('user_auth')
+            .select('id, role')
+            .in('id', newAdminIds);
+
+          if (checkError) {
+            return NextResponse.json(
+              { error: 'Failed to verify admin roles' },
+              { status: 500 }
+            );
+          }
+
+          assignedUserAuths = checkUserAuths || [];
+
+          const nonAcenteAdmins = assignedUserAuths.filter((ua: any) => ua.role !== 'acente');
+          if (nonAcenteAdmins.length > 0) {
+            return NextResponse.json(
+              { error: 'Admin rolü sadece acentelere atama yapabilir' },
+              { status: 403 }
+            );
+          }
+        }
+
+        // Sadece acente atamalarını sil
+        const { data: acenteAssignments } = await supabaseAdmin
+          .from('case_admins')
+          .select('admin_id')
+          .eq('case_id', caseId)
+          .in('admin_id', existingAdminIds);
+
+        if (acenteAssignments && acenteAssignments.length > 0) {
+          const acenteIds = (existingUserAuths || [])
+            .filter((ua: any) => ua.role === 'acente')
+            .map((ua: any) => ua.id);
+
+          if (acenteIds.length > 0) {
+            const { error: deleteAcenteError } = await supabaseAdmin
+              .from('case_admins')
+              .delete()
+              .eq('case_id', caseId)
+              .in('admin_id', acenteIds);
+
+            if (deleteAcenteError) {
+              console.error('Error deleting acente assignments:', deleteAcenteError);
+              return NextResponse.json(
+                { error: 'Failed to delete acente assignments' },
+                { status: 500 }
+              );
+            }
+          }
+        }
+
+        // Yeni acente atamalarını ekle (admin'in kendisi de dahil)
+        const newAcenteIds = adminIds.filter((adminId: string) => {
+          // Admin'in kendisi veya acente olanlar
+          if (adminId === user.id) return true;
+          const userAuth = assignedUserAuths?.find((ua: any) => ua.id === adminId);
+          return userAuth?.role === 'acente';
+        });
+
+        // Mevcut tüm atamaları al (hem acente hem non-acente)
+        const allExistingAdminIds = existingAdminIds;
+        
+        // Sadece gerçekten yeni olan atamaları ekle (mevcut olmayanları)
+        const finalAdminIds = [...new Set([...nonAcenteAssignments, ...newAcenteIds])];
+        const newAssignments = finalAdminIds.filter((adminId: string) => !allExistingAdminIds.includes(adminId));
+
+        if (newAssignments.length > 0) {
+          const assignments = newAssignments.map((adminId: string) => ({
+            case_id: caseId,
+            admin_id: adminId,
+          }));
+
+          const { error: insertError } = await supabaseAdmin
+            .from('case_admins')
+            .insert(assignments);
+
+          if (insertError) {
+            console.error('Error inserting admin assignments:', insertError);
+            return NextResponse.json(
+              { error: 'Failed to insert admin assignments' },
+              { status: 500 }
+            );
+          }
+        }
+      } else {
+        // Superadmin için: tüm atamaları güncelle
+        // Eski atamaları temizle
+        const { error: deleteError } = await supabaseAdmin
+          .from('case_admins')
+          .delete()
+          .eq('case_id', caseId);
+        
+        if (deleteError) {
+          console.error('Error deleting existing admin assignments:', deleteError);
+          return NextResponse.json(
+            { error: 'Failed to delete existing admin assignments' },
+            { status: 500 }
+          );
+        }
+
+        // Yeni adminleri ekle
+        if (adminIds.length > 0) {
+          const assignments = adminIds.map((adminId: string) => ({
+            case_id: caseId,
+            admin_id: adminId,
+          }));
+
+          const { error: insertError } = await supabaseAdmin
+            .from('case_admins')
+            .insert(assignments);
+
+          if (insertError) {
+            console.error('Error inserting admin assignments:', insertError);
+            return NextResponse.json(
+              { error: 'Failed to insert admin assignments' },
+              { status: 500 }
+            );
+          }
         }
       }
     }

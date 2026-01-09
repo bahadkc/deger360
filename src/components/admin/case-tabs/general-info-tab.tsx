@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Save, Edit2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { getAllAdmins, isSuperAdmin, canEdit, canAssignAdmins } from '@/lib/supabase/admin-auth';
+import { getAllAdmins, isSuperAdmin, canEdit, canAssignAdmins, getCurrentAdmin } from '@/lib/supabase/admin-auth';
 import { DateDisplay } from '@/components/ui/date-display';
 
 interface GeneralInfoTabProps {
@@ -76,8 +76,10 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
   const [assignedAdmins, setAssignedAdmins] = useState<string[]>([]);
   const [initialAssignedAdmins, setInitialAssignedAdmins] = useState<string[]>([]);
   const [allAdmins, setAllAdmins] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
+  const [filteredAdmins, setFilteredAdmins] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [canEditData, setCanEditData] = useState(false);
   const [canAssignAdminsData, setCanAssignAdminsData] = useState(false);
 
@@ -88,6 +90,10 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         const admins = await getAllAdmins();
         setAllAdmins(admins);
         
+        const currentAdmin = await getCurrentAdmin();
+        const currentRole = currentAdmin?.role || '';
+        setCurrentUserRole(currentRole);
+        
         const superAdmin = await isSuperAdmin();
         setIsSuperAdminUser(superAdmin);
         
@@ -96,6 +102,13 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         
         const assignPermission = await canAssignAdmins();
         setCanAssignAdminsData(assignPermission);
+        
+        // Filter admins based on role: admin can only see acentes, superadmin sees all
+        if (currentRole === 'admin') {
+          setFilteredAdmins(admins.filter(admin => admin.role === 'acente'));
+        } else {
+          setFilteredAdmins(admins);
+        }
       } catch (error) {
         console.error('Error loading admins:', error);
       }
@@ -751,10 +764,10 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 </button>
                 {isEditing && isAdminDropdownOpen && (
                   <div className="absolute z-50 w-full mt-1 bg-white border-2 border-neutral-200 rounded-lg shadow-lg max-h-60 overflow-y-auto admin-dropdown-container">
-                    {allAdmins.length === 0 ? (
+                    {filteredAdmins.length === 0 ? (
                       <div className="p-3 md:p-4 text-xs md:text-sm text-neutral-500">Admin bulunamadı</div>
                     ) : (
-                      allAdmins.map((admin) => {
+                      filteredAdmins.map((admin) => {
                         const isSelected = assignedAdmins.includes(admin.id);
                         return (
                           <label

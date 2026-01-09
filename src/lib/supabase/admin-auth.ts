@@ -441,11 +441,13 @@ export async function canEdit(): Promise<boolean> {
 }
 
 /**
- * Check if current admin can assign admins (only superadmin can)
+ * Check if current admin can assign admins (superadmin and admin can)
  */
 export async function canAssignAdmins(): Promise<boolean> {
   try {
-    return await isSuperAdmin();
+    const admin = await getCurrentAdmin();
+    if (!admin) return false;
+    return admin.role === 'superadmin' || admin.role === 'admin';
   } catch (error) {
     console.error('Error checking admin assignment permission:', error);
     return false;

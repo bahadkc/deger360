@@ -340,23 +340,6 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
                       <span>Bu bilgileri not alın! Müşteri portalına giriş için gereklidir.</span>
                     </p>
                   </div>
-
-                  {/* Info message for non-superadmin users */}
-                  {!isSuperAdminUser && (
-                    <div className="p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-semibold text-blue-800 mb-1">
-                            Yeni müşteri bilgileri superadmine iletildi.
-                          </p>
-                          <p className="text-sm text-blue-700">
-                            Müşteri onayı için superadmin ile iletişime geçin.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                   
                   <div className="flex justify-end pt-2">
                     <Button
