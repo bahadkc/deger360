@@ -2,7 +2,7 @@
 
 import { PortalLayout } from '@/components/portal/portal-layout';
 import { Card } from '@/components/ui/card';
-import { Download, Eye, FileText, CheckCircle2, Clock } from 'lucide-react';
+import { Download, Eye, FileText, CheckCircle2, Clock, Image as ImageIcon } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase/client';
@@ -15,14 +15,15 @@ interface DocumentDisplay {
   category: string;
   description: string;
   uploaded: boolean;
-  documentData?: {
-  id: string;
+  documentData?: Array<{
+    id: string;
     file_path: string;
     file_name?: string;
     file_size?: number;
     created_at: string;
     uploaded_by_name?: string;
-  };
+    file_type?: string;
+  }>;
 }
 
 type DocumentCategory = 'all' | string;
@@ -67,23 +68,24 @@ export default function BelgelerPage() {
 
         // Create document display list from expected documents
         const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => {
-          // Find uploaded document matching this expected document
-          const uploadedDoc = docsData?.find((doc) => doc.category === expectedDoc.key);
+          // Find all uploaded documents matching this expected document category
+          const uploadedDocs = docsData?.filter((doc) => doc.category === expectedDoc.key) || [];
           
           return {
             key: expectedDoc.key,
             name: expectedDoc.name,
             category: expectedDoc.category,
             description: expectedDoc.description,
-            uploaded: !!uploadedDoc,
-            documentData: uploadedDoc ? {
-              id: uploadedDoc.id,
-              file_path: uploadedDoc.file_path,
-              file_name: uploadedDoc.name,
-              file_size: uploadedDoc.file_size,
-              created_at: uploadedDoc.created_at,
-              uploaded_by_name: uploadedDoc.uploaded_by_name,
-            } : undefined,
+            uploaded: uploadedDocs.length > 0,
+            documentData: uploadedDocs.length > 0 ? uploadedDocs.map((doc) => ({
+              id: doc.id,
+              file_path: doc.file_path,
+              file_name: doc.name,
+              file_size: doc.file_size,
+              created_at: doc.created_at || doc.uploaded_at,
+              uploaded_by_name: doc.uploaded_by_name,
+              file_type: doc.file_type,
+            })) : undefined,
           };
         });
 
@@ -159,7 +161,8 @@ export default function BelgelerPage() {
               </div>
             ) : (
             documents.map((doc) => {
-              const isUploaded = doc.uploaded && doc.documentData;
+              const isUploaded = doc.uploaded && doc.documentData && doc.documentData.length > 0;
+              const files = doc.documentData || [];
               
               return (
                 <Card
@@ -192,9 +195,9 @@ export default function BelgelerPage() {
                           )}>
                             {doc.name}
                           </h3>
-                          {isUploaded && doc.documentData?.file_name && (
-                            <p className="text-xs sm:text-sm text-neutral-600 truncate">
-                              {doc.documentData.file_name}
+                          {isUploaded && (
+                            <p className="text-xs sm:text-sm text-neutral-600">
+                              {files.length} dosya yüklendi
                             </p>
                         )}
                       </div>
@@ -213,92 +216,120 @@ export default function BelgelerPage() {
                         {doc.description}
                       </p>
 
-                      {/* Details */}
-                      {isUploaded && doc.documentData ? (
-                        <>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-neutral-600 mb-3">
-                            {doc.documentData.created_at && (
-                              <span suppressHydrationWarning>
-                                Tarih: {typeof window !== 'undefined' ? new Date(doc.documentData.created_at).toLocaleDateString('tr-TR') : '--'}
-                              </span>
-                            )}
-                            {doc.documentData.file_size && (
-                              <span>Boyut: {(doc.documentData.file_size / 1024 / 1024).toFixed(2)} MB</span>
-                            )}
-                            {doc.documentData.uploaded_by_name && (
-                              <span className="text-green-600">
-                                {doc.documentData.uploaded_by_name} tarafından yüklendi
-                              </span>
-                      )}
-                    </div>
-                          {/* Action Buttons */}
-                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <button
-                              className="px-3 sm:px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
-                              onClick={async () => {
-                                if (doc.documentData?.file_path) {
-                                  // Use API route for viewing to handle authentication and path conversion
-                                  try {
-                                    const response = await fetch(`/api/download-document?documentId=${doc.documentData.id}&filePath=${encodeURIComponent(doc.documentData.file_path)}`, {
-                                      method: 'GET',
-                                      credentials: 'include',
-                                    });
+                      {/* Files List */}
+                      {isUploaded && files.length > 0 ? (
+                        <div className="space-y-3">
+                          {files.map((fileData, index) => (
+                            <div
+                              key={fileData.id || index}
+                              className="p-3 bg-neutral-50 rounded-lg border border-neutral-200"
+                            >
+                              <div className="flex items-start gap-3">
+                                {/* File Icon */}
+                                <div className="flex-shrink-0 mt-0.5">
+                                  {fileData.file_type?.startsWith('image/') ? (
+                                    <ImageIcon className="w-5 h-5 text-primary-blue" />
+                                  ) : (
+                                    <FileText className="w-5 h-5 text-primary-blue" />
+                                  )}
+                                </div>
 
-                                    if (!response.ok) {
-                                      throw new Error('View failed');
-                                    }
+                                {/* File Info */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-neutral-800 truncate mb-1">
+                                    {fileData.file_name || doc.name}
+                                  </p>
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-neutral-600">
+                                    {fileData.created_at && (
+                                      <span suppressHydrationWarning>
+                                        {typeof window !== 'undefined' ? new Date(fileData.created_at).toLocaleDateString('tr-TR') : '--'}
+                                      </span>
+                                    )}
+                                    {fileData.file_size && (
+                                      <>
+                                        <span className="hidden sm:inline">•</span>
+                                        <span>{(fileData.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                                      </>
+                                    )}
+                                    {fileData.uploaded_by_name && (
+                                      <>
+                                        <span className="hidden sm:inline">•</span>
+                                        <span className="text-green-600">
+                                          {fileData.uploaded_by_name} tarafından yüklendi
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
 
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    window.open(url, '_blank');
-                                    // Clean up URL after a delay
-                                    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-                                  } catch (error) {
-                                    console.error('Error viewing file:', error);
-                                    alert('Dosya görüntüleme sırasında bir hata oluştu.');
-                                  }
-                                }
-                              }}
-                        >
-                              <Eye className="w-4 h-4" />
-                              Görüntüle
-                        </button>
-                        <button
-                              className="px-3 sm:px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
-                              onClick={async () => {
-                                if (doc.documentData?.file_path) {
-                                  // Use API route for download to handle both URL and path formats
-                                  try {
-                                    const response = await fetch(`/api/download-document?documentId=${doc.documentData.id}&filePath=${encodeURIComponent(doc.documentData.file_path)}`, {
-                                      method: 'GET',
-                                      credentials: 'include',
-                                    });
+                                {/* Action Buttons */}
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <button
+                                    className="px-3 py-1.5 bg-primary-blue text-white rounded-lg hover:bg-primary-blue/90 transition-colors flex items-center gap-1.5 text-xs sm:text-sm"
+                                    onClick={async () => {
+                                      if (fileData.file_path) {
+                                        try {
+                                          const response = await fetch(`/api/download-document?documentId=${fileData.id}&filePath=${encodeURIComponent(fileData.file_path)}`, {
+                                            method: 'GET',
+                                            credentials: 'include',
+                                          });
 
-                                    if (!response.ok) {
-                                      throw new Error('Download failed');
-                                    }
+                                          if (!response.ok) {
+                                            throw new Error('View failed');
+                                          }
 
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = doc.documentData.file_name || doc.name;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    window.URL.revokeObjectURL(url);
-                                    document.body.removeChild(a);
-                                  } catch (error) {
-                                    console.error('Error downloading file:', error);
-                                    alert('Dosya indirme sırasında bir hata oluştu.');
-                                  }
-                                }
-                              }}
-                        >
-                              <Download className="w-4 h-4" />
-                              İndir
-                        </button>
-                          </div>
-                      </>
+                                          const blob = await response.blob();
+                                          const url = window.URL.createObjectURL(blob);
+                                          window.open(url, '_blank');
+                                          setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+                                        } catch (error) {
+                                          console.error('Error viewing file:', error);
+                                          alert('Dosya görüntüleme sırasında bir hata oluştu.');
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Görüntüle</span>
+                                  </button>
+                                  <button
+                                    className="px-3 py-1.5 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors flex items-center gap-1.5 text-xs sm:text-sm"
+                                    onClick={async () => {
+                                      if (fileData.file_path) {
+                                        try {
+                                          const response = await fetch(`/api/download-document?documentId=${fileData.id}&filePath=${encodeURIComponent(fileData.file_path)}`, {
+                                            method: 'GET',
+                                            credentials: 'include',
+                                          });
+
+                                          if (!response.ok) {
+                                            throw new Error('Download failed');
+                                          }
+
+                                          const blob = await response.blob();
+                                          const url = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = url;
+                                          a.download = fileData.file_name || doc.name;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          window.URL.revokeObjectURL(url);
+                                          document.body.removeChild(a);
+                                        } catch (error) {
+                                          console.error('Error downloading file:', error);
+                                          alert('Dosya indirme sırasında bir hata oluştu.');
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <Download className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">İndir</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       ) : (
                         <p className="text-xs sm:text-sm text-neutral-500 italic">
                           Bu belge ileriki zamanlarda yüklenecektir

@@ -91,48 +91,57 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Upload documents (if any)
+    // Upload documents (if any) - support multiple files per category
     const uploadedDocs = [];
-    for (const [category, fileData] of Object.entries(documents)) {
-      if (fileData) {
-        try {
-          // fileData is base64 encoded file
-          const { name, content, type } = fileData as any;
-          const buffer = Buffer.from(content, 'base64');
-          const fileExt = type || 'pdf';
-          const fileName = `${caseData.id}/${category}_${Date.now()}.${fileExt}`;
-          const filePath = `documents/${fileName}`;
+    for (const [category, fileDataOrArray] of Object.entries(documents)) {
+      if (fileDataOrArray) {
+        // Handle both single file (backward compatibility) and array of files
+        const filesArray = Array.isArray(fileDataOrArray) ? fileDataOrArray : [fileDataOrArray];
+        
+        for (const fileData of filesArray) {
+          try {
+            // fileData is base64 encoded file
+            const { name, content, type } = fileData as any;
+            const buffer = Buffer.from(content, 'base64');
+            const fileExt = type || 'pdf';
+            const timestamp = Date.now();
+            const randomSuffix = Math.random().toString(36).substring(2, 9);
+            const sanitizedFileName = name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const fileName = `${caseData.id}/${category}/${timestamp}_${randomSuffix}_${sanitizedFileName}`;
+            const filePath = `documents/${fileName}`;
 
-          // Determine content type
-          let contentType = 'application/pdf';
-          if (fileExt === 'jpg' || fileExt === 'jpeg') contentType = 'image/jpeg';
-          if (fileExt === 'png') contentType = 'image/png';
+            // Determine content type
+            let contentType = 'application/pdf';
+            if (fileExt === 'jpg' || fileExt === 'jpeg') contentType = 'image/jpeg';
+            if (fileExt === 'png') contentType = 'image/png';
+            if (fileExt === 'webp') contentType = 'image/webp';
 
-          const { error: uploadError } = await supabaseAdmin.storage
-            .from('documents')
-            .upload(filePath, buffer, {
-              contentType: contentType,
-            });
+            const { error: uploadError } = await supabaseAdmin.storage
+              .from('documents')
+              .upload(filePath, buffer, {
+                contentType: contentType,
+              });
 
-          if (!uploadError) {
-            const { error: docError } = await supabaseAdmin.from('documents').insert({
-              case_id: caseData.id,
-              name: name,
-              file_path: filePath,
-              file_size: buffer.length,
-              file_type: fileExt,
-              category: category,
-              uploaded_by: 'admin',
-              uploaded_by_name: 'Admin',
-            });
+            if (!uploadError) {
+              const { error: docError } = await supabaseAdmin.from('documents').insert({
+                case_id: caseData.id,
+                name: name,
+                file_path: filePath,
+                file_size: buffer.length,
+                file_type: contentType,
+                category: category,
+                uploaded_by: 'admin',
+                uploaded_by_name: 'Admin',
+              });
 
-            if (!docError) {
-              uploadedDocs.push(name);
+              if (!docError) {
+                uploadedDocs.push(name);
+              }
             }
+          } catch (docError) {
+            console.error(`Error uploading document ${category}:`, docError);
+            // Continue with other documents
           }
-        } catch (docError) {
-          console.error(`Error uploading document ${category}:`, docError);
-          // Continue with other documents
         }
       }
     }

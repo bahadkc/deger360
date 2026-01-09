@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ArrowRight, ArrowLeft, CheckCircle2, Info } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, CheckCircle2, Info, Upload, FileText, Trash2, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/supabase/admin-auth';
+import imageCompression from 'browser-image-compression';
 
 interface AddCustomerModalProps {
   isOpen: boolean;
@@ -52,14 +53,14 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
         accident_location: '',
       });
       setDocuments({
-        kaza_tespit_tutanagi: null,
-        arac_fotograflari: null,
-        bilir_kisi_raporu: null,
-        ruhsat: null,
-        kimlik: null,
-        sigortaya_gonderilen_ihtarname: null,
-        hakem_karari: null,
-        sigorta_odeme_dekontu: null,
+        kaza_tespit_tutanagi: [],
+        arac_fotograflari: [],
+        bilir_kisi_raporu: [],
+        ruhsat: [],
+        kimlik: [],
+        sigortaya_gonderilen_ihtarname: [],
+        hakem_karari: [],
+        sigorta_odeme_dekontu: [],
       });
     }
   }, [isOpen, credentials]);
@@ -83,16 +84,16 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
     accident_location: '',
   });
 
-  // Step 3: Documents
-  const [documents, setDocuments] = useState<Record<string, File | null>>({
-    kaza_tespit_tutanagi: null,
-    arac_fotograflari: null,
-    bilir_kisi_raporu: null,
-    ruhsat: null,
-    kimlik: null,
-    sigortaya_gonderilen_ihtarname: null,
-    hakem_karari: null,
-    sigorta_odeme_dekontu: null,
+  // Step 3: Documents - Now supports multiple files per category
+  const [documents, setDocuments] = useState<Record<string, File[]>>({
+    kaza_tespit_tutanagi: [],
+    arac_fotograflari: [],
+    bilir_kisi_raporu: [],
+    ruhsat: [],
+    kimlik: [],
+    sigortaya_gonderilen_ihtarname: [],
+    hakem_karari: [],
+    sigorta_odeme_dekontu: [],
   });
 
   const documentLabels: Record<string, string> = {
@@ -106,9 +107,80 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
     sigorta_odeme_dekontu: 'Sigorta Ödeme Dekontu',
   };
 
-  const handleFileChange = (category: string, file: File | null) => {
-    setDocuments((prev) => ({ ...prev, [category]: file }));
+  const handleFilesChange = (category: string, files: File[]) => {
+    setDocuments((prev) => ({ ...prev, [category]: files }));
   };
+
+  const compressImage = async (file: File): Promise<File> => {
+    // Only compress image files
+    if (!file.type.startsWith('image/')) {
+      return file;
+    }
+
+    const options = {
+      maxSizeMB: 2, // Maximum file size after compression (2MB)
+      maxWidthOrHeight: 1920, // Maximum width or height
+      useWebWorker: true,
+      fileType: file.type,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      
+      // Create a new File object with the original filename and extension
+      const originalFileName = file.name;
+      
+      // Create a new File with the original name but compressed content
+      const finalFile = new File(
+        [compressedFile],
+        originalFileName,
+        {
+          type: file.type,
+          lastModified: file.lastModified,
+        }
+      );
+      
+      return finalFile;
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      // Return original file if compression fails
+      return file;
+    }
+  };
+
+  const processFiles = async (files: FileList | null, category: string) => {
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const processedFiles: File[] = [];
+
+    for (const file of fileArray) {
+      try {
+        // Compress if image
+        const processedFile = await compressImage(file);
+        processedFiles.push(processedFile);
+      } catch (error) {
+        console.error('Error processing file:', error);
+        // Add original file if processing fails
+        processedFiles.push(file);
+      }
+    }
+
+    // Add to existing files
+    setDocuments((prev) => ({
+      ...prev,
+      [category]: [...(prev[category] || []), ...processedFiles],
+    }));
+  };
+
+  const removeFile = (category: string, index: number) => {
+    setDocuments((prev) => ({
+      ...prev,
+      [category]: prev[category].filter((_, i) => i !== index),
+    }));
+  };
+
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const fileToBase64 = (file: File): Promise<{ name: string; content: string; type: string }> => {
     return new Promise((resolve, reject) => {
@@ -130,11 +202,14 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Convert files to base64
+      // Convert files to base64 - support multiple files per category
       const documentsData: Record<string, any> = {};
-      for (const [category, file] of Object.entries(documents)) {
-        if (file) {
-          documentsData[category] = await fileToBase64(file);
+      for (const [category, files] of Object.entries(documents)) {
+        if (files && files.length > 0) {
+          // Convert all files to base64
+          documentsData[category] = await Promise.all(
+            files.map(file => fileToBase64(file))
+          );
         }
       }
 
@@ -191,14 +266,14 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
         accident_location: '',
       });
       setDocuments({
-        kaza_tespit_tutanagi: null,
-        arac_fotograflari: null,
-        bilir_kisi_raporu: null,
-        ruhsat: null,
-        kimlik: null,
-        sigortaya_gonderilen_ihtarname: null,
-        hakem_karari: null,
-        sigorta_odeme_dekontu: null,
+        kaza_tespit_tutanagi: [],
+        arac_fotograflari: [],
+        bilir_kisi_raporu: [],
+        ruhsat: [],
+        kimlik: [],
+        sigortaya_gonderilen_ihtarname: [],
+        hakem_karari: [],
+        sigorta_odeme_dekontu: [],
       });
 
       // Don't call onSuccess() here - let user see credentials first
@@ -482,31 +557,87 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
           {!credentials && currentStep === 3 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-neutral-800 mb-4">Dökümanlar (Opsiyonel)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(documentLabels).map(([key, label]) => (
-                  <div key={key}>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      {label}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          handleFileChange(key, file);
-                        }}
-                        className="flex-1"
-                      />
-                      {documents[key] && (
-                        <span className="text-xs text-green-600 flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Yüklendi
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 gap-4">
+                {Object.entries(documentLabels).map(([key, label]) => {
+                  const categoryFiles = documents[key] || [];
+                  return (
+                    <Card key={key} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-sm font-medium text-neutral-700">
+                            {label}
+                          </label>
+                          <span className="text-xs text-neutral-500">
+                            {categoryFiles.length} dosya
+                          </span>
+                        </div>
+
+                        {/* File List */}
+                        {categoryFiles.length > 0 && (
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {categoryFiles.map((file, index) => (
+                              <div
+                                key={`${file.name}-${index}`}
+                                className="flex items-center gap-2 p-2 bg-neutral-50 rounded border"
+                              >
+                                <div className="flex-shrink-0 text-neutral-600">
+                                  {file.type.startsWith('image/') ? (
+                                    <ImageIcon className="w-4 h-4" />
+                                  ) : (
+                                    <FileText className="w-4 h-4" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-neutral-800 truncate">
+                                    {file.name}
+                                  </p>
+                                  <p className="text-xs text-neutral-500">
+                                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeFile(key, index)}
+                                  className="flex-shrink-0 h-8 w-8 p-0 border-0 bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Upload Area */}
+                        <div
+                          onClick={() => fileInputRefs.current[key]?.click()}
+                          className="border-2 border-dashed border-neutral-300 rounded-lg p-4 text-center cursor-pointer hover:border-neutral-400 transition-colors"
+                        >
+                          <input
+                            ref={(el) => {
+                              fileInputRefs.current[key] = el;
+                            }}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp"
+                            onChange={(e) => {
+                              processFiles(e.target.files, key);
+                              e.target.value = ''; // Reset input
+                            }}
+                          />
+                          <Upload className="w-6 h-6 mx-auto mb-2 text-neutral-400" />
+                          <p className="text-sm text-neutral-600">
+                            Dosya seçin veya sürükleyip bırakın
+                          </p>
+                          <p className="text-xs text-neutral-400 mt-1">
+                            Çoklu dosya seçebilirsiniz • Maksimum 20MB • PDF, JPG, PNG
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
               <div className="flex justify-between mt-6">
                 <Button variant="outline" onClick={() => setCurrentStep(2)}>

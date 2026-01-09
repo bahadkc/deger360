@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Download, Trash2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { FileText, Download, Trash2, Image as ImageIcon } from 'lucide-react';
 import { canEdit } from '@/lib/supabase/admin-auth';
 import { DateDisplay } from '@/components/ui/date-display';
+import { MultiFileUpload } from '@/components/admin/multi-file-upload';
 
 interface DocumentsTabProps {
   caseId: string;
@@ -19,6 +19,7 @@ interface Document {
   name: string;
   category: string;
   file_size: number | null;
+  file_type: string | null;
   uploaded_by: string;
   uploaded_by_name: string | null;
   uploaded_at: string;
@@ -39,9 +40,7 @@ const DOCUMENT_CATEGORIES = [
 export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [canEditData, setCanEditData] = useState(false);
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const loadDocuments = useCallback(async () => {
     try {
@@ -85,73 +84,16 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      // Get admin name for upload - use API route to avoid RLS issues
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      let uploadedByName = 'Admin';
-      if (user?.id) {
-        try {
-          // Try to get name from API route instead of direct query
-          const response = await fetch('/api/check-admin-status', {
-            method: 'GET',
-            credentials: 'include',
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            uploadedByName = data.admin?.name || 'Admin';
-          }
-        } catch (error) {
-          console.error('Error getting admin name:', error);
-          // Fallback to 'Admin' if API call fails
-        }
-      }
-
-      // Use API route to upload document
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('caseId', caseId);
-      formData.append('category', category);
-      formData.append('uploadedByName', uploadedByName);
-
-      const response = await fetch('/api/upload-document', {
-        method: 'POST',
-        credentials: 'include', // Important: Include cookies
-        headers: {
-          // Don't set Content-Type header - browser will set it automatically with boundary for FormData
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || 'Failed to upload document';
-        
-        // If unauthorized, don't throw - just show error message
-        // Don't redirect or sign out - let user try again
-        if (response.status === 401) {
-          throw new Error('Oturum süreniz dolmuş olabilir. Lütfen sayfayı yenileyip tekrar deneyin.');
-        }
-        
-        throw new Error(errorMessage);
-      }
-
-      await loadDocuments();
-      onUpdate();
-    } catch (error: any) {
-      console.error('Error uploading file:', error);
-      alert(`Dosya yükleme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
-    } finally {
-      setUploading(false);
-      e.target.value = ''; // Reset input
-    }
+  const getFileIcon = (fileType: string | null) => {
+    if (!fileType) return <FileText className="w-4 h-4" />;
+    if (fileType.startsWith('image/')) return <ImageIcon className="w-4 h-4" />;
+    return <FileText className="w-4 h-4" />;
   };
+
+  const handleUploadComplete = useCallback(() => {
+    loadDocuments();
+    onUpdate();
+  }, [loadDocuments, onUpdate]);
 
   const handleDownload = async (doc: Document) => {
     try {
@@ -211,8 +153,8 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
     }
   };
 
-  const getDocumentForCategory = (category: string) => {
-    return documents.find((doc) => doc.category === category);
+  const getDocumentsForCategory = (category: string) => {
+    return documents.filter((doc) => doc.category === category);
   };
 
   if (loading) {
@@ -231,91 +173,94 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {DOCUMENT_CATEGORIES.map((category) => {
-          const document = getDocumentForCategory(category.key);
+          const categoryDocuments = getDocumentsForCategory(category.key);
           return (
-            <Card key={category.key} className="p-4">
+            <Card key={category.key} className="p-4 flex flex-col">
               <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-neutral-800 mb-1">{category.label}</h4>
-                  {document ? (
-                    <div className="space-y-1 text-sm text-neutral-600">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        <span>{document.name}</span>
-                      </div>
-                      <div>Boyut: {formatFileSize(document.file_size)}</div>
-                      <div>
-                        Yükleyen: {document.uploaded_by_name || document.uploaded_by}
-                      </div>
-                      <div>
-                        Tarih:{' '}
-                        <DateDisplay 
-                          date={document.uploaded_at} 
-                          format="date"
-                          options={{
-                            day: '2-digit',
-                            month: 'long',
-                            year: 'numeric',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-neutral-400">Henüz yüklenmedi</p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {document && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(document)}
-                      >
-                        <Download className="w-4 h-4" />
-                      </Button>
-                      {canEditData && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(document.id, document.file_path)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {canEditData && (
-                    <div>
-                      <input
-                        ref={(el) => {
-                          fileInputRefs.current[category.key] = el;
-                        }}
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e, category.key)}
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        disabled={uploading}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={uploading}
-                        type="button"
-                        onClick={() => {
-                          const input = fileInputRefs.current[category.key];
-                          if (input) {
-                            input.click();
-                          }
-                        }}
-                      >
-                        <Upload className="w-4 h-4 mr-1" />
-                        {document ? 'Yenile' : 'Yükle'}
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <h4 className="font-semibold text-neutral-800">{category.label}</h4>
+                <span className="text-xs text-neutral-500">
+                  {categoryDocuments.length} dosya
+                </span>
               </div>
+
+              {/* Documents List */}
+              <div className="flex-1 min-h-0 mb-3">
+                {categoryDocuments.length > 0 ? (
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    {categoryDocuments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center gap-2 p-2 bg-neutral-50 rounded border hover:bg-neutral-100 transition-colors"
+                      >
+                        <div className="flex-shrink-0 text-neutral-600">
+                          {getFileIcon(doc.file_type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-neutral-800 truncate">
+                            {doc.name}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1">
+                            <span>{formatFileSize(doc.file_size)}</span>
+                            <span>•</span>
+                            <span>
+                              {doc.uploaded_by_name || doc.uploaded_by}
+                            </span>
+                            <span>•</span>
+                            <DateDisplay 
+                              date={doc.uploaded_at} 
+                              format="date"
+                              options={{
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownload(doc)}
+                            className="h-8 w-8 p-0 border-0 bg-transparent hover:bg-neutral-200"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                          {canEditData && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(doc.id, doc.file_path)}
+                              className="h-8 w-8 p-0 border-0 bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-400 py-4 text-center">
+                    Henüz dosya yüklenmedi
+                  </p>
+                )}
+              </div>
+
+              {/* Upload Component */}
+              {canEditData && (
+                <div className="mt-auto">
+                  <MultiFileUpload
+                    caseId={caseId}
+                    category={category.key}
+                    onUploadComplete={handleUploadComplete}
+                    onUploadError={(error) => {
+                      alert(`Hata: ${error}`);
+                    }}
+                    disabled={loading}
+                  />
+                </div>
+              )}
             </Card>
           );
         })}

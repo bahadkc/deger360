@@ -11,14 +11,17 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const files = formData.getAll('files') as File[];
     const caseId = formData.get('caseId') as string;
     const category = formData.get('category') as string;
     const uploadedByName = formData.get('uploadedByName') as string;
 
-    if (!file || !caseId || !category) {
+    // Support both single file (backward compatibility) and multiple files
+    const fileList = files.length > 0 ? files : formData.get('file') ? [formData.get('file') as File] : [];
+
+    if (fileList.length === 0 || !caseId || !category) {
       return NextResponse.json(
-        { error: 'File, case ID, and category are required' },
+        { error: 'File(s), case ID, and category are required' },
         { status: 400 }
       );
     }
@@ -133,82 +136,82 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if document with same category already exists
-    const { data: existingDoc, error: existingDocError } = await supabaseAdmin
-      .from('documents')
-      .select('id, file_path')
-      .eq('case_id', caseId)
-      .eq('category', category)
-      .maybeSingle();
+    // Upload multiple files
+    const uploadedDocuments = [];
+    const errors = [];
 
-    // Upload file to Supabase Storage
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${caseId}/${category}_${Date.now()}.${fileExt}`;
-    const filePath = `documents/${fileName}`;
+    for (const file of fileList) {
+      try {
+        // Generate unique filename with timestamp to avoid collisions
+        const fileExt = file.name.split('.').pop();
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 9);
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${caseId}/${category}/${timestamp}_${randomSuffix}_${sanitizedFileName}`;
+        const filePath = `documents/${fileName}`;
 
-    const fileBuffer = await file.arrayBuffer();
-    
-    // Delete old file if exists
-    if (existingDoc && existingDoc.file_path) {
-      let oldStoragePath = existingDoc.file_path;
-      // Extract storage path from URL if it's a full URL
-      if (oldStoragePath.includes('supabase.co')) {
-        const urlParts = oldStoragePath.split('/storage/v1/object/public/documents/');
-        if (urlParts.length > 1) {
-          oldStoragePath = `documents/${urlParts[1]}`;
+        const fileBuffer = await file.arrayBuffer();
+
+        // Upload file to Supabase Storage
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from('documents')
+          .upload(filePath, fileBuffer, {
+            contentType: file.type,
+            upsert: false, // Don't overwrite, use unique filename
+          });
+
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          errors.push({ fileName: file.name, error: 'Failed to upload file' });
+          continue;
         }
-      } else if (!oldStoragePath.startsWith('documents/')) {
-        oldStoragePath = `documents/${oldStoragePath}`;
+
+        // Save document record with storage path (not public URL) for easier deletion and access
+        const { data: document, error: documentError } = await supabaseAdmin
+          .from('documents')
+          .insert({
+            case_id: caseId,
+            name: file.name,
+            category: category,
+            file_path: filePath, // Store storage path, not public URL
+            file_size: file.size,
+            file_type: file.type || fileExt,
+            uploaded_by: user.id,
+            uploaded_by_name: uploadedByName || (userAuth as { name: string | null }).name || null,
+          })
+          .select()
+          .single();
+
+        if (documentError) {
+          console.error('Error saving document record:', documentError);
+          // Try to delete uploaded file
+          await supabaseAdmin.storage.from('documents').remove([filePath]);
+          errors.push({ fileName: file.name, error: 'Failed to save document record' });
+          continue;
+        }
+
+        uploadedDocuments.push(document);
+      } catch (fileError: any) {
+        console.error('Error processing file:', fileError);
+        errors.push({ fileName: file.name, error: fileError.message || 'Unknown error' });
       }
-      
-      // Delete old file from storage
-      await supabaseAdmin.storage.from('documents').remove([oldStoragePath]);
-      
-      // Delete old document record
-      await supabaseAdmin.from('documents').delete().eq('id', existingDoc.id);
     }
 
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('documents')
-      .upload(filePath, fileBuffer, {
-        contentType: file.type,
-        upsert: false, // Don't overwrite, use unique filename
-      });
-
-    if (uploadError) {
-      console.error('Error uploading file:', uploadError);
+    // Return results
+    if (uploadedDocuments.length === 0) {
       return NextResponse.json(
-        { error: 'Failed to upload file' },
+        { 
+          error: 'Failed to upload any files',
+          errors: errors
+        },
         { status: 500 }
       );
     }
 
-    // Save document record with storage path (not public URL) for easier deletion and access
-    const { data: document, error: documentError } = await supabaseAdmin
-      .from('documents')
-      .insert({
-        case_id: caseId,
-        name: file.name,
-        category: category,
-        file_path: filePath, // Store storage path, not public URL
-        file_size: file.size,
-        uploaded_by: user.id,
-        uploaded_by_name: uploadedByName || (userAuth as { name: string | null }).name || null,
-      })
-      .select()
-      .single();
-
-    if (documentError) {
-      console.error('Error saving document record:', documentError);
-      // Try to delete uploaded file
-      await supabaseAdmin.storage.from('documents').remove([filePath]);
-      return NextResponse.json(
-        { error: 'Failed to save document record' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ document });
+    return NextResponse.json({ 
+      documents: uploadedDocuments,
+      errors: errors.length > 0 ? errors : undefined
+    });
   } catch (error: any) {
     console.error('Error in upload-document API:', error);
     return NextResponse.json(
