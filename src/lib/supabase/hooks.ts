@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { casesApi, documentsApi, processStepsApi, customerTasksApi, activitiesApi, notificationsApi } from './api';
+import { casesApi, documentsApi, notificationsApi } from './api';
 import { Database } from './database.types';
 
 type Tables = Database['public']['Tables'];
@@ -57,86 +57,6 @@ export function useDocuments(caseId: string) {
   }, [caseId, refetch]);
 
   return { data, loading, error, refetch };
-}
-
-// Use process steps
-export function useProcessSteps(caseId: string) {
-  const [data, setData] = useState<Tables['process_steps']['Row'][]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!caseId) return;
-
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const steps = await processStepsApi.getByCaseId(caseId);
-        setData(steps);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [caseId]);
-
-  return { data, loading, error };
-}
-
-// Use customer tasks
-export function useCustomerTasks(caseId: string) {
-  const [data, setData] = useState<Tables['customer_tasks']['Row'][]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const refetch = useCallback(async () => {
-    try {
-      setLoading(true);
-      const tasks = await customerTasksApi.getByCaseId(caseId);
-      setData(tasks);
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  }, [caseId]);
-
-  useEffect(() => {
-    if (!caseId) return;
-    refetch();
-  }, [caseId, refetch]);
-
-  return { data, loading, error, refetch };
-}
-
-// Use activities
-export function useActivities(caseId: string) {
-  const [data, setData] = useState<Tables['activities']['Row'][]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!caseId) return;
-
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const activities = await activitiesApi.getByCaseId(caseId);
-        setData(activities);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [caseId]);
-
-  return { data, loading, error };
 }
 
 // Use notifications

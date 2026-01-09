@@ -13,11 +13,7 @@ export const casesApi = {
       .select(`
         *,
         customer:customers(*),
-        documents(*),
-        process_steps(*),
-        customer_tasks(*),
-        activities(*),
-        payments(*)
+        documents(*)
       `)
       .eq('id', caseId)
       .single();
@@ -33,8 +29,7 @@ export const casesApi = {
       .select(`
         *,
         customer:customers(*),
-        documents(*),
-        process_steps(*)
+        documents(*)
       `)
       .eq('case_number', caseNumber)
       .single();
@@ -143,107 +138,6 @@ export const documentsApi = {
   },
 };
 
-// Process Steps API
-export const processStepsApi = {
-  // Get all steps for a case
-  async getByCaseId(caseId: string) {
-    const { data, error } = await supabase
-      .from('process_steps')
-      .select('*')
-      .eq('case_id', caseId)
-      .order('step_order', { ascending: true });
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Update step
-  async update(stepId: string, updates: Partial<Tables['process_steps']['Update']>) {
-    const { data, error } = await (supabase as any)
-      .from('process_steps')
-      .update(updates)
-      .eq('id', stepId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-};
-
-// Customer Tasks API
-export const customerTasksApi = {
-  // Get all tasks for a case
-  async getByCaseId(caseId: string) {
-    const { data, error } = await supabase
-      .from('customer_tasks')
-      .select('*')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Update task (complete/uncomplete)
-  // Note: Customers can only update 'completed', 'status', and 'completed_at' fields
-  // Other fields are protected by application logic
-  async update(taskId: string, updates: Partial<Tables['customer_tasks']['Update']>) {
-    // Filter updates to only allow safe fields for customers
-    const safeUpdates: Partial<Tables['customer_tasks']['Update']> = {
-      completed: updates.completed,
-      status: updates.status,
-      completed_at: updates.completed_at,
-    };
-
-    const { data, error } = await (supabase as any)
-      .from('customer_tasks')
-      .update(safeUpdates)
-      .eq('id', taskId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Mark task as completed
-  async complete(taskId: string) {
-    return this.update(taskId, {
-      status: 'completed',
-      completed: true,
-      completed_at: new Date().toISOString(),
-    });
-  },
-};
-
-// Activities API
-export const activitiesApi = {
-  // Get all activities for a case
-  async getByCaseId(caseId: string) {
-    const { data, error } = await supabase
-      .from('activities')
-      .select('*')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Create new activity
-  async create(activity: Tables['activities']['Insert']) {
-    const { data, error } = await (supabase as any)
-      .from('activities')
-      .insert(activity)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-};
-
 // Notifications API
 export const notificationsApi = {
   // Get all notifications for a customer
@@ -312,17 +206,3 @@ export const customersApi = {
   },
 };
 
-// Payments API
-export const paymentsApi = {
-  // Get all payments for a case
-  async getByCaseId(caseId: string) {
-    const { data, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  },
-};

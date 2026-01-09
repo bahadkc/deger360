@@ -404,7 +404,9 @@ export async function getAssignedCaseIds(forceRefresh = false): Promise<string[]
       return [];
     }
 
-    const caseIds = (data || []).map((item: { case_id: string }) => item.case_id);
+    const caseIds = (data || [])
+      .map((item: { case_id: string | null }) => item.case_id)
+      .filter((id): id is string => id !== null);
     
     // Update cache
     assignedCaseIdsCache = {

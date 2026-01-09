@@ -619,7 +619,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Kusur Oranı (%)</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Karşı Tarafın Kusur Oranı (%)</label>
             <Input
               type="number"
               min="0"

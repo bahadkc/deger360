@@ -43,7 +43,6 @@ export default function DashboardPage() {
   const [customerData, setCustomerData] = useState<any>(null);
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
   const [documents, setDocuments] = useState<DocumentDisplay[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
 
   const customerId = useMemo(() => customerData?.id, [customerData?.id]);
   const caseId = useMemo(() => caseData?.id, [caseData?.id]);
@@ -187,17 +186,6 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const loadPaymentsData = useCallback(async (caseId: string) => {
-    const { data: paymentsData, error: paymentsError } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('case_id', caseId)
-      .order('payment_date', { ascending: false });
-
-    if (!paymentsError && paymentsData) {
-      setPayments(paymentsData || []);
-    }
-  }, []);
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -345,8 +333,6 @@ export default function DashboardPage() {
           await loadDocumentsData(currentCase.id);
         }
 
-        // Load payments (not included in API response yet)
-        await loadPaymentsData(currentCase.id);
 
       } else {
         console.warn('Dashboard: No cases found for current user');
@@ -358,7 +344,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [loadChecklistData, loadDocumentsData, loadPaymentsData]);
+  }, [loadChecklistData, loadDocumentsData]);
 
   useEffect(() => {
     // Load data once on page entry
@@ -536,9 +522,6 @@ export default function DashboardPage() {
   
   // Toplam Beklenen Net Gelir = Değer Kaybı * Karşı Taraf Kusur Oranı * 80/10000
   const sizeKalacakTutar = (degerKaybi * karsiTarafKusurOrani * 80) / 10000;
-
-  // Total paid amount
-  const toplamOdenen = payments.reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0);
 
   return (
     <PortalLayout>

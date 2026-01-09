@@ -18,12 +18,10 @@ export async function getDatabaseStats() {
     'customers',
     'cases',
     'documents',
-    'process_steps',
-    'customer_tasks',
-    'activities',
-    'payments',
     'notifications',
     'user_auth',
+    'admin_checklist',
+    'case_admins',
   ];
 
   const stats: Record<string, { count: number; error?: string }> = {};
@@ -119,12 +117,10 @@ export function getTableNames(): TableName[] {
     'customers',
     'cases',
     'documents',
-    'process_steps',
-    'customer_tasks',
-    'activities',
-    'payments',
     'notifications',
     'user_auth',
+    'admin_checklist',
+    'case_admins',
   ];
 }
 
@@ -140,11 +136,9 @@ export function getTableRelationships() {
     cases: {
       hasMany: [
         'documents',
-        'process_steps',
-        'customer_tasks',
-        'activities',
-        'payments',
         'notifications',
+        'admin_checklist',
+        'case_admins',
       ],
       belongsTo: ['customers'],
     },
@@ -152,19 +146,11 @@ export function getTableRelationships() {
       hasMany: [],
       belongsTo: ['cases'],
     },
-    process_steps: {
+    admin_checklist: {
       hasMany: [],
       belongsTo: ['cases'],
     },
-    customer_tasks: {
-      hasMany: [],
-      belongsTo: ['cases', 'documents'],
-    },
-    activities: {
-      hasMany: [],
-      belongsTo: ['cases'],
-    },
-    payments: {
+    case_admins: {
       hasMany: [],
       belongsTo: ['cases'],
     },

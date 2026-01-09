@@ -229,39 +229,6 @@ export const optimizedDocumentsApi = {
   },
 };
 
-// Activities API - Optimized with pagination
-export const optimizedActivitiesApi = {
-  /**
-   * Get activities for case - Paginated
-   */
-  async getByCaseId(caseId: string, options?: { limit?: number; offset?: number }): Promise<any[]> {
-    const cacheKey = getCacheKey('activities', caseId, JSON.stringify(options));
-    const cached = supabaseCache.get<any[]>(cacheKey);
-    if (cached) return cached;
-
-    let query = supabase
-      .from('activities')
-      .select('id, activity_type, description, created_at, created_by')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false });
-
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
-    if (options?.offset) {
-      query = query.range(options.offset, options.offset + (options.limit || 20) - 1);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-    
-    // Cache for 30 seconds (activities update frequently)
-    supabaseCache.set(cacheKey, data, 30000);
-    return data;
-  },
-};
-
 // Notifications API - Optimized
 export const optimizedNotificationsApi = {
   /**

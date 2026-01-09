@@ -22,21 +22,14 @@ export { DatabaseAccess, db, dbAdmin } from './db';
 export {
   casesApi,
   documentsApi,
-  processStepsApi,
-  customerTasksApi,
-  activitiesApi,
   notificationsApi,
   customersApi,
-  paymentsApi,
 } from './api';
 
 // React Hooks (existing)
 export {
   useCase,
   useDocuments,
-  useProcessSteps,
-  useCustomerTasks,
-  useActivities,
   useNotifications,
 } from './hooks';
 
