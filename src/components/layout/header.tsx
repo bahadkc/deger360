@@ -20,17 +20,36 @@ export function Header() {
     
     // Ana sayfadaysak direkt scroll et
     if (window.location.pathname === '/') {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
-        const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
-        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - headerHeight - offset;
-        
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+      // Element'i bulmak için birkaç kez deneme yap (animasyon gecikmesi için)
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const tryScroll = () => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+          const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - headerHeight - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          return true;
+        }
+        return false;
+      };
+      
+      // İlk deneme
+      if (!tryScroll()) {
+        // Element bulunamazsa birkaç kez daha dene
+        const interval = setInterval(() => {
+          attempts++;
+          if (tryScroll() || attempts >= maxAttempts) {
+            clearInterval(interval);
+          }
+        }, 100);
       }
     } else {
       // Başka sayfadaysak ana sayfaya yönlendir
