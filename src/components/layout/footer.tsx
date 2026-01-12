@@ -3,12 +3,53 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Phone, Mail, MapPin } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export function Footer() {
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+  const scrollToSection = (sectionId: string | null) => {
+    if (!sectionId) {
+      window.location.href = '/';
+      return;
+    }
+    
+    // Ana sayfadaysak direkt scroll et
+    if (window.location.pathname === '/') {
+      // Element'i bulmak için birkaç kez deneme yap (animasyon gecikmesi için)
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const tryScroll = () => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+          const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - headerHeight - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          return true;
+        }
+        return false;
+      };
+      
+      // İlk deneme
+      if (!tryScroll()) {
+        // Element bulunamazsa birkaç kez daha dene
+        const interval = setInterval(() => {
+          attempts++;
+          if (tryScroll() || attempts >= maxAttempts) {
+            clearInterval(interval);
+          }
+        }, 100);
+      }
+    } else {
+      // Başka sayfadaysak ana sayfaya yönlendir
+      window.location.href = '/#' + sectionId;
     }
   };
 
@@ -37,35 +78,86 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <button 
-                  onClick={() => scrollToSection('hizmetlerimiz')}
+                  onClick={() => scrollToSection('contact-form')}
                   className="text-neutral-200 hover:text-primary-orange transition-colors"
                 >
-                  Rakamlar
+                  Değer Kaybı Hesaplama
                 </button>
               </li>
               <li>
                 <button 
-                  onClick={() => scrollToSection('surec')}
+                  onClick={() => scrollToSection('nedir')}
                   className="text-neutral-200 hover:text-primary-orange transition-colors"
                 >
-                  Süreç
+                  Değer Kaybı Nedir?
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => scrollToSection('hakkimizda')}
-                  className="text-neutral-200 hover:text-primary-orange transition-colors"
-                >
-                  Hakkımızda
-                </button>
+                {isHomePage ? (
+                  <button 
+                    onClick={() => scrollToSection('surec')}
+                    className="text-neutral-200 hover:text-primary-orange transition-colors"
+                  >
+                    Süreç
+                  </button>
+                ) : (
+                  <Link 
+                    href="/#surec"
+                    className="text-neutral-200 hover:text-primary-orange transition-colors"
+                  >
+                    Süreç
+                  </Link>
+                )}
               </li>
               <li>
                 <button 
-                  onClick={() => scrollToSection('sss')}
+                  onClick={() => scrollToSection('neden-biz')}
                   className="text-neutral-200 hover:text-primary-orange transition-colors"
                 >
-                  SSS
+                  Neden Biz?
                 </button>
+              </li>
+              <li>
+                {isHomePage ? (
+                  <button 
+                    onClick={() => scrollToSection('hakkimizda')}
+                    className="text-neutral-200 hover:text-primary-orange transition-colors"
+                  >
+                    Hakkımızda
+                  </button>
+                ) : (
+                  <Link 
+                    href="/#hakkimizda"
+                    className="text-neutral-200 hover:text-primary-orange transition-colors"
+                  >
+                    Hakkımızda
+                  </Link>
+                )}
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('iletisim')}
+                  className="text-neutral-200 hover:text-primary-orange transition-colors"
+                >
+                  İletişim
+                </button>
+              </li>
+              <li>
+                {isHomePage ? (
+                  <button 
+                    onClick={() => scrollToSection('sss')}
+                    className="text-neutral-200 hover:text-primary-orange transition-colors"
+                  >
+                    SSS
+                  </button>
+                ) : (
+                  <Link 
+                    href="/#sss"
+                    className="text-neutral-200 hover:text-primary-orange transition-colors"
+                  >
+                    SSS
+                  </Link>
+                )}
               </li>
             </ul>
           </div>

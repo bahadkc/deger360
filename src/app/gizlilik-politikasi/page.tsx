@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Gizlilik Politikası | Değer360',
-  description: 'Değer360 gizlilik politikası. Kişisel bilgilerinizin nasıl toplandığı, kullanıldığı ve korunduğu hakkında bilgi.',
+  title: 'Gizlilik Politikası',
+  description: 'Değer360 olarak kullanıcı verilerini nasıl topladığımız, sakladığımız ve koruduğumuza dair gizlilik prensiplerimiz.',
   openGraph: {
     title: 'Gizlilik Politikası | Değer360',
     description: 'Değer360 gizlilik politikası. Kişisel bilgilerinizin nasıl toplandığı, kullanıldığı ve korunduğu hakkında bilgi.',

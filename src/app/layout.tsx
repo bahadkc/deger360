@@ -89,6 +89,47 @@ export default function RootLayout({
             gtag('config', 'G-DW3NXFD2DY');
           `}
         </Script>
+        {/* Schema.org Structured Data */}
+        <Script
+          id="schema-org"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "url": siteUrl,
+                  "name": "Değer360",
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                      "@type": "EntryPoint",
+                      "urlTemplate": `${siteUrl}/search?q={search_term_string}`
+                    },
+                    "query-input": "required name=search_term_string"
+                  }
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  "name": "Teklif Al",
+                  "url": `${siteUrl}/teklif`
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  "name": "Süreç",
+                  "url": `${siteUrl}/surec`
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  "name": "Sıkça Sorulan Sorular",
+                  "url": `${siteUrl}/sss`
+                }
+              ]
+            })
+          }}
+        />
         <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>

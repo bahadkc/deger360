@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     // Get all admin users from user_auth
     const { data: userAuthData, error: userAuthError } = await supabaseAdmin
       .from('user_auth')
-      .select('id, role, name')
+      .select('id, role, name, password')
       .in('role', ['superadmin', 'admin', 'lawyer', 'acente']);
 
     if (userAuthError) {
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
         name: admin.name || authUser?.email || 'Unknown',
         email: authUser?.email || 'Unknown',
         role: admin.role,
+        password: admin.password || null, // Include password if available
         assignedCaseCount: caseCounts[admin.id] || 0,
       };
     });

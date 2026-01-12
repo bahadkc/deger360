@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'KVKK Aydınlatma Metni | Değer360',
-  description: 'Değer360 KVKK kapsamında kişisel verilerinizin işlenmesine ilişkin aydınlatma metni.',
+  title: 'KVKK Aydınlatma Metni',
+  description: '6698 sayılı KVKK kapsamında kişisel verilerinizin işlenmesi, korunması ve haklarınızla ilgili detaylı aydınlatma metnimiz.',
   openGraph: {
     title: 'KVKK Aydınlatma Metni | Değer360',
     description: 'Değer360 KVKK kapsamında kişisel verilerinizin işlenmesine ilişkin aydınlatma metni.',

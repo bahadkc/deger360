@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Kullanım Koşulları | Değer360',
-  description: 'Değer360 web sitesi ve hizmetlerinin kullanım koşulları. Hak ve sorumluluklarınız hakkında bilgi.',
+  title: 'Kullanım Koşulları',
+  description: 'Değer360 web sitesi kullanım şartları, yasal sorumluluklar ve kullanıcı yükümlülükleri hakkında bilgilendirme metni.',
   openGraph: {
     title: 'Kullanım Koşulları | Değer360',
     description: 'Değer360 web sitesi ve hizmetlerinin kullanım koşulları. Hak ve sorumluluklarınız hakkında bilgi.',

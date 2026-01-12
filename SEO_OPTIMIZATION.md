@@ -42,10 +42,6 @@ Bu dokümantasyon, yapılan SEO optimizasyonlarını ve best practice'leri içer
 - ✅ H2: "Değer Kaybı Nedir?", "Süreç Nasıl İşliyor", "Neden Biz?", "Hakkımızda", "Sıkça Sorulan Sorular"
 - ✅ H3: Section içeriklerinde alt başlıklar
 
-**Hizmetlerimiz (`/hizmetlerimiz`):**
-- ✅ H1: "Hizmetlerimiz"
-- ✅ H2: Her hizmet için alt başlıklar (Ekspertiz, Avukatlık, vb.)
-
 **Süreç (`/surec`):**
 - ✅ H1: "Değer Kaybı Tazminatı Süreci"
 - ✅ H2: "Süreç Nasıl İşliyor"
@@ -67,7 +63,6 @@ Bu dokümantasyon, yapılan SEO optimizasyonlarını ve best practice'leri içer
 Tüm sayfalarda meta descriptions'a **CTA (Call-to-Action)** eklendi:
 
 - **Ana Sayfa**: "Ücretsiz hesaplama yapın ve hemen başvurun!"
-- **Hizmetlerimiz**: "Ücretsiz değerlendirme için hemen başvurun!"
 - **Süreç**: "Hemen başvurun!"
 - **Hakkımızda**: "Hemen başvurun!"
 - **SSS**: "Hemen okuyun ve başvurun!"
@@ -76,7 +71,7 @@ Tüm sayfalarda meta descriptions'a **CTA (Call-to-Action)** eklendi:
 #### ✅ URL Yapısı
 
 - ✅ **Okunabilir URL'ler**: Türkçe karakterler Next.js tarafından otomatik handle ediliyor
-- ✅ **SEO-Friendly**: `/hizmetlerimiz`, `/surec`, `/hakkimizda` gibi açıklayıcı URL'ler
+- ✅ **SEO-Friendly**: `/surec`, `/hakkimizda` gibi açıklayıcı URL'ler
 - ✅ **Kısa ve Net**: Karmaşık sayılar yerine anlamlı URL'ler
 
 #### ✅ Görsel Alt Metinleri (Alt Text)
@@ -132,7 +127,6 @@ Tüm görsellere SEO-friendly alt text'ler eklendi:
 
 ### İçerik SEO
 - [x] Ana sayfa içeriği zengin
-- [x] Hizmetlerimiz sayfası detaylandırıldı
 - [x] Süreç sayfası açıklayıcı
 - [x] Hakkımızda sayfası bilgilendirici
 - [x] SSS sayfası kullanışlı

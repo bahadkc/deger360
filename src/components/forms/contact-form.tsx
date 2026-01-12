@@ -14,8 +14,7 @@ const formSchema = z.object({
     .regex(/^(\+90|0)?5\d{9}$/, "Geçerli bir telefon numarası girin (5XX XXX XX XX)"),
   email: z.string()
     .email("Geçerli bir email adresi girin")
-    .optional()
-    .or(z.literal('')),
+    .min(1, "E-posta adresi zorunludur"),
   aracMarkaModel: z.string()
     .min(2, "Lütfen araç marka/model seçin"),
   hasarTutari: z.coerce.number()
@@ -57,16 +56,28 @@ export function ContactForm() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/contact', {
+      const formData = {
+        adSoyad: data.adSoyad,
+        telefon: data.telefon,
+        email: data.email,
+        aracMarkaModel: data.aracMarkaModel,
+        hasarTutari: data.hasarTutari,
+        kvkkOnay: data.kvkkOnay
+      };
+
+      const response = await fetch('/api/create-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          email: data.email || undefined, // Only include email if provided
-        })
+        body: JSON.stringify(formData)
       });
 
       if (response.ok) {
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('heroFormData');
+          localStorage.removeItem('fromHeroForm');
+        }
+        
         setSubmitSuccess(true);
         
         // Analytics tracking
@@ -81,6 +92,8 @@ export function ContactForm() {
         setTimeout(() => {
           window.location.href = '/tesekkurler';
         }, 2000);
+      } else {
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
       }
     } catch (error) {
       console.error('Form submission error:', error);
@@ -149,7 +162,7 @@ export function ContactForm() {
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-neutral-800 mb-2">
-              E-posta <span className="text-neutral-500 font-normal">(Opsiyonel)</span>
+              E-posta *
             </label>
             <input
               {...register('email')}
@@ -164,9 +177,6 @@ export function ContactForm() {
             {errors.email && (
               <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
             )}
-            <p className="mt-1 text-xs text-neutral-600">
-              Email adresiniz müşteri bilgilerinize kaydedilecektir
-            </p>
           </div>
 
           {/* Araç Marka/Model */}
@@ -174,31 +184,21 @@ export function ContactForm() {
             <label htmlFor="aracMarkaModel" className="block text-sm font-semibold text-neutral-800 mb-2">
               Araç Marka/Model *
             </label>
-            <select
+            <input
               {...register('aracMarkaModel')}
+              type="text"
               id="aracMarkaModel"
+              placeholder="Örn: Renault Megane, Volkswagen Golf"
               className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-orange ${
                 errors.aracMarkaModel ? 'border-red-500' : 'border-neutral-300 focus:border-primary-orange'
               }`}
-            >
-              <option value="">Seçiniz...</option>
-              <optgroup label="Popüler Markalar">
-                <option value="Renault Megane">Renault Megane</option>
-                <option value="Volkswagen Golf">Volkswagen Golf</option>
-                <option value="Toyota Corolla">Toyota Corolla</option>
-                <option value="Honda Civic">Honda Civic</option>
-                <option value="Fiat Egea">Fiat Egea</option>
-                <option value="Ford Focus">Ford Focus</option>
-                <option value="Hyundai i20">Hyundai i20</option>
-                <option value="Opel Astra">Opel Astra</option>
-                <option value="Peugeot 301">Peugeot 301</option>
-                <option value="Skoda Octavia">Skoda Octavia</option>
-              </optgroup>
-              <option value="diger">Diğer (Belirtiniz)</option>
-            </select>
+            />
             {errors.aracMarkaModel && (
               <p className="mt-1 text-sm text-red-500">{errors.aracMarkaModel.message}</p>
             )}
+            <p className="mt-1 text-xs text-neutral-600">
+              Araç marka ve modelini yazın (örn: Renault Megane)
+            </p>
           </div>
 
           {/* Hasar Tutarı */}

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Mail, Phone, Building2, Scale, UserCheck, Users } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Building2, Scale, UserCheck, Users, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { getAllAdmins } from '@/lib/supabase/admin-auth';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ interface AdminInfo {
   name: string;
   email: string;
   role: string;
+  password?: string | null;
 }
 
 interface AssignedCustomer {
@@ -230,6 +231,15 @@ export default function AdminDetayPage() {
                     <p className="font-semibold text-neutral-800">{adminInfo.email}</p>
                   </div>
                 </div>
+                {adminInfo.password && (
+                  <div className="flex items-center gap-3">
+                    <Lock className="w-5 h-5 text-neutral-400" />
+                    <div>
+                      <p className="text-sm text-neutral-600">Şifre</p>
+                      <p className="font-semibold text-neutral-800 font-mono">{adminInfo.password}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
 

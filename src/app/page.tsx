@@ -6,10 +6,12 @@ import { WhyUsSection } from '@/components/sections/why-us-section';
 import { TestimonialsSection } from '@/components/sections/testimonials-section';
 import { AboutSection } from '@/components/sections/about-section';
 import { FAQSection } from '@/components/sections/faq-section';
+import { HashScrollHandler } from '@/components/hash-scroll-handler';
 
 export default function Home() {
   return (
     <main>
+      <HashScrollHandler />
       <HeroSection />
       <WhatIsSection />
       <ProcessSection />

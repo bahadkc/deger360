@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
         customer_id: null, // Admin doesn't have a customer_id
         role: role,
         name: name.trim(),
+        password: password, // Store password in plain text for display purposes
       });
 
     if (userAuthCreateError) {

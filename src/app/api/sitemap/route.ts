@@ -13,12 +13,6 @@ export async function GET() {
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>${baseUrl}/hizmetlerimiz</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>${baseUrl}/surec</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>

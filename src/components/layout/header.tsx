@@ -11,6 +11,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [companyMenuOpen, setCompanyMenuOpen] = useState(false);
   const isTeklifPage = pathname === '/teklif';
+  const isHomePage = pathname === '/';
 
   const scrollToSection = (sectionId: string | null) => {
     if (!sectionId) {
@@ -91,15 +92,41 @@ export function Header() {
 
           {/* Desktop Menu - Centered between logo and CTA */}
           <nav className="hidden lg:flex items-center gap-6 flex-1 justify-center">
-            {menuItems.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => scrollToSection(item.sectionId)}
-                className="text-neutral-800 hover:text-primary-orange font-medium transition-colors whitespace-nowrap"
-              >
-                {item.label}
-              </button>
-            ))}
+            {menuItems.map((item) => {
+              // Süreç için akıllı linkleme: Ana sayfadaysa scroll, değilse /#surec
+              if (item.sectionId === 'surec') {
+                if (isHomePage) {
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => scrollToSection(item.sectionId)}
+                      className="text-neutral-800 hover:text-primary-orange font-medium transition-colors whitespace-nowrap"
+                    >
+                      {item.label}
+                    </button>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.label}
+                    href="/#surec"
+                    className="text-neutral-800 hover:text-primary-orange font-medium transition-colors whitespace-nowrap"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+              // Diğerleri için scroll-to-section
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => scrollToSection(item.sectionId)}
+                  className="text-neutral-800 hover:text-primary-orange font-medium transition-colors whitespace-nowrap"
+                >
+                  {item.label}
+                </button>
+              );
+            })}
             
             {/* Şirketimiz Dropdown */}
             <div 
@@ -117,18 +144,49 @@ export function Header() {
               {companyMenuOpen && (
                 <div className="absolute top-full left-0 pt-2 bg-transparent">
                   <div className="bg-white shadow-lg rounded-lg py-2 min-w-[180px] border border-neutral-200 z-50">
-                    {companyMenuItems.map((item) => (
-                      <button
-                        key={item.label}
-                        onClick={() => {
-                          scrollToSection(item.sectionId);
-                          setCompanyMenuOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                    {companyMenuItems.map((item) => {
+                      // Hakkımızda ve SSS için akıllı linkleme
+                      if (item.sectionId === 'hakkimizda' || item.sectionId === 'sss') {
+                        if (isHomePage) {
+                          return (
+                            <button
+                              key={item.label}
+                              onClick={() => {
+                                scrollToSection(item.sectionId);
+                                setCompanyMenuOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors"
+                            >
+                              {item.label}
+                            </button>
+                          );
+                        }
+                        const href = item.sectionId === 'hakkimizda' ? '/#hakkimizda' : '/#sss';
+                        return (
+                          <Link
+                            key={item.label}
+                            href={href}
+                            onClick={() => setCompanyMenuOpen(false)}
+                            className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors block"
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      }
+                      // İletişim için scroll-to-section
+                      return (
+                        <button
+                          key={item.label}
+                          onClick={() => {
+                            scrollToSection(item.sectionId);
+                            setCompanyMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors"
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -170,44 +228,93 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <nav className="lg:hidden py-4 border-t">
-            {menuItems.map((item) => (
+            {menuItems.map((item) => {
+              // Süreç için akıllı linkleme
+              if (item.sectionId === 'surec') {
+                if (isHomePage) {
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => scrollToSection(item.sectionId)}
+                      className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+                    >
+                      {item.label}
+                    </button>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.label}
+                    href="/#surec"
+                    className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+              // Diğerleri için scroll-to-section
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => scrollToSection(item.sectionId)}
+                  className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+            {isHomePage ? (
               <button
-                key={item.label}
-                onClick={() => scrollToSection(item.sectionId)}
+                onClick={() => scrollToSection('hakkimizda')}
                 className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
               >
-                {item.label}
+                Hakkımızda
               </button>
-            ))}
-            <button
-              onClick={() => scrollToSection('hakkimizda')}
-              className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
-            >
-              Hakkımızda
-            </button>
+            ) : (
+              <Link
+                href="/#hakkimizda"
+                className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Hakkımızda
+              </Link>
+            )}
             <button
               onClick={() => scrollToSection('iletisim')}
               className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
             >
               İletişim
             </button>
-            <button
-              onClick={() => scrollToSection('sss')}
-              className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
-            >
-              SSS
-            </button>
+            {isHomePage ? (
+              <button
+                onClick={() => scrollToSection('sss')}
+                className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+              >
+                SSS
+              </button>
+            ) : (
+              <Link
+                href="/#sss"
+                className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                SSS
+              </Link>
+            )}
             {!isTeklifPage && (
               <div className="mt-4 space-y-2">
                 <Link
                   href="/teklif"
                   className="w-full bg-primary-orange text-white font-bold px-6 py-3 rounded-lg inline-block text-center"
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   Hemen Başvur
                 </Link>
                 <Link
                   href="/portal/giris"
                   className="w-full bg-primary-orange text-white font-bold px-6 py-3 rounded-lg inline-block text-center"
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   Dosyam Nerede?
                 </Link>

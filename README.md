@@ -37,7 +37,6 @@ npm start
 /src
   /app
     /page.tsx                    # Ana sayfa
-    /hizmetlerimiz/page.tsx
     /surec/page.tsx
     /hakkimizda/page.tsx
     /sss/page.tsx
