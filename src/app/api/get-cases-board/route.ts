@@ -107,6 +107,7 @@ export async function GET(request: NextRequest) {
         value_loss_amount,
         fault_rate,
         assigned_lawyer,
+        insurance_response,
         created_at,
         customer:customers!inner(
           id,
@@ -144,6 +145,7 @@ export async function GET(request: NextRequest) {
       value_loss_amount: caseItem.value_loss_amount,
       fault_rate: caseItem.fault_rate,
       assigned_lawyer: caseItem.assigned_lawyer,
+      insurance_response: caseItem.insurance_response,
       created_at: caseItem.created_at,
       customer: {
         id: caseItem.customer?.id || '',

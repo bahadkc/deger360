@@ -101,6 +101,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get case data to check insurance_response
+    const { data: caseData, error: caseError } = await supabaseAdmin
+      .from('cases')
+      .select('insurance_response')
+      .eq('id', caseId)
+      .single();
+
     // Merge with default checklist items
     const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
       const existing = data?.find((c) => c.task_key === item.key);
@@ -114,7 +121,10 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ checklist: mergedChecklist });
+    return NextResponse.json({ 
+      checklist: mergedChecklist,
+      insuranceResponse: caseData?.insurance_response || null
+    });
   } catch (error: any) {
     console.error('Error in get-checklist API:', error);
     return NextResponse.json(

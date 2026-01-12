@@ -8,6 +8,19 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export const dynamic = 'force-dynamic';
 
+// Document category to checklist task key mapping
+// This mapping determines which checklist item should be marked as completed when a document is uploaded
+const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
+  'kaza_tespit_tutanagi': 'kaza_tespit_tutanagi',
+  'arac_fotograflari': 'arac_fotograflari',
+  'ruhsat': 'ruhsat_fotokopisi',
+  'kimlik': 'kimlik_fotokopisi',
+  'bilir_kisi_raporu': 'eksper_raporu_alindi',
+  'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
+  'sigortaya_gonderilen_ihtarname': 'sigorta_basvurusu_yapildi',
+  'hakem_karari': 'tahkim_sonucu_belirlendi',
+};
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -194,6 +207,56 @@ export async function POST(request: NextRequest) {
       } catch (fileError: any) {
         console.error('Error processing file:', fileError);
         errors.push({ fileName: file.name, error: fileError.message || 'Unknown error' });
+      }
+    }
+
+    // Auto-mark checklist items based on uploaded documents
+    // Only mark if document was successfully uploaded
+    if (uploadedDocuments.length > 0) {
+      const taskKeyToMark = DOCUMENT_TO_TASK_MAPPING[category];
+      
+      if (taskKeyToMark) {
+        try {
+          // Get task title from CHECKLIST_ITEMS
+          const { CHECKLIST_ITEMS } = await import('@/lib/checklist-sections');
+          const taskItem = CHECKLIST_ITEMS.find((item) => item.key === taskKeyToMark);
+          const taskTitle = taskItem?.title || taskKeyToMark;
+
+          // Check if checklist item already exists and is completed
+          const { data: existingChecklistItem } = await supabaseAdmin
+            .from('admin_checklist')
+            .select('completed')
+            .eq('case_id', caseId)
+            .eq('task_key', taskKeyToMark)
+            .maybeSingle();
+
+          // Only mark as completed if not already completed (to avoid overwriting manual unchecks)
+          if (!existingChecklistItem || !existingChecklistItem.completed) {
+            // Upsert checklist item
+            const { error: checklistError } = await supabaseAdmin
+              .from('admin_checklist')
+              .upsert({
+                case_id: caseId,
+                task_key: taskKeyToMark,
+                title: taskTitle,
+                completed: true,
+                completed_at: new Date().toISOString(),
+                completed_by: (userAuth as { name: string | null }).name || user.email || null,
+              }, {
+                onConflict: 'case_id,task_key',
+              });
+
+            if (checklistError) {
+              console.error('Error auto-marking checklist item:', checklistError);
+              // Don't fail the upload, just log the error
+            } else {
+              console.log(`Auto-marked checklist item: ${taskKeyToMark} for case ${caseId}`);
+            }
+          }
+        } catch (checklistError: any) {
+          console.error('Error in auto-marking checklist:', checklistError);
+          // Don't fail the upload, just log the error
+        }
       }
     }
 

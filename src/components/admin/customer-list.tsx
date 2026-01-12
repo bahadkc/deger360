@@ -59,7 +59,7 @@ export function CustomerList({ customers, onDelete }: CustomerListProps) {
   const getBoardStageLabel = (stage: string) => {
     const stages: Record<string, string> = {
       basvuru_alindi: 'Başvuru Alındı',
-      evrak_ekspertiz: 'Evrak Toplama ve Bilir Kişi',
+      evrak_ekspertiz: 'Evrak Toplama ve Eksper',
       sigorta_basvurusu: 'Sigorta Başvurusu',
       muzakere: 'Müzakere',
       odeme: 'Ödeme',

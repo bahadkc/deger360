@@ -17,9 +17,10 @@ interface CaseCardProps {
 const getSectionInfo = (boardStage: string) => {
   const stageMap: Record<string, { title: string; emoji: string }> = {
     basvuru_alindi: { title: 'Başvuru Alındı', emoji: '📝' },
-    evrak_ekspertiz: { title: 'Evrak Toplama ve Bilir Kişi', emoji: '📋' },
+    evrak_ekspertiz: { title: 'Evrak Toplama ve Eksper', emoji: '📋' },
     sigorta_basvurusu: { title: 'Sigorta Başvurusu', emoji: '📮' },
     muzakere: { title: 'Müzakere', emoji: '🤝' },
+    tahkim: { title: 'Tahkim', emoji: '⚖️' },
     odeme: { title: 'Ödeme', emoji: '💰' },
     tamamlandi: { title: 'Tamamlandı', emoji: '✅' },
   };

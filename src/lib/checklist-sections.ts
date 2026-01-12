@@ -25,24 +25,31 @@ export const CHECKLIST_SECTIONS: ChecklistSection[] = [
   },
   {
     id: 2,
-    title: 'Evrak Toplama ve Bilir Kişi',
+    title: 'Evrak Toplama ve Eksper',
     emoji: '📋',
     boardStage: 'evrak_ekspertiz',
-    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'bilir_kisi_raporu_alindi'],
+    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'eksper_raporu_alindi'],
   },
   {
     id: 3,
     title: 'Sigorta Başvurusu',
     emoji: '📮',
     boardStage: 'sigorta_basvurusu',
-    taskKeys: ['evraklar_talep_edildi', 'sigorta_basvurusu_yapildi', 'basvuru_inceleme_basladi'],
+    taskKeys: ['sigorta_basvurusu_yapildi', 'sigortadan_kabul_cevabi_geldi', 'sigortadan_red_cevabi_geldi'],
   },
   {
     id: 4,
     title: 'Müzakere',
     emoji: '🤝',
     boardStage: 'muzakere',
-    taskKeys: ['sigorta_kabul_cevabi', 'odeme_bekleniyor'],
+    taskKeys: ['odeme_bekleniyor_muzakere', 'odeme_alindi_muzakere'],
+  },
+  {
+    id: 7,
+    title: 'Tahkim',
+    emoji: '⚖️',
+    boardStage: 'tahkim',
+    taskKeys: ['tahkime_basvuru_yapildi', 'bilirkisi_rapor_hazirlandi', 'tahkim_sonucu_belirlendi', 'odeme_bekleniyor_tahkim', 'odeme_alindi_tahkim'],
   },
   {
     id: 5,
@@ -71,26 +78,33 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   { key: 'ruhsat_fotokopisi', title: 'Ruhsat fotokopisi alındı' },
   { key: 'kimlik_fotokopisi', title: 'Kimlik fotokopisi alındı' },
   
-  // Bilir Kişi Raporu
+  // Eksper Raporu
   { key: 'arac_incelendi', title: 'Araç İncelendi' },
   { key: 'deger_kaybi_hesaplandi', title: 'Değer Kaybı Hesaplandı' },
-  { key: 'bilir_kisi_raporu_alindi', title: 'Bilir Kişi Raporu alındı' },
+  { key: 'eksper_raporu_alindi', title: 'Eksper Raporu alındı' },
   
   // Sigorta Başvurusu
-  { key: 'evraklar_talep_edildi', title: 'Evraklar talep edildi' },
   { key: 'sigorta_basvurusu_yapildi', title: 'Karşı tarafın sigortasına başvuru yapıldı' },
-  { key: 'basvuru_inceleme_basladi', title: 'Başvuru alındı, inceleme başladı' },
+  { key: 'sigortadan_kabul_cevabi_geldi', title: 'Sigortadan kabul cevabı geldi' },
+  { key: 'sigortadan_red_cevabi_geldi', title: 'Sigortadan red cevabı geldi' },
   
   // Müzakere
-  { key: 'sigorta_kabul_cevabi', title: 'Sigortadan kabul cevabı geldi' },
-  { key: 'odeme_bekleniyor', title: 'Ödeme bekleniyor' },
+  { key: 'odeme_bekleniyor_muzakere', title: 'Ödeme bekleniyor' },
+  { key: 'odeme_alindi_muzakere', title: 'Ödeme alındı' },
+  
+  // Tahkim
+  { key: 'tahkime_basvuru_yapildi', title: 'Tahkime başvuru yapıldı' },
+  { key: 'bilirkisi_rapor_hazirlandi', title: 'Bilirkişi rapor hazırlandı' },
+  { key: 'tahkim_sonucu_belirlendi', title: 'Tahkim sonucu belirlendi' },
+  { key: 'odeme_bekleniyor_tahkim', title: 'Ödeme bekleniyor' },
+  { key: 'odeme_alindi_tahkim', title: 'Ödeme alındı' },
   
   // Ödeme
   { key: 'musteriye_odeme_yapildi', title: 'Müşteriye ödeme yapıldı' },
   { key: 'musteri_bilgilendirildi', title: 'Müşteri bilgilendirildi' },
   
   // Tamamlandı
-  { key: 'dava_tamamlandi', title: 'Dava tamamlandı' },
+  { key: 'dava_tamamlandi', title: 'Başvuru tamamlandı' },
 ];
 
 // Section tamamlandı mı kontrol et
@@ -98,6 +112,15 @@ export function isSectionCompleted(
   section: ChecklistSection,
   checklistItems: Array<{ task_key: string; completed: boolean }>
 ): boolean {
+  // Special handling for Sigorta Başvurusu section
+  // Section is completed if: sigorta_basvurusu_yapildi + (kabul OR red)
+  if (section.boardStage === 'sigorta_basvurusu') {
+    const basvuruYapildi = checklistItems.find(item => item.task_key === 'sigorta_basvurusu_yapildi')?.completed || false;
+    const kabulCevabi = checklistItems.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi')?.completed || false;
+    const redCevabi = checklistItems.find(item => item.task_key === 'sigortadan_red_cevabi_geldi')?.completed || false;
+    return basvuruYapildi && (kabulCevabi || redCevabi);
+  }
+  
   const sectionItems = checklistItems.filter((item) => section.taskKeys.includes(item.task_key));
   return sectionItems.length > 0 && sectionItems.every((item) => item.completed);
 }

@@ -14,6 +14,15 @@ function isSectionCompleted(
   section: typeof CHECKLIST_SECTIONS[0],
   checklistItems: Array<{ task_key: string; completed: boolean }>
 ): boolean {
+  // Special handling for Sigorta Başvurusu section
+  // Section is completed if: sigorta_basvurusu_yapildi + (kabul OR red)
+  if (section.boardStage === 'sigorta_basvurusu') {
+    const basvuruYapildi = checklistItems.find(item => item.task_key === 'sigorta_basvurusu_yapildi')?.completed || false;
+    const kabulCevabi = checklistItems.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi')?.completed || false;
+    const redCevabi = checklistItems.find(item => item.task_key === 'sigortadan_red_cevabi_geldi')?.completed || false;
+    return basvuruYapildi && (kabulCevabi || redCevabi);
+  }
+  
   // Get all items for this section
   const sectionItems = checklistItems.filter((item) => section.taskKeys.includes(item.task_key));
   
@@ -196,13 +205,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ checklistItem });
     }
 
+    // Get case insurance_response to determine which section to show
+    const { data: caseData, error: caseError } = await supabaseAdmin
+      .from('cases')
+      .select('insurance_response')
+      .eq('id', caseId)
+      .single();
+
+    const insuranceResponse = caseData?.insurance_response || null;
+
     // Determine current section based on checklist completion
     const checklistData = (allChecklistItems || []).map((item: any) => ({
       task_key: item.task_key,
       completed: item.completed,
     }));
 
-    const currentSection = getCurrentSection(checklistData);
+    // Filter sections based on insurance response
+    let availableSections = CHECKLIST_SECTIONS;
+    if (insuranceResponse === 'accepted') {
+      // Show Müzakere section if accepted (hide Tahkim)
+      availableSections = CHECKLIST_SECTIONS.filter(s => s.boardStage !== 'tahkim');
+    } else if (insuranceResponse === 'rejected') {
+      // Show Tahkim section if rejected (hide Müzakere)
+      availableSections = CHECKLIST_SECTIONS.filter(s => s.boardStage !== 'muzakere');
+    }
+
+    // Find current section from available sections using isSectionCompleted function
+    let currentSection = null;
+    for (const section of availableSections) {
+      // Use isSectionCompleted function which handles special cases like sigorta_basvurusu
+      const sectionCompleted = isSectionCompleted(section, checklistData);
+      if (!sectionCompleted) {
+        currentSection = section;
+        break;
+      }
+    }
+
+    // If all sections completed, use last section
+    if (!currentSection) {
+      currentSection = availableSections[availableSections.length - 1];
+    }
+
     const newBoardStage = currentSection?.boardStage || 'basvuru_alindi';
 
     // Update case board_stage

@@ -19,6 +19,7 @@ const statusConfig: Record<string, { color: string; bgColor: string; emoji: stri
   'evrak_ekspertiz': { color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200', emoji: '📋' },
   'sigorta_basvurusu': { color: 'text-indigo-700', bgColor: 'bg-indigo-50 border-indigo-200', emoji: '📮' },
   'muzakere': { color: 'text-pink-700', bgColor: 'bg-pink-50 border-pink-200', emoji: '🤝' },
+  'tahkim': { color: 'text-yellow-700', bgColor: 'bg-yellow-50 border-yellow-200', emoji: '⚖️' },
   'odeme': { color: 'text-green-700', bgColor: 'bg-green-50 border-green-200', emoji: '💰' },
   'tamamlandi': { color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200', emoji: '✅' },
 };
@@ -30,7 +31,8 @@ const statusLabels: Record<string, string> = {
   urgent: 'Acil',
   active: 'Aktif',
   'basvuru_alindi': 'Başvuru Alındı',
-  'evrak_ekspertiz': 'Evrak Toplama ve Bilir Kişi',
+  'evrak_ekspertiz': 'Evrak Toplama ve Eksper',
+  'tahkim': 'Tahkim',
   'sigorta_basvurusu': 'Sigorta Başvurusu',
   'muzakere': 'Müzakere',
   'odeme': 'Ödeme',

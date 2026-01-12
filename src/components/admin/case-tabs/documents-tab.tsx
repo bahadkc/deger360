@@ -29,12 +29,13 @@ interface Document {
 const DOCUMENT_CATEGORIES = [
   { key: 'kaza_tespit_tutanagi', label: 'Kaza Tespit Tutanağı' },
   { key: 'arac_fotograflari', label: 'Araç Fotoğrafları' },
-  { key: 'bilir_kisi_raporu', label: 'Bilir Kişi Raporu' },
+  { key: 'bilir_kisi_raporu', label: 'Eksper Raporu' },
   { key: 'ruhsat', label: 'Ruhsat' },
   { key: 'kimlik', label: 'Kimlik' },
-  { key: 'sigortaya_gonderilen_ihtarname', label: 'Sigortaya Gönderilen İhtarname' },
+  { key: 'sigortaya_gonderilen_ihtarname', label: 'Sigortaya Yapılan Başvuru' },
   { key: 'hakem_karari', label: 'Hakem Kararı' },
   { key: 'sigorta_odeme_dekontu', label: 'Sigorta Ödeme Dekontu' },
+  { key: 'bilirkisi_raporu', label: 'Bilirkişi Raporu' },
 ];
 
 export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) {
@@ -93,6 +94,8 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
   const handleUploadComplete = useCallback(() => {
     loadDocuments();
     onUpdate();
+    // Dispatch custom event to notify other tabs (like checklist) that documents were updated
+    window.dispatchEvent(new CustomEvent('documents-updated'));
   }, [loadDocuments, onUpdate]);
 
   const handleDownload = async (doc: Document) => {
@@ -147,6 +150,8 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
       await loadDocuments();
       onUpdate();
+      // Dispatch custom event to notify other tabs (like checklist) that documents were updated
+      window.dispatchEvent(new CustomEvent('documents-updated'));
     } catch (error: any) {
       console.error('Error deleting document:', error);
       alert(`Belge silme sırasında bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);

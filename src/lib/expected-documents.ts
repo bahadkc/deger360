@@ -25,9 +25,9 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
   },
   {
     key: 'bilir_kisi_raporu',
-    name: 'Bilir Kişi Raporu',
+    name: 'Eksper Raporu',
     category: 'prepared',
-    description: 'Bağımsız bilir kişi tarafından hazırlanan değer kaybı raporu',
+    description: 'Bağımsız eksper tarafından hazırlanan değer kaybı raporu',
     required: true,
   },
   {
@@ -46,7 +46,7 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
   },
   {
     key: 'sigortaya_gonderilen_ihtarname',
-    name: 'Sigortaya Gönderilen İhtarname',
+    name: 'Sigortaya Yapılan Başvuru',
     category: 'legal',
     description: 'Sigorta şirketine gönderilen resmi ihtarname',
     required: true,
@@ -63,6 +63,13 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     name: 'Sigorta Ödeme Dekontu',
     category: 'payment',
     description: 'Sigorta şirketinden alınan ödeme dekontu',
+    required: true,
+  },
+  {
+    key: 'bilirkisi_raporu',
+    name: 'Bilirkişi Raporu',
+    category: 'legal',
+    description: 'Tahkim sürecinde hazırlanan bilirkişi raporu',
     required: true,
   },
 ];

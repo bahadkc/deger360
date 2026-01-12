@@ -22,14 +22,16 @@ export interface CaseData {
   assigned_lawyer: string | null;
   value_loss_amount: number | null;
   fault_rate: number | null;
+  insurance_response: string | null;
   created_at: string;
 }
 
 const BOARD_STAGES = [
   { key: 'basvuru_alindi', label: 'Başvuru Alındı', emoji: '📝', color: 'bg-blue-50 border-blue-200', textColor: 'text-blue-700' },
-  { key: 'evrak_ekspertiz', label: 'Evrak Toplama ve Bilir Kişi', emoji: '📋', color: 'bg-orange-50 border-orange-200', textColor: 'text-orange-700' },
+  { key: 'evrak_ekspertiz', label: 'Evrak Toplama ve Eksper', emoji: '📋', color: 'bg-orange-50 border-orange-200', textColor: 'text-orange-700' },
   { key: 'sigorta_basvurusu', label: 'Sigorta Başvurusu', emoji: '📮', color: 'bg-indigo-50 border-indigo-200', textColor: 'text-indigo-700' },
   { key: 'muzakere', label: 'Müzakere', emoji: '🤝', color: 'bg-pink-50 border-pink-200', textColor: 'text-pink-700' },
+  { key: 'tahkim', label: 'Tahkim', emoji: '⚖️', color: 'bg-yellow-50 border-yellow-200', textColor: 'text-yellow-700' },
   { key: 'odeme', label: 'Ödeme', emoji: '💰', color: 'bg-green-50 border-green-200', textColor: 'text-green-700' },
   { key: 'tamamlandi', label: 'Tamamlandı', emoji: '✅', color: 'bg-purple-50 border-purple-200', textColor: 'text-purple-700' },
 ];
@@ -103,6 +105,7 @@ export function AdminBoard() {
         assigned_lawyer: caseItem.assigned_lawyer,
         value_loss_amount: caseItem.value_loss_amount,
         fault_rate: caseItem.fault_rate,
+        insurance_response: caseItem.insurance_response || null,
         created_at: caseItem.created_at,
       }));
 
@@ -134,6 +137,21 @@ export function AdminBoard() {
       <div className="flex gap-3 sm:gap-4 h-full min-w-max">
         {BOARD_STAGES.map((stage) => {
           const stageCases = getCasesForStage(stage.key);
+          
+          // Determine label with insurance response tags
+          let stageLabel = stage.label;
+          if (stage.key === 'muzakere' && stageCases.length > 0) {
+            // Check if any case in this stage has accepted insurance response
+            // Müzakere stage'ine sadece insurance_response === 'accepted' olan case'ler gelir
+            // Bu yüzden stage'de case varsa zaten accepted demektir
+            stageLabel = `${stage.label} (kabul)`;
+          } else if (stage.key === 'tahkim' && stageCases.length > 0) {
+            // Check if any case in this stage has rejected insurance response
+            // Tahkim stage'ine sadece insurance_response === 'rejected' olan case'ler gelir
+            // Bu yüzden stage'de case varsa zaten rejected demektir
+            stageLabel = `${stage.label} (red)`;
+          }
+          
           return (
             <div
               key={stage.key}
@@ -142,7 +160,7 @@ export function AdminBoard() {
               <div className="mb-3 sm:mb-4 flex-shrink-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg sm:text-xl">{stage.emoji}</span>
-                  <h3 className={`font-bold ${stage.textColor} text-sm sm:text-base md:text-lg truncate`}>{stage.label}</h3>
+                  <h3 className={`font-bold ${stage.textColor} text-sm sm:text-base md:text-lg truncate`}>{stageLabel}</h3>
                 </div>
                 <span className={`text-xs sm:text-sm ${stage.textColor} opacity-75`}>
                   {stageCases.length} dosya

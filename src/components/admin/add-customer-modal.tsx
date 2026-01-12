@@ -99,10 +99,10 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
   const documentLabels: Record<string, string> = {
     kaza_tespit_tutanagi: 'Kaza Tespit Tutanağı',
     arac_fotograflari: 'Araç Fotoğrafları',
-    bilir_kisi_raporu: 'Bilir Kişi Raporu',
+    bilir_kisi_raporu: 'Eksper Raporu',
     ruhsat: 'Ruhsat',
     kimlik: 'Kimlik',
-    sigortaya_gonderilen_ihtarname: 'Sigortaya Gönderilen İhtarname',
+    sigortaya_gonderilen_ihtarname: 'Sigortaya Yapılan Başvuru',
     hakem_karari: 'Hakem Kararı',
     sigorta_odeme_dekontu: 'Sigorta Ödeme Dekontu',
   };

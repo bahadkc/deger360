@@ -47,7 +47,134 @@ export default function DashboardPage() {
   const customerId = useMemo(() => customerData?.id, [customerData?.id]);
   const caseId = useMemo(() => caseData?.id, [caseData?.id]);
 
-  const loadChecklistData = useCallback(async (caseId: string) => {
+  // Progress hesaplama - Admin paneldekiyle aynı section-based sistem
+  const calculateProgressPercentage = useCallback((checklistItems: any[], insuranceResponse: string | null): number => {
+    const checklistData = checklistItems.map(item => ({ task_key: item.task_key, completed: item.completed }));
+    let totalProgress = 0;
+
+    // 1. Başvuru Alındı (0% -> 5%)
+    const basvuruSection = CHECKLIST_SECTIONS.find(s => s.boardStage === 'basvuru_alindi');
+    if (basvuruSection) {
+      const basvuruItems = checklistData.filter(item => basvuruSection.taskKeys.includes(item.task_key));
+      const basvuruCompleted = basvuruItems.filter(item => item.completed).length;
+      const basvuruTotal = basvuruItems.length;
+      if (basvuruTotal > 0) {
+        totalProgress = (basvuruCompleted / basvuruTotal) * 5;
+      }
+    }
+
+    // 2. Evrak Toplama ve Eksper (5% -> 20%)
+    const evrakSection = CHECKLIST_SECTIONS.find(s => s.boardStage === 'evrak_ekspertiz');
+    if (evrakSection) {
+      const evrakItems = checklistData.filter(item => evrakSection.taskKeys.includes(item.task_key));
+      const evrakCompleted = evrakItems.filter(item => item.completed).length;
+      const evrakTotal = evrakItems.length;
+      if (evrakTotal > 0) {
+        const evrakProgress = (evrakCompleted / evrakTotal) * 15; // 15% range (5% to 20%)
+        totalProgress = Math.max(totalProgress, 5 + evrakProgress);
+      }
+    }
+
+    // 3. Sigorta Başvurusu (20% -> 30%)
+    const sigortaSection = CHECKLIST_SECTIONS.find(s => s.boardStage === 'sigorta_basvurusu');
+    if (sigortaSection) {
+      const basvuruYapildi = checklistData.find(item => item.task_key === 'sigorta_basvurusu_yapildi')?.completed || false;
+      const kabulCevabi = checklistData.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi')?.completed || false;
+      const redCevabi = checklistData.find(item => item.task_key === 'sigortadan_red_cevabi_geldi')?.completed || false;
+      
+      if (basvuruYapildi && (kabulCevabi || redCevabi)) {
+        totalProgress = Math.max(totalProgress, 30); // Section completed
+      } else if (basvuruYapildi) {
+        totalProgress = Math.max(totalProgress, 25); // Başvuru yapıldı, halfway
+      }
+    }
+
+    // 4. Müzakere or Tahkim (30% -> 50% -> 95%)
+    if (totalProgress >= 30) {
+      if (insuranceResponse === 'accepted') {
+        // Müzakere path
+        const odemeBekleniyor = checklistData.find(item => item.task_key === 'odeme_bekleniyor_muzakere')?.completed || false;
+        const odemeAlindi = checklistData.find(item => item.task_key === 'odeme_alindi_muzakere')?.completed || false;
+        
+        if (odemeAlindi) {
+          totalProgress = 95;
+        } else if (odemeBekleniyor) {
+          totalProgress = 50;
+        }
+      } else if (insuranceResponse === 'rejected') {
+        // Tahkim path
+        const tahkimSection = CHECKLIST_SECTIONS.find(s => s.boardStage === 'tahkim');
+        if (tahkimSection) {
+          const tahkimItems = checklistData.filter(item => tahkimSection.taskKeys.includes(item.task_key));
+          const odemeBekleniyorTahkim = checklistData.find(item => item.task_key === 'odeme_bekleniyor_tahkim')?.completed || false;
+          const odemeAlindiTahkim = checklistData.find(item => item.task_key === 'odeme_alindi_tahkim')?.completed || false;
+          
+          // Items before odeme_bekleniyor_tahkim: tahkime_basvuru_yapildi, bilirkisi_rapor_hazirlandi, tahkim_sonucu_belirlendi
+          const beforeOdemeItems = tahkimItems.filter(item => 
+            ['tahkime_basvuru_yapildi', 'bilirkisi_rapor_hazirlandi', 'tahkim_sonucu_belirlendi'].includes(item.task_key)
+          );
+          const beforeOdemeCompleted = beforeOdemeItems.filter(item => item.completed).length;
+          const beforeOdemeTotal = beforeOdemeItems.length;
+          
+          if (odemeAlindiTahkim) {
+            totalProgress = 95;
+          } else if (odemeBekleniyorTahkim) {
+            totalProgress = 50;
+          } else if (beforeOdemeTotal > 0) {
+            const tahkimProgress = 30 + (beforeOdemeCompleted / beforeOdemeTotal) * 20;
+            totalProgress = Math.max(totalProgress, tahkimProgress);
+          }
+        }
+      }
+    }
+
+    // 5. Ödeme (95% -> 100%)
+    if (totalProgress >= 95) {
+      const odemeSection = CHECKLIST_SECTIONS.find(s => s.boardStage === 'odeme');
+      if (odemeSection) {
+        const odemeItems = checklistData.filter(item => odemeSection.taskKeys.includes(item.task_key));
+        const odemeCompleted = odemeItems.filter(item => item.completed).length;
+        const odemeTotal = odemeItems.length;
+        if (odemeTotal > 0) {
+          const odemeProgress = 95 + (odemeCompleted / odemeTotal) * 5;
+          totalProgress = Math.max(totalProgress, odemeProgress);
+        }
+      }
+    }
+
+    // 6. Tamamlandı (100%)
+    const tamamlandiSection = CHECKLIST_SECTIONS.find(s => s.boardStage === 'tamamlandi');
+    if (tamamlandiSection) {
+      const tamamlandiItems = checklistData.filter(item => tamamlandiSection.taskKeys.includes(item.task_key));
+      const tamamlandiCompleted = tamamlandiItems.filter(item => item.completed).length;
+      if (tamamlandiCompleted > 0) {
+        totalProgress = 100;
+      }
+    }
+
+    return Math.min(Math.round(totalProgress), 100);
+  }, []);
+
+  // Get checklist items for progress calculation
+  const getChecklistItemsForProgress = useCallback(() => {
+    if (!caseData?.admin_checklist) return [];
+    return CHECKLIST_ITEMS.map((item) => {
+      const existing = caseData.admin_checklist.find((c: any) => c.task_key === item.key);
+      return existing || {
+        task_key: item.key,
+        completed: false,
+      };
+    });
+  }, [caseData]);
+
+  // Calculate progress percentage
+  const progressPercentage = useMemo(() => {
+    const checklistItems = getChecklistItemsForProgress();
+    const insuranceResponse = caseData?.insurance_response || null;
+    return calculateProgressPercentage(checklistItems, insuranceResponse);
+  }, [caseData, getChecklistItemsForProgress, calculateProgressPercentage]);
+
+  const loadChecklistData = useCallback(async (caseId: string, insuranceResponse?: string | null) => {
     const { data: checklistData, error: checklistError } = await supabase
       .from('admin_checklist')
       .select('*')
@@ -74,11 +201,70 @@ export default function DashboardPage() {
 
       // Section'ları ProgressStep formatına dönüştür (Tamamlandı section'ını müşteri portalında gizle)
       const formattedSteps: ProgressStep[] = CHECKLIST_SECTIONS.filter(
-        (section) => section.title !== 'Tamamlandı'
+        (section) => {
+          // Hide Tamamlandı section
+          if (section.title === 'Tamamlandı') return false;
+          
+          // Müzakere/Tahkim section filtering based on insurance response
+          if (section.boardStage === 'muzakere') {
+            // Show müzakere if: no response yet OR accepted
+            return insuranceResponse === null || insuranceResponse === 'accepted';
+          }
+          if (section.boardStage === 'tahkim') {
+            // Show tahkim only if rejected
+            return insuranceResponse === 'rejected';
+          }
+          
+          return true;
+        }
       ).map((section) => {
         const sectionItems = mergedChecklist.filter((item) =>
           section.taskKeys.includes(item.task_key)
         );
+        
+        // Special handling for Sigorta Başvurusu section
+        if (section.boardStage === 'sigorta_basvurusu') {
+          const kabulCevabi = mergedChecklist.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi');
+          const redCevabi = mergedChecklist.find(item => item.task_key === 'sigortadan_red_cevabi_geldi');
+          const kabulCompleted = kabulCevabi?.completed || false;
+          const redCompleted = redCevabi?.completed || false;
+          
+          // Filter section items based on insurance response
+          const filteredSectionItems = sectionItems.filter((item) => {
+            // Always show sigorta_basvurusu_yapildi
+            if (item.task_key === 'sigorta_basvurusu_yapildi') return true;
+            
+            // If no response yet, show "Sigortadan cevap bekleniyor" (we'll add this manually)
+            if (!kabulCompleted && !redCompleted) {
+              // Don't show kabul/red items, we'll add a custom "cevap bekleniyor" item
+              return false;
+            }
+            
+            // If kabul completed, only show kabul
+            if (kabulCompleted && item.task_key === 'sigortadan_kabul_cevabi_geldi') return true;
+            
+            // If red completed, only show red
+            if (redCompleted && item.task_key === 'sigortadan_red_cevabi_geldi') return true;
+            
+            return false;
+          });
+          
+          // Add "Sigortadan cevap bekleniyor" item if no response yet
+          if (!kabulCompleted && !redCompleted) {
+            filteredSectionItems.push({
+              id: 'sigortadan_cevap_bekleniyor',
+              task_key: 'sigortadan_cevap_bekleniyor',
+              title: 'Sigortadan cevap bekleniyor',
+              completed: false,
+              completed_at: null,
+              completed_by: null,
+            });
+          }
+          
+          sectionItems.length = 0;
+          sectionItems.push(...filteredSectionItems);
+        }
+        
         const sectionCompleted = isSectionCompleted(
           section,
           mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
@@ -108,9 +294,17 @@ export default function DashboardPage() {
           .filter((item) => item.completed)
           .map((item) => item.title);
 
+        // Section title'a insurance response'a göre etiket ekle
+        let sectionTitle = `${section.emoji} ${section.title}`;
+        if (section.boardStage === 'muzakere' && insuranceResponse === 'accepted') {
+          sectionTitle = `${section.emoji} ${section.title} (kabul)`;
+        } else if (section.boardStage === 'tahkim' && insuranceResponse === 'rejected') {
+          sectionTitle = `${section.emoji} ${section.title} (red)`;
+        }
+
         return {
           id: `section-${section.id}`,
-          title: `${section.emoji} ${section.title}`,
+          title: sectionTitle,
           status,
           date,
           description: sectionCompleted
@@ -224,12 +418,72 @@ export default function DashboardPage() {
             mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
           );
 
+          const insuranceResponse = currentCase.insurance_response;
+          
           const formattedSteps: ProgressStep[] = CHECKLIST_SECTIONS.filter(
-            (section) => section.title !== 'Tamamlandı'
+            (section) => {
+              // Hide Tamamlandı section
+              if (section.title === 'Tamamlandı') return false;
+              
+              // Müzakere/Tahkim section filtering based on insurance response
+              if (section.boardStage === 'muzakere') {
+                // Show müzakere if: no response yet OR accepted
+                return insuranceResponse === null || insuranceResponse === 'accepted';
+              }
+              if (section.boardStage === 'tahkim') {
+                // Show tahkim only if rejected
+                return insuranceResponse === 'rejected';
+              }
+              
+              return true;
+            }
           ).map((section) => {
             const sectionItems = mergedChecklist.filter((item) =>
               section.taskKeys.includes(item.task_key)
             );
+            
+            // Special handling for Sigorta Başvurusu section
+            if (section.boardStage === 'sigorta_basvurusu') {
+              const kabulCevabi = mergedChecklist.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi');
+              const redCevabi = mergedChecklist.find(item => item.task_key === 'sigortadan_red_cevabi_geldi');
+              const kabulCompleted = kabulCevabi?.completed || false;
+              const redCompleted = redCevabi?.completed || false;
+              
+              // Filter section items based on insurance response
+              const filteredSectionItems = sectionItems.filter((item) => {
+                // Always show sigorta_basvurusu_yapildi
+                if (item.task_key === 'sigorta_basvurusu_yapildi') return true;
+                
+                // If no response yet, don't show kabul/red items
+                if (!kabulCompleted && !redCompleted) {
+                  return false;
+                }
+                
+                // If kabul completed, only show kabul
+                if (kabulCompleted && item.task_key === 'sigortadan_kabul_cevabi_geldi') return true;
+                
+                // If red completed, only show red
+                if (redCompleted && item.task_key === 'sigortadan_red_cevabi_geldi') return true;
+                
+                return false;
+              });
+              
+              // Add "Sigortadan cevap bekleniyor" item if no response yet
+              if (!kabulCompleted && !redCompleted) {
+                filteredSectionItems.push({
+                  id: 'sigortadan_cevap_bekleniyor',
+                  task_key: 'sigortadan_cevap_bekleniyor',
+                  title: 'Sigortadan cevap bekleniyor',
+                  completed: false,
+                  completed_at: null,
+                  completed_by: null,
+                });
+              }
+              
+              sectionItems.length = 0;
+              sectionItems.push(...filteredSectionItems);
+            }
+            
             const sectionCompleted = isSectionCompleted(
               section,
               mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
@@ -256,9 +510,17 @@ export default function DashboardPage() {
               .filter((item) => item.completed)
               .map((item) => item.title);
 
+            // Section title'a insurance response'a göre etiket ekle
+            let sectionTitle = `${section.emoji} ${section.title}`;
+            if (section.boardStage === 'muzakere' && insuranceResponse === 'accepted') {
+              sectionTitle = `${section.emoji} ${section.title} (kabul)`;
+            } else if (section.boardStage === 'tahkim' && insuranceResponse === 'rejected') {
+              sectionTitle = `${section.emoji} ${section.title} (red)`;
+            }
+
             return {
               id: `section-${section.id}`,
-              title: `${section.emoji} ${section.title}`,
+              title: sectionTitle,
               status,
               date,
               description: sectionCompleted
@@ -280,7 +542,7 @@ export default function DashboardPage() {
           setProgressSteps(formattedSteps);
         } else {
           console.log('Dashboard: Loading checklist data separately');
-          await loadChecklistData(currentCase.id);
+          await loadChecklistData(currentCase.id, currentCase.insurance_response);
         }
 
         // Use documents data from API if available, otherwise load separately
@@ -409,7 +671,7 @@ export default function DashboardPage() {
             console.log('Checklist updated, refreshing progress tracker...');
             // Reload checklist data
             if (caseId) {
-              loadChecklistData(caseId);
+              loadChecklistData(caseId, caseData?.insurance_response);
             }
           }
         )
@@ -444,7 +706,7 @@ export default function DashboardPage() {
         supabase.removeChannel(documentsChannel);
       };
     }
-  }, [loadDashboardData, customerId, caseId, loadChecklistData, loadDocumentsData]);
+  }, [loadDashboardData, customerId, caseId, caseData, loadChecklistData, loadDocumentsData]);
 
   if (loading) {
     return (
@@ -508,12 +770,6 @@ export default function DashboardPage() {
       </PortalLayout>
     );
   }
-
-
-  // Progress hesaplama
-  const completedSteps = progressSteps.filter((s) => s.status === 'completed').length;
-  const totalSteps = progressSteps.length;
-  const progressPercentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
   // Financial calculations
   const degerKaybi = parseFloat(caseData?.value_loss_amount?.toString() || '0');
