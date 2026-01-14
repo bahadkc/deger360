@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   creator: 'Değer360',
   publisher: 'Değer360',
   icons: {
-    icon: '/icon.png',
-    apple: '/icon.png',
+    icon: `https://deger360.net/icon.png`,
+    apple: `https://deger360.net/icon.png`,
   },
   formatDetection: {
     email: false,
