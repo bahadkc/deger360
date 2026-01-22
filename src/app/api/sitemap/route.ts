@@ -31,6 +31,18 @@ export async function GET() {
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>${baseUrl}/blog</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/blog/kaza-yaptim-simdi-ne-olacak-aracinizdaki-gizli-parayi-deger-kaybini-nasil-geri-alirsiniz</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/iletisim</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>

@@ -215,7 +215,8 @@ export function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-8 pt-8 text-center text-neutral-200">
-          <p>© 2024 Değer360. Tüm hakları saklıdır.</p>
+          <p className="mb-2">© 2024 Değer360 - Tüm Hakları Saklıdır.</p>
+          <p className="text-sm">Değer360, araç değer kaybı süreçlerinde uzmanlaşmış bir danışmanlık firmasıdır.</p>
         </div>
       </div>
     </footer>

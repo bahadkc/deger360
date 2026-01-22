@@ -10,6 +10,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://deger360.net';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: '/',
+  },
   title: {
     default: 'Değer360 - Araç Değer Kaybı Danışmanlığı',
     template: '%s | Değer360',
@@ -127,6 +130,28 @@ export default function RootLayout({
                   "url": `${siteUrl}/sss`
                 }
               ]
+            })
+          }}
+        />
+        {/* Organization Schema Markup */}
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Değer360",
+              "url": siteUrl,
+              "logo": `${siteUrl}/icon.png`,
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+90-505-705-3305",
+                "contactType": "customer service",
+                "areaServed": "TR",
+                "availableLanguage": "Turkish"
+              }
             })
           }}
         />

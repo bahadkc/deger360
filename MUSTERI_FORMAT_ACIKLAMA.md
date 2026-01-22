@@ -34,18 +34,11 @@ Bu dosya, 30-40 örnek müşteri verisini sisteme yüklemek için kullanılacak 
 - `vehicle_plate`: Araç plakası (yukarıda belirtildi)
 - `vehicle_brand_model`: Araç marka/model (yukarıda belirtildi)
 - `accident_date`: Kaza tarihi (yukarıda belirtildi)
-
-### Opsiyonel Alanlar
 - `accident_location`: Kaza yeri (örn: "Kadıköy Bağdat Caddesi")
 - `damage_amount`: Hasar tutarı (TL, örn: 50000)
-- `value_loss_amount`: Değer kaybı tutarı (TL, örn: 45000)
-- `fault_rate`: Kusur oranı (0-100 arası, örn: 0, 10, 20, 30)
-- `estimated_compensation`: Tahmini tazminat (TL, örn: 36000)
-- `commission_rate`: Komisyon oranı (yüzde, varsayılan: 20)
-- `total_payment_amount`: Toplam ödeme tutarı (TL)
-- `notary_and_file_expenses`: Noter ve dosya masrafları (TL, örn: 500)
+- `fault_rate`: Kusur oranı (0-100 arası, örn: 100, 80, 70, 90)
+- `notary_and_file_expenses`: Noter ve dosya masrafları (TL, örn: 3500)
 - `assigned_lawyer`: Atanmış avukat (örn: "Av. Mehmet Demir")
-- `status`: Dava durumu - `active`, `completed`, `cancelled` (varsayılan: "active")
 
 ## Dava Aşamaları
 
