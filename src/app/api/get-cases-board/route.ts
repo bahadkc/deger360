@@ -113,7 +113,8 @@ export async function GET(request: NextRequest) {
           id,
           full_name,
           email,
-          phone
+          phone,
+          is_sample
         )
       `)
       .order('created_at', { ascending: false });
@@ -121,8 +122,10 @@ export async function GET(request: NextRequest) {
     // Filter by assigned cases if not superadmin
     if (!isSuperAdmin && assignedCaseIds && assignedCaseIds.length > 0) {
       query = query.in('id', assignedCaseIds);
+    } else if (isSuperAdmin) {
+      // Superadmin: exclude sample customers
+      query = query.eq('customers.is_sample', false);
     }
-    // Superadmin: no filter needed, will see all cases
 
     const { data, error } = await query;
 

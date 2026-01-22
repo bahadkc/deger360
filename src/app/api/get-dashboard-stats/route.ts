@@ -103,13 +103,15 @@ export async function GET(request: NextRequest) {
     // Build query
     let casesQuery = supabaseAdmin
       .from('cases')
-      .select('id, status, board_stage');
+      .select('id, status, board_stage, customers!inner(is_sample)');
 
     // Filter by assigned cases if not superadmin
     if (!isSuperAdmin && assignedCaseIds && assignedCaseIds.length > 0) {
       casesQuery = casesQuery.in('id', assignedCaseIds);
+    } else if (isSuperAdmin) {
+      // Superadmin: exclude sample customers
+      casesQuery = casesQuery.eq('customers.is_sample', false);
     }
-    // Superadmin: no filter needed
 
     const { data: casesData, error: casesError } = await casesQuery;
 

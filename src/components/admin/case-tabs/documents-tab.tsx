@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Trash2, Image as ImageIcon } from 'lucide-react';
+import { FileText, Download, Trash2, Image as ImageIcon, X, Receipt } from 'lucide-react';
 import { canEdit } from '@/lib/supabase/admin-auth';
 import { DateDisplay } from '@/components/ui/date-display';
 import { MultiFileUpload } from '@/components/admin/multi-file-upload';
+import { supabase } from '@/lib/supabase/client';
+import { Input } from '@/components/ui/input';
 
 interface DocumentsTabProps {
   caseId: string;
@@ -36,12 +38,15 @@ const DOCUMENT_CATEGORIES = [
   { key: 'hakem_karari', label: 'Hakem Kararı' },
   { key: 'sigorta_odeme_dekontu', label: 'Sigorta Ödeme Dekontu' },
   { key: 'bilirkisi_raporu', label: 'Bilirkişi Raporu' },
+  { key: 'acenteye_atilan_dekont', label: 'Acente Ödeme Dekontu' },
 ];
 
 export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [canEditData, setCanEditData] = useState(false);
+  const [showNoReceiptModal, setShowNoReceiptModal] = useState(false);
+  const [paymentDate, setPaymentDate] = useState('');
 
   const loadDocuments = useCallback(async () => {
     try {
@@ -100,6 +105,13 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
   const handleDownload = async (doc: Document) => {
     try {
+      // Check if this is a NO_RECEIPT document
+      if (doc.file_path.startsWith('NO_RECEIPT:')) {
+        // Open in new tab for NO_RECEIPT documents (they return HTML)
+        window.open(`/api/download-document?documentId=${doc.id}&filePath=${encodeURIComponent(doc.file_path)}`, '_blank');
+        return;
+      }
+
       // Use API route to download document
       const response = await fetch(`/api/download-document?documentId=${doc.id}&filePath=${encodeURIComponent(doc.file_path)}`, {
         method: 'GET',
@@ -158,6 +170,60 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
     }
   };
 
+  const handleNoReceipt = async () => {
+    if (!paymentDate) {
+      alert('Lütfen ödeme tarihini girin');
+      return;
+    }
+
+    try {
+      // Get admin name
+      const { data: { user } } = await supabase.auth.getUser();
+      let uploadedByName = 'Admin';
+      if (user?.id) {
+        try {
+          const response = await fetch('/api/check-admin-status', {
+            method: 'GET',
+            credentials: 'include',
+          });
+          if (response.ok) {
+            const data = await response.json();
+            uploadedByName = data.admin?.name || 'Admin';
+          }
+        } catch (error) {
+          console.error('Error getting admin name:', error);
+        }
+      }
+
+      const response = await fetch('/api/create-no-receipt-document', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId,
+          paymentDate,
+          uploadedByName,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create no-receipt document');
+      }
+
+      setShowNoReceiptModal(false);
+      setPaymentDate('');
+      await loadDocuments();
+      onUpdate();
+      window.dispatchEvent(new CustomEvent('documents-updated'));
+    } catch (error: any) {
+      console.error('Error creating no-receipt document:', error);
+      alert(`Dekont kaydı oluşturulurken bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
+    }
+  };
+
   const getDocumentsForCategory = (category: string) => {
     return documents.filter((doc) => doc.category === category);
   };
@@ -203,10 +269,19 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-neutral-800 truncate">
                             {doc.name}
+                            {doc.file_path.startsWith('NO_RECEIPT:') && (
+                              <span className="ml-2 text-xs text-neutral-500">(Nakit Ödeme)</span>
+                            )}
                           </p>
                           <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1">
-                            <span>{formatFileSize(doc.file_size)}</span>
-                            <span>•</span>
+                            {doc.file_path.startsWith('NO_RECEIPT:') ? (
+                              <span className="text-blue-600 font-medium">Nakit ödeme kaydı</span>
+                            ) : (
+                              <>
+                                <span>{formatFileSize(doc.file_size)}</span>
+                                <span>•</span>
+                              </>
+                            )}
                             <span>
                               {doc.uploaded_by_name || doc.uploaded_by}
                             </span>
@@ -254,7 +329,7 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
               {/* Upload Component */}
               {canEditData && (
-                <div className="mt-auto">
+                <div className="mt-auto space-y-2">
                   <MultiFileUpload
                     caseId={caseId}
                     category={category.key}
@@ -264,12 +339,74 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
                     }}
                     disabled={loading}
                   />
+                  {/* Dekont Yok butonu - sadece acente ödeme dekontu için */}
+                  {category.key === 'acenteye_atilan_dekont' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowNoReceiptModal(true)}
+                      className="w-full mt-2"
+                    >
+                      <Receipt className="w-4 h-4 mr-2" />
+                      Dekont Yok
+                    </Button>
+                  )}
                 </div>
               )}
             </Card>
           );
         })}
       </div>
+
+      {/* No Receipt Modal */}
+      {showNoReceiptModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-neutral-800">Dekont Yok</h3>
+              <button
+                onClick={() => {
+                  setShowNoReceiptModal(false);
+                  setPaymentDate('');
+                }}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Ödeme Tarihi
+                </label>
+                <Input
+                  type="date"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowNoReceiptModal(false);
+                    setPaymentDate('');
+                  }}
+                >
+                  İptal
+                </Button>
+                <Button
+                  onClick={handleNoReceipt}
+                  disabled={!paymentDate}
+                >
+                  Kaydet
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

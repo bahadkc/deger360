@@ -273,13 +273,24 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
   }, [caseData]);
 
   const calculateExpectedNet = () => {
-    const valueLoss = parseFloat(financialData.value_loss_amount?.toString() || '0');
-    const faultRate = parseFloat(financialData.fault_rate?.toString() || '0');
-    return (valueLoss * faultRate) / 100;
+    const valueLoss = financialData.value_loss_amount?.toString().trim();
+    const faultRate = financialData.fault_rate?.toString().trim();
+    if (!valueLoss || valueLoss === '' || !faultRate || faultRate === '') {
+      return null;
+    }
+    const parsedValueLoss = parseFloat(valueLoss);
+    const parsedFaultRate = parseFloat(faultRate);
+    if (isNaN(parsedValueLoss) || isNaN(parsedFaultRate)) {
+      return null;
+    }
+    return (parsedValueLoss * parsedFaultRate) / 100;
   };
 
   const calculateTotalPayment = () => {
     const expectedNet = calculateExpectedNet();
+    if (expectedNet === null) {
+      return null;
+    }
     return (expectedNet * 80) / 100;
   };
 
@@ -304,7 +315,7 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         dosyaTakipNo = 'AUTO_GENERATE';
       }
 
-      // Calculate financial values
+      // Calculate financial values (can be null if values are missing)
       const expectedNet = calculateExpectedNet();
       const totalPayment = calculateTotalPayment();
 
@@ -321,23 +332,34 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         insurance_company: customerData.insurance_company,
       };
 
+      // Parse financial values - allow null/empty values
+      const valueLossAmount = financialData.value_loss_amount?.toString().trim();
+      const faultRate = financialData.fault_rate?.toString().trim();
+      const notaryExpenses = financialData.notary_and_file_expenses?.toString().trim();
+
       const caseUpdates: any = {
         vehicle_plate: vehicleData.vehicle_plate,
         vehicle_brand_model: vehicleData.vehicle_brand_model,
         accident_date: vehicleData.accident_date,
-        value_loss_amount: parseFloat(financialData.value_loss_amount?.toString() || '0'),
-        fault_rate: parseInt(financialData.fault_rate?.toString() || '0'),
-        estimated_compensation: expectedNet,
-        total_payment_amount: totalPayment,
+        value_loss_amount: valueLossAmount && valueLossAmount !== '' ? parseFloat(valueLossAmount) : null,
+        fault_rate: faultRate && faultRate !== '' ? parseInt(faultRate) : null,
+        estimated_compensation: expectedNet ?? null,
+        total_payment_amount: totalPayment ?? null,
         status: fileData.status,
         assigned_lawyer: fileData.assigned_lawyer,
       };
 
       // Try to include notary_and_file_expenses if it exists
       try {
-        const notaryExpenses = parseFloat(financialData.notary_and_file_expenses?.toString() || '0');
-        if (notaryExpenses > 0) {
-          caseUpdates.notary_and_file_expenses = notaryExpenses;
+        if (notaryExpenses && notaryExpenses !== '') {
+          const parsedExpenses = parseFloat(notaryExpenses);
+          if (parsedExpenses > 0) {
+            caseUpdates.notary_and_file_expenses = parsedExpenses;
+          } else {
+            caseUpdates.notary_and_file_expenses = null;
+          }
+        } else {
+          caseUpdates.notary_and_file_expenses = null;
         }
       } catch (error) {
         // Ignore if column doesn't exist
@@ -667,7 +689,11 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             </label>
             <div className="px-4 py-2 bg-neutral-50 border border-neutral-300 rounded-lg">
               <span className="text-lg font-semibold text-primary-blue">
-                {calculateExpectedNet().toLocaleString('tr-TR')} TL
+                {calculateExpectedNet() !== null ? (
+                  `${calculateExpectedNet()!.toLocaleString('tr-TR')} TL`
+                ) : (
+                  <span className="text-neutral-400">Bekleniyor..</span>
+                )}
               </span>
               <p className="text-xs text-neutral-500 mt-1">
                 (Toplam Değer Kaybı × Kusur Oranı)
@@ -680,7 +706,11 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             </label>
             <div className="px-4 py-2 bg-neutral-50 border border-neutral-300 rounded-lg">
               <span className="text-lg font-semibold text-green-600">
-                {calculateTotalPayment().toLocaleString('tr-TR')} TL
+                {calculateTotalPayment() !== null ? (
+                  `${calculateTotalPayment()!.toLocaleString('tr-TR')} TL`
+                ) : (
+                  <span className="text-neutral-400">Bekleniyor..</span>
+                )}
               </span>
               <p className="text-xs text-neutral-500 mt-1">(Beklenen Net Tutar × 80%)</p>
             </div>

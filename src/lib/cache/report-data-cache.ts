@@ -8,6 +8,7 @@ interface CachedReportData {
   admins: any[];
   caseAdmins: any[];
   checklist: any[];
+  documents: any[];
   timestamp: number;
 }
 
@@ -54,6 +55,7 @@ export async function getReportData(
     admins: data.admins || [],
     caseAdmins: data.caseAdmins || [],
     checklist: data.checklist || [],
+    documents: data.documents || [],
     timestamp: Date.now(),
   };
 

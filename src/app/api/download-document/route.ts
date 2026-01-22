@@ -153,6 +153,78 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if this is a "NO_RECEIPT" document (no physical file)
+    if (filePath.startsWith('NO_RECEIPT:')) {
+      // Extract date from file_path (format: NO_RECEIPT:dd/mm/yyyy)
+      const datePart = filePath.replace('NO_RECEIPT:', '');
+      
+      // Create HTML page showing the payment information
+      const htmlContent = `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödeme Dekontu</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .message {
+            font-size: 18px;
+            color: #475569;
+            line-height: 1.6;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            border-left: 4px solid #2563eb;
+        }
+        .date {
+            font-weight: 600;
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ödeme Dekontu</h1>
+        <div class="message">
+            Bu dosyanın ödemesi <span class="date">${datePart}</span> tarihinde nakit olarak yapılmıştır.
+        </div>
+    </div>
+</body>
+</html>
+      `;
+
+      return new NextResponse(htmlContent, {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+      });
+    }
+
     // Extract storage path from file_path (remove domain if it's a URL)
     let storagePath = filePath;
     if (storagePath.includes('supabase.co')) {

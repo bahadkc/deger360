@@ -134,8 +134,10 @@ export async function GET(request: NextRequest) {
 
       // Filter cases by assigned case IDs (using inner join, this will filter customers too)
       query = query.in('cases.id', assignedCaseIds);
+    } else {
+      // Superadmin: exclude sample customers
+      query = query.eq('is_sample', false);
     }
-    // Superadmin: no filter needed, will see all customers with their cases
 
     // Apply search filter (on customer fields)
     if (search) {

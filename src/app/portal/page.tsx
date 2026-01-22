@@ -772,12 +772,15 @@ export default function DashboardPage() {
   }
 
   // Financial calculations
-  const degerKaybi = parseFloat(caseData?.value_loss_amount?.toString() || '0');
-  const karsiTarafKusurOrani = parseFloat(caseData?.fault_rate?.toString() || '0');
-  const noterVeDosyaMasraflari = parseFloat(caseData?.notary_and_file_expenses?.toString() || '0');
+  const degerKaybi = caseData?.value_loss_amount ? parseFloat(caseData.value_loss_amount.toString()) : null;
+  const karsiTarafKusurOrani = caseData?.fault_rate ? parseFloat(caseData.fault_rate.toString()) : null;
+  const noterVeDosyaMasraflari = caseData?.notary_and_file_expenses ? parseFloat(caseData.notary_and_file_expenses.toString()) : null;
+  
+  // Check if values are missing
+  const hasMissingValues = degerKaybi === null || degerKaybi === 0;
   
   // Toplam Beklenen Net Gelir = Değer Kaybı * Karşı Taraf Kusur Oranı * 80/10000
-  const sizeKalacakTutar = (degerKaybi * karsiTarafKusurOrani * 80) / 10000;
+  const sizeKalacakTutar = hasMissingValues ? null : (degerKaybi! * (karsiTarafKusurOrani || 0) * 80) / 10000;
 
   return (
     <PortalLayout>
@@ -802,10 +805,23 @@ export default function DashboardPage() {
             
             <div className="relative z-10">
               <p className="text-sm md:text-base mb-2 opacity-90">Toplam Beklenen Net Gelir</p>
-              <p className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">{sizeKalacakTutar.toLocaleString('tr-TR')} TL</p>
-              <p className="text-xs md:text-sm opacity-80">
-                Bu tutar, tüm kesintilerden sonra size kalacak net tutardır
-              </p>
+              {hasMissingValues ? (
+                <>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 text-yellow-200">
+                    Bilir kişi raporu bekleniyor
+                  </p>
+                  <p className="text-xs md:text-sm opacity-80">
+                    Bilir kişi raporu hazırlandıktan sonra tutar güncellenecektir
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">{sizeKalacakTutar!.toLocaleString('tr-TR')} TL</p>
+                  <p className="text-xs md:text-sm opacity-80">
+                    Bu tutar, tüm kesintilerden sonra size kalacak net tutardır
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
@@ -814,21 +830,33 @@ export default function DashboardPage() {
             <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
               <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Değer Kaybı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
-                {degerKaybi.toLocaleString('tr-TR')} TL
+                {hasMissingValues || degerKaybi === null ? (
+                  <span className="text-neutral-400">Bekleniyor..</span>
+                ) : (
+                  `${degerKaybi.toLocaleString('tr-TR')} TL`
+                )}
               </p>
             </Card>
             
             <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
               <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Karşı Tarafın Kusur Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
-                %{karsiTarafKusurOrani.toFixed(0)}
+                {hasMissingValues || karsiTarafKusurOrani === null ? (
+                  <span className="text-neutral-400">Bekleniyor..</span>
+                ) : (
+                  `%${karsiTarafKusurOrani.toFixed(0)}`
+                )}
               </p>
             </Card>
 
             <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-green-100 to-green-200/50 border-2 border-green-400 shadow-md">
               <p className="text-xs md:text-sm text-green-800 mb-1 font-semibold">Noter ve Dosya Masrafları</p>
               <p className="text-lg md:text-xl font-bold text-green-900 mb-1">
-                {noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL
+                {hasMissingValues || noterVeDosyaMasraflari === null ? (
+                  <span className="text-green-700">Bekleniyor..</span>
+                ) : (
+                  `${noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL`
+                )}
               </p>
               <p className="text-xs text-green-900 font-bold">Biz karşılıyoruz!</p>
             </Card>
@@ -836,7 +864,11 @@ export default function DashboardPage() {
             <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
               <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Müşteri Hakediş Oranı</p>
               <p className="text-lg md:text-xl font-bold text-neutral-800">
-                %80
+                {hasMissingValues ? (
+                  <span className="text-neutral-400">Bekleniyor..</span>
+                ) : (
+                  '%80'
+                )}
               </p>
             </Card>
         </div>

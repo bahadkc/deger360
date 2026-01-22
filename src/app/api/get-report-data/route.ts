@@ -135,6 +135,9 @@ export async function GET(request: NextRequest) {
         caseAdmins: [],
         checklist: [],
       });
+    } else if (isSuperAdmin) {
+      // Superadmin: exclude sample customers
+      casesQuery = casesQuery.eq('customers.is_sample', false);
     }
 
     const { data: casesData, error: casesError } = await casesQuery;
@@ -196,11 +199,28 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Load documents (specifically for acente report - dekont documents)
+    let documentsData: any[] = [];
+    if (caseIds.length > 0) {
+      const { data: documents, error: documentsError } = await supabaseAdmin
+        .from('documents')
+        .select('id, case_id, name, file_path, category, uploaded_at')
+        .in('case_id', caseIds)
+        .eq('category', 'acenteye_atilan_dekont');
+
+      if (documentsError) {
+        console.error('Error loading documents:', documentsError);
+      } else {
+        documentsData = documents || [];
+      }
+    }
+
     return NextResponse.json({
       cases: casesData || [],
       admins: adminsData,
       caseAdmins: caseAdminsData,
       checklist: checklistData,
+      documents: documentsData,
     });
   } catch (error: any) {
     console.error('Error in get-report-data API:', error);

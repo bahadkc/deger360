@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { AdminUser } from '@/lib/supabase/admin-auth';
 import { StatusBadge } from './common/status-badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users, FileText, CheckCircle, UserPlus } from 'lucide-react';
+import { Users, FileText, CheckCircle, UserPlus, Eye } from 'lucide-react';
 import { CHECKLIST_ITEMS } from '@/lib/checklist-sections';
 import { DateDisplay } from '@/components/ui/date-display';
 import { getReportData } from '@/lib/cache/report-data-cache';
@@ -28,6 +28,11 @@ interface ReportSection {
     board_stage: string;
     start_date: string;
     estimated_earnings: number;
+    dekont_document?: {
+      id: string;
+      name: string;
+      file_path: string;
+    } | null;
   }[];
 }
 
@@ -54,6 +59,10 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
       const reportData = await getReportData('acente');
       const casesData = reportData.cases || [];
       const checklistList = reportData.checklist || [];
+      const documentsList = reportData.documents || [];
+      
+      console.log('Acente Report: Documents loaded:', documentsList.length);
+      console.log('Acente Report: Documents data:', documentsList);
 
       console.log('Acente Report: Cases loaded:', casesData?.length || 0);
       console.log('Acente Report: Checklist items loaded:', checklistList.length);
@@ -129,6 +138,19 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
       setTotalCustomers(totalCustomersCount);
       setTotalEarnings(totalEarningsValue);
 
+      // Helper function to find dekont document for a case
+      const findDekontDocument = (caseId: string) => {
+        const dekont = documentsList.find((doc: any) => doc.case_id === caseId);
+        if (dekont) {
+          console.log(`Acente Report: Found dekont for case ${caseId}:`, dekont);
+        }
+        return dekont ? {
+          id: dekont.id,
+          name: dekont.name,
+          file_path: dekont.file_path,
+        } : null;
+      };
+
       // Prepare customer list for all periods
       const allCustomers = cases.map((caseItem: any) => ({
         id: caseItem.customers?.id || '',
@@ -139,6 +161,7 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
         board_stage: caseItem.board_stage || 'basvuru_alindi',
         start_date: caseItem.start_date || caseItem.created_at,
         estimated_earnings: estimatedEarningsPerCustomer,
+        dekont_document: findDekontDocument(caseItem.id),
       }));
 
       // Calculate sections: 1 month, 3 months, 1 year
@@ -160,6 +183,7 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
         board_stage: caseItem.board_stage || 'basvuru_alindi',
         start_date: caseItem.start_date || caseItem.created_at,
         estimated_earnings: estimatedEarningsPerCustomer,
+        dekont_document: findDekontDocument(caseItem.id),
       }));
 
       // Calculate monthly earnings for 1 month (just this month)
@@ -203,6 +227,7 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
         board_stage: caseItem.board_stage || 'basvuru_alindi',
         start_date: caseItem.start_date || caseItem.created_at,
         estimated_earnings: estimatedEarningsPerCustomer,
+        dekont_document: findDekontDocument(caseItem.id),
       }));
 
       // Calculate monthly earnings for 3 months
@@ -248,6 +273,7 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
         board_stage: caseItem.board_stage || 'basvuru_alindi',
         start_date: caseItem.start_date || caseItem.created_at,
         estimated_earnings: estimatedEarningsPerCustomer,
+        dekont_document: findDekontDocument(caseItem.id),
       }));
 
       // Calculate monthly earnings for 1 year (last 12 months)
@@ -432,13 +458,14 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
                   <th className="text-left py-3 px-4 font-medium text-neutral-700">Müşteri Adı</th>
                   <th className="text-left py-3 px-4 font-medium text-neutral-700">Dosya Durumu</th>
                   <th className="text-left py-3 px-4 font-medium text-neutral-700">Başlangıç Tarihi</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-700">Tahmini Gelir</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-700">Alınan Ödeme</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-700">Dekontu Görüntüleme</th>
                 </tr>
               </thead>
               <tbody>
                 {section.customers.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-8 text-neutral-500">Müşteri bulunamadı</td>
+                    <td colSpan={5} className="text-center py-8 text-neutral-500">Müşteri bulunamadı</td>
                   </tr>
                 ) : (
                   section.customers.map((customer) => (
@@ -452,6 +479,24 @@ export function AcenteReport({ adminUser }: { adminUser: AdminUser }) {
                       </td>
                       <td className="py-3 px-4 font-medium">
                         {customer.estimated_earnings.toLocaleString('tr-TR')} TL
+                      </td>
+                      <td className="py-3 px-4">
+                        {customer.dekont_document ? (
+                          <button
+                            onClick={() => {
+                              const url = `/api/download-document?documentId=${customer.dekont_document!.id}&filePath=${encodeURIComponent(customer.dekont_document!.file_path)}`;
+                              window.open(url, '_blank');
+                            }}
+                            className="flex items-center gap-2 text-primary-blue hover:text-primary-blue/80 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span className="text-sm">
+                              {customer.dekont_document.file_path?.startsWith('NO_RECEIPT:') ? 'Görüntüle (Nakit)' : 'Görüntüle'}
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="text-sm text-neutral-400">Dekont yok</span>
+                        )}
                       </td>
                     </tr>
                   ))
