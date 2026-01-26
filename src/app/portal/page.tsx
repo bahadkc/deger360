@@ -826,52 +826,64 @@ export default function DashboardPage() {
           </div>
 
           {/* İstatistikler - 4'lü Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
-              <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Değer Kaybı</p>
-              <p className="text-lg md:text-xl font-bold text-neutral-800">
-                {hasMissingValues || degerKaybi === null ? (
-                  <span className="text-neutral-400">Bekleniyor..</span>
-                ) : (
-                  `${degerKaybi.toLocaleString('tr-TR')} TL`
-                )}
-              </p>
-            </Card>
+          {(() => {
+            // Adem Uğurlu müşterisi için noter ve dosya masrafları kartını gizle
+            const customerName = customerData?.full_name?.toLowerCase().trim() || '';
+            const isAdemUgurlu = customerName === 'adem uğurlu' || customerName === 'adem ugurlu';
+            const shouldShowNoterCard = !isAdemUgurlu;
+            const gridCols = shouldShowNoterCard ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-3';
             
-            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
-              <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Karşı Tarafın Kusur Oranı</p>
-              <p className="text-lg md:text-xl font-bold text-neutral-800">
-                {hasMissingValues || karsiTarafKusurOrani === null ? (
-                  <span className="text-neutral-400">Bekleniyor..</span>
-                ) : (
-                  `%${karsiTarafKusurOrani.toFixed(0)}`
-                )}
-              </p>
-            </Card>
+            return (
+              <div className={`grid ${gridCols} gap-3 md:gap-4`}>
+                <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
+                  <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Değer Kaybı</p>
+                  <p className="text-lg md:text-xl font-bold text-neutral-800">
+                    {hasMissingValues || degerKaybi === null ? (
+                      <span className="text-neutral-400">Bekleniyor..</span>
+                    ) : (
+                      `${degerKaybi.toLocaleString('tr-TR')} TL`
+                    )}
+                  </p>
+                </Card>
+                
+                <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
+                  <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Karşı Tarafın Kusur Oranı</p>
+                  <p className="text-lg md:text-xl font-bold text-neutral-800">
+                    {hasMissingValues || karsiTarafKusurOrani === null ? (
+                      <span className="text-neutral-400">Bekleniyor..</span>
+                    ) : (
+                      `%${karsiTarafKusurOrani.toFixed(0)}`
+                    )}
+                  </p>
+                </Card>
 
-            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-green-100 to-green-200/50 border-2 border-green-400 shadow-md">
-              <p className="text-xs md:text-sm text-green-800 mb-1 font-semibold">Noter ve Dosya Masrafları</p>
-              <p className="text-lg md:text-xl font-bold text-green-900 mb-1">
-                {hasMissingValues || noterVeDosyaMasraflari === null ? (
-                  <span className="text-green-700">Bekleniyor..</span>
-                ) : (
-                  `${noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL`
+                {shouldShowNoterCard && (
+                  <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-green-100 to-green-200/50 border-2 border-green-400 shadow-md">
+                    <p className="text-xs md:text-sm text-green-800 mb-1 font-semibold">Noter ve Dosya Masrafları</p>
+                    <p className="text-lg md:text-xl font-bold text-green-900 mb-1">
+                      {hasMissingValues || noterVeDosyaMasraflari === null ? (
+                        <span className="text-green-700">Bekleniyor..</span>
+                      ) : (
+                        `${noterVeDosyaMasraflari.toLocaleString('tr-TR')} TL`
+                      )}
+                    </p>
+                    <p className="text-xs text-green-900 font-bold">Biz karşılıyoruz!</p>
+                  </Card>
                 )}
-              </p>
-              <p className="text-xs text-green-900 font-bold">Biz karşılıyoruz!</p>
-            </Card>
 
-            <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
-              <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Müşteri Hakediş Oranı</p>
-              <p className="text-lg md:text-xl font-bold text-neutral-800">
-                {hasMissingValues ? (
-                  <span className="text-neutral-400">Bekleniyor..</span>
-                ) : (
-                  '%80'
-                )}
-              </p>
-            </Card>
-        </div>
+                <Card className="p-3 md:p-4 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50/50 to-white border border-blue-200">
+                  <p className="text-xs md:text-sm text-primary-blue mb-1 font-medium">Müşteri Hakediş Oranı</p>
+                  <p className="text-lg md:text-xl font-bold text-neutral-800">
+                    {hasMissingValues ? (
+                      <span className="text-neutral-400">Bekleniyor..</span>
+                    ) : (
+                      '%80'
+                    )}
+                  </p>
+                </Card>
+              </div>
+            );
+          })()}
 
           <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-300 rounded-lg shadow-sm">
             <div className="flex items-start gap-2">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { turkishToEnglish } from '@/lib/utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -92,10 +93,10 @@ export async function POST(request: NextRequest) {
     const dosyaTakipNo =
       existingNumbers.length === 0 ? '546179' : (Math.max(...existingNumbers) + 1).toString();
 
-    // Generate password
+    // Generate password - only English characters and numbers
     const surname = customerData.full_name.split(' ').pop() || '';
-    const cleanPlate = vehicleData.vehicle_plate.replace(/\s/g, '').toLowerCase();
-    const cleanSurname = surname.toLowerCase();
+    const cleanPlate = turkishToEnglish(vehicleData.vehicle_plate.replace(/\s/g, ''));
+    const cleanSurname = turkishToEnglish(surname);
     const password = `${cleanPlate}.${cleanSurname}`;
 
     // Create customer
@@ -165,6 +166,7 @@ export async function POST(request: NextRequest) {
         id: authData.user.id,
         customer_id: customer.id,
         role: 'customer',
+        password: password, // Store password in user_auth table for display purposes
       });
     }
 

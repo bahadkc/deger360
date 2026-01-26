@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { turkishToEnglish } from '@/lib/utils';
 
 export async function POST(request: Request) {
   // 1. Önce bu işlemi yapanın Admin olup olmadığını kontrol et
@@ -67,17 +68,31 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Kullanıcı ID veya email gerekli' }, { status: 400 });
     }
 
+    // Convert Turkish characters to English characters for password
+    const englishPassword = turkishToEnglish(newPassword);
+
     // DİKKAT: Burada 'updateUser' DEĞİL, 'admin.updateUserById' kullanıyoruz.
     // updateUser -> Login olan kişiyi günceller (HATA BUYDU)
     // updateUserById -> ID'si verilen kişiyi günceller (DOĞRUSU BU)
     const { data, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
         targetUserId,
-        { password: newPassword }
+        { password: englishPassword }
     );
 
     if (updateError) {
         console.error("Şifre güncelleme hatası:", updateError);
         throw updateError;
+    }
+
+    // Update password in user_auth table as well (use English password)
+    const { error: userAuthUpdateError } = await supabaseAdmin
+        .from('user_auth')
+        .update({ password: englishPassword })
+        .eq('id', targetUserId);
+
+    if (userAuthUpdateError) {
+        console.error("user_auth password update error:", userAuthUpdateError);
+        // Don't fail the request, password was updated in auth.users
     }
 
     console.log(`User ${targetUserId} password updated by Admin ${user.id}`);

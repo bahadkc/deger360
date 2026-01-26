@@ -9,6 +9,7 @@ import { Save, Edit2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { getAllAdmins, isSuperAdmin, canEdit, canAssignAdmins, getCurrentAdmin } from '@/lib/supabase/admin-auth';
 import { DateDisplay } from '@/components/ui/date-display';
+import { turkishToEnglish } from '@/lib/utils';
 
 interface GeneralInfoTabProps {
   caseData: any;
@@ -40,12 +41,13 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
   const [passwordWasUpdated, setPasswordWasUpdated] = useState(false);
   const [updatedPassword, setUpdatedPassword] = useState<string>(''); // Store the updated password to display
 
-  // Calculate current password format for display/placeholder
+  // Calculate current password format for display/placeholder (fallback only)
   const getCurrentPasswordFormat = () => {
     if (vehicleData.vehicle_plate && customerData.full_name) {
-      const cleanPlate = vehicleData.vehicle_plate.replace(/\s/g, '').toLowerCase();
-      const surname = customerData.full_name.split(' ').pop()?.toLowerCase() || '';
-      return `${cleanPlate}.${surname}`;
+      const cleanPlate = turkishToEnglish(vehicleData.vehicle_plate.replace(/\s/g, ''));
+      const surname = customerData.full_name.split(' ').pop() || '';
+      const cleanSurname = turkishToEnglish(surname);
+      return `${cleanPlate}.${cleanSurname}`;
     }
     return '';
   };
@@ -239,20 +241,62 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
         insurance_company: caseData.customers?.insurance_company || '',
       });
       
-      // Load updated password from localStorage if exists
-      if (customerId && typeof window !== 'undefined') {
-        const storedPassword = localStorage.getItem(`updated_password_${customerId}`);
-        if (storedPassword) {
-          setUpdatedPassword(storedPassword);
-          setPasswordWasUpdated(true);
+      // Load password from Supabase user_auth table
+      const loadPasswordFromSupabase = async () => {
+        if (customerId) {
+          try {
+            const { data: userAuthData, error } = await supabase
+              .from('user_auth')
+              .select('password')
+              .eq('customer_id', customerId)
+              .eq('role', 'customer')
+              .maybeSingle();
+
+            if (!error && userAuthData?.password) {
+              // Convert Turkish characters to English for display
+              const englishPassword = turkishToEnglish(userAuthData.password);
+              setUpdatedPassword(englishPassword);
+              setPasswordWasUpdated(true);
+            } else {
+              // Fallback to localStorage if Supabase doesn't have password yet
+              if (typeof window !== 'undefined') {
+                const storedPassword = localStorage.getItem(`updated_password_${customerId}`);
+                if (storedPassword) {
+                  // Convert Turkish characters to English for display
+                  const englishPassword = turkishToEnglish(storedPassword);
+                  setUpdatedPassword(englishPassword);
+                  setPasswordWasUpdated(true);
+                } else {
+                  setPasswordWasUpdated(false);
+                  setUpdatedPassword('');
+                }
+              } else {
+                setPasswordWasUpdated(false);
+                setUpdatedPassword('');
+              }
+            }
+          } catch (error) {
+            console.error('Error loading password from Supabase:', error);
+            // Fallback to localStorage
+            if (typeof window !== 'undefined') {
+              const storedPassword = localStorage.getItem(`updated_password_${customerId}`);
+              if (storedPassword) {
+                setUpdatedPassword(storedPassword);
+                setPasswordWasUpdated(true);
+              } else {
+                setPasswordWasUpdated(false);
+                setUpdatedPassword('');
+              }
+            }
+          }
         } else {
           setPasswordWasUpdated(false);
           setUpdatedPassword('');
         }
-      } else {
-        setPasswordWasUpdated(false);
-        setUpdatedPassword('');
-      }
+      };
+
+      loadPasswordFromSupabase();
+      
       setVehicleData({
         vehicle_plate: caseData.vehicle_plate || '',
         vehicle_brand_model: caseData.vehicle_brand_model || '',
@@ -407,12 +451,14 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             passwordUpdateSuccess = false;
             passwordUpdateError = 'Müşteri email bilgisi bulunamadı';
           } else {
+            // Convert Turkish characters to English before sending to API
+            const englishPassword = turkishToEnglish(passwordData.newPassword.trim());
             const passwordResponse = await fetch('/api/update-password', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 customerEmail: customerEmail, // Müşterinin email'i
-                newPassword: passwordData.newPassword.trim(),
+                newPassword: englishPassword,
               }),
             });
 
@@ -422,13 +468,16 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
               passwordUpdateSuccess = false;
               passwordUpdateError = passwordData_result.error || 'Şifre güncellenirken bir hata oluştu';
             } else {
-              const newPasswordValue = passwordData.newPassword.trim();
-              setUpdatedPassword(newPasswordValue);
+              // Password is already converted to English in API, use the English version
+              const englishPassword = turkishToEnglish(passwordData.newPassword.trim());
+              setUpdatedPassword(englishPassword);
               setPasswordData({ newPassword: '' });
               setPasswordWasUpdated(true);
               
+              // Password is now stored in Supabase user_auth table, no need for localStorage
+              // But keep localStorage as backup for now
               if (customerId && typeof window !== 'undefined') {
-                localStorage.setItem(`updated_password_${customerId}`, newPasswordValue);
+                localStorage.setItem(`updated_password_${customerId}`, englishPassword);
               }
             }
           }
@@ -445,8 +494,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
       }
 
       setIsEditing(false);
-      const currentPassword = updatedPassword || getCurrentPasswordFormat();
-      setPasswordData({ newPassword: currentPassword });
+      // Password will be reloaded from Supabase via useEffect
+      setPasswordData({ newPassword: '' });
       
       // Show success message
       if (passwordData.newPassword && passwordData.newPassword.trim().length >= 6) {
@@ -488,8 +537,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
                 variant="outline"
                 onClick={() => {
                   setIsEditing(false);
-                  // Restore to updated password or format when canceling
-                  const currentPassword = updatedPassword || getCurrentPasswordFormat();
+                  // Restore to current password from Supabase when canceling
+                  const currentPassword = updatedPassword || '';
                   setPasswordData({ newPassword: currentPassword });
                 }}
               >
@@ -504,8 +553,8 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             <Button
               onClick={() => {
                 setIsEditing(true);
-                // Load current active password (updated password if exists, otherwise format) into input field
-                const currentPassword = updatedPassword || getCurrentPasswordFormat();
+                // Load current password from Supabase into input field (already converted to English)
+                const currentPassword = updatedPassword || '';
                 setPasswordData({ newPassword: currentPassword });
               }}
             >
@@ -951,20 +1000,19 @@ export function GeneralInfoTab({ caseData, onUpdate }: GeneralInfoTabProps) {
             ) : (
               <div className="px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
                 <div className="font-mono text-sm font-bold text-primary-blue">
-                  {passwordWasUpdated && updatedPassword ? (
+                  {updatedPassword ? (
                     <div>
-                      <span className="text-green-600">✓ Şifre güncellendi: </span>
-                      <span className="text-neutral-800">{updatedPassword}</span>
+                      <span className="text-neutral-800">{turkishToEnglish(updatedPassword)}</span>
                     </div>
                   ) : (
                     <span className="text-neutral-600">
-                      {getCurrentPasswordFormat() || 'Şifre görüntülenemiyor'}
+                      {getCurrentPasswordFormat() ? turkishToEnglish(getCurrentPasswordFormat()) : 'Şifre yükleniyor...'}
                     </span>
                   )}
                 </div>
-                {passwordWasUpdated && updatedPassword && (
+                {updatedPassword && (
                   <p className="text-xs text-green-600 mt-1">
-                    Bu şifre Supabase ve portal girişinde aktif.
+                    Bu şifre Supabase'den alınmıştır ve portal girişinde aktif.
                   </p>
                 )}
               </div>

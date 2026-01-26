@@ -340,6 +340,7 @@ export type Database = {
           customer_id: string | null
           id: string
           name: string | null
+          password: string | null
           role: string | null
           updated_at: string | null
         }
@@ -348,6 +349,7 @@ export type Database = {
           customer_id?: string | null
           id: string
           name?: string | null
+          password?: string | null
           role?: string | null
           updated_at?: string | null
         }
@@ -356,6 +358,7 @@ export type Database = {
           customer_id?: string | null
           id?: string
           name?: string | null
+          password?: string | null
           role?: string | null
           updated_at?: string | null
         }

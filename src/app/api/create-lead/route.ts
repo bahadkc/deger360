@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 import { protectAPI, createProtectedResponse } from '@/lib/security/api-protection';
+import { turkishToEnglish } from '@/lib/utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -59,9 +60,9 @@ export async function POST(request: NextRequest) {
     const cleanPhone = telefon.replace(/\s/g, '').replace(/[^0-9]/g, '');
     const email = providedEmail?.trim() || `${cleanPhone}@deger360.net`;
 
-    // Generate password for portal
+    // Generate password for portal - only English characters and numbers
     const surname = adSoyad.split(' ').pop() || '';
-    const cleanSurname = surname.toLowerCase();
+    const cleanSurname = turkishToEnglish(surname);
     // Use first 4 digits of phone as part of password
     const phoneDigits = cleanPhone.slice(-4);
     const password = `${cleanSurname}.${phoneDigits}`;
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
             id: authData.user.id,
             customer_id: retryCustomer.id,
             role: 'customer',
+            password: password, // Store password in user_auth table for display purposes
           });
         }
 
@@ -167,6 +169,7 @@ export async function POST(request: NextRequest) {
         id: authData.user.id,
         customer_id: customer.id,
         role: 'customer',
+        password: password, // Store password in user_auth table for display purposes
       });
 
       if (userAuthError) {
