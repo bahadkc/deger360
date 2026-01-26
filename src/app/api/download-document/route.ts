@@ -155,8 +155,23 @@ export async function GET(request: NextRequest) {
 
     // Check if this is a "NO_RECEIPT" document (no physical file)
     if (filePath.startsWith('NO_RECEIPT:')) {
-      // Extract date from file_path (format: NO_RECEIPT:dd/mm/yyyy)
-      const datePart = filePath.replace('NO_RECEIPT:', '');
+      // Extract date and amount from file_path (format: NO_RECEIPT:dd/mm/yyyy:amount or NO_RECEIPT:dd/mm/yyyy for old records)
+      const parts = filePath.replace('NO_RECEIPT:', '').split(':');
+      const datePart = parts[0] || '';
+      const amountPart = parts[1] || '';
+      
+      // Format amount for display (support old format without amount)
+      let messageText = '';
+      if (amountPart) {
+        const formattedAmount = parseFloat(amountPart).toLocaleString('tr-TR', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }) + ' TL';
+        messageText = `Bu dosyanın ödemesi <span class="date">${datePart}</span> tarihinde <span class="amount">${formattedAmount}</span> ücret nakit olarak yapılmıştır.`;
+      } else {
+        // Old format without amount
+        messageText = `Bu dosyanın ödemesi <span class="date">${datePart}</span> tarihinde nakit olarak yapılmıştır.`;
+      }
       
       // Create HTML page showing the payment information
       const htmlContent = `
@@ -201,7 +216,7 @@ export async function GET(request: NextRequest) {
             border-radius: 6px;
             border-left: 4px solid #2563eb;
         }
-        .date {
+        .date, .amount {
             font-weight: 600;
             color: #1e293b;
         }
@@ -211,7 +226,7 @@ export async function GET(request: NextRequest) {
     <div class="container">
         <h1>Ödeme Dekontu</h1>
         <div class="message">
-            Bu dosyanın ödemesi <span class="date">${datePart}</span> tarihinde nakit olarak yapılmıştır.
+            ${messageText}
         </div>
     </div>
 </body>

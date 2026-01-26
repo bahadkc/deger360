@@ -147,7 +147,7 @@ export default function RootLayout({
               "logo": `${siteUrl}/icon.png`,
               "contactPoint": {
                 "@type": "ContactPoint",
-                "telephone": "+90-505-705-3305",
+                "telephone": "+90 505 705 33 05",
                 "contactType": "customer service",
                 "areaServed": "TR",
                 "availableLanguage": "Turkish"

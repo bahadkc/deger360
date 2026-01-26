@@ -47,6 +47,7 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
   const [canEditData, setCanEditData] = useState(false);
   const [showNoReceiptModal, setShowNoReceiptModal] = useState(false);
   const [paymentDate, setPaymentDate] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
 
   const loadDocuments = useCallback(async () => {
     try {
@@ -175,6 +176,10 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
       alert('Lütfen ödeme tarihini girin');
       return;
     }
+    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
+      alert('Lütfen geçerli bir ödeme tutarı girin');
+      return;
+    }
 
     try {
       // Get admin name
@@ -204,6 +209,7 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
         body: JSON.stringify({
           caseId,
           paymentDate,
+          paymentAmount: parseFloat(paymentAmount),
           uploadedByName,
         }),
       });
@@ -215,6 +221,7 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
       setShowNoReceiptModal(false);
       setPaymentDate('');
+      setPaymentAmount('');
       await loadDocuments();
       onUpdate();
       window.dispatchEvent(new CustomEvent('documents-updated'));
@@ -386,19 +393,34 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
                   className="w-full"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Ödeme Tutarı (TL)
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full"
+                />
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button
                   variant="outline"
                   onClick={() => {
                     setShowNoReceiptModal(false);
                     setPaymentDate('');
+                    setPaymentAmount('');
                   }}
                 >
                   İptal
                 </Button>
                 <Button
                   onClick={handleNoReceipt}
-                  disabled={!paymentDate}
+                  disabled={!paymentDate || !paymentAmount || parseFloat(paymentAmount) <= 0}
                 >
                   Kaydet
                 </Button>

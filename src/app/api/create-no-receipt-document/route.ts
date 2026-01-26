@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { caseId, paymentDate, uploadedByName } = body;
+    const { caseId, paymentDate, paymentAmount, uploadedByName } = body;
 
-    if (!caseId || !paymentDate) {
+    if (!caseId || !paymentDate || !paymentAmount) {
       return NextResponse.json(
-        { error: 'Case ID and payment date are required' },
+        { error: 'Case ID, payment date, and payment amount are required' },
         { status: 400 }
       );
     }
@@ -120,9 +120,15 @@ export async function POST(request: NextRequest) {
       year: 'numeric',
     });
 
+    // Format payment amount
+    const formattedAmount = parseFloat(paymentAmount.toString()).toLocaleString('tr-TR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+
     // Create special document record with NO_RECEIPT flag in file_path
-    // Format: NO_RECEIPT:dd/mm/yyyy
-    const specialFilePath = `NO_RECEIPT:${formattedDate}`;
+    // Format: NO_RECEIPT:dd/mm/yyyy:amount
+    const specialFilePath = `NO_RECEIPT:${formattedDate}:${paymentAmount}`;
 
     const { data: document, error: documentError } = await supabaseAdmin
       .from('documents')
@@ -135,7 +141,7 @@ export async function POST(request: NextRequest) {
         file_type: 'text/plain',
         uploaded_by: user.id,
         uploaded_by_name: uploadedByName || (userAuth as { name: string | null }).name || null,
-        description: `Bu dosyanın ödemesi ${formattedDate} tarihinde nakit olarak yapılmıştır`,
+        description: `Bu dosyanın ödemesi ${formattedDate} tarihinde ${formattedAmount} TL ücret nakit olarak yapılmıştır`,
       })
       .select()
       .single();

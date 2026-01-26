@@ -19,6 +19,24 @@ const samplePosts: BlogPost[] = [
     category: 'Rehber',
     imageUrl: '/images/blog/blog_1.jpg',
   },
+  {
+    id: '2',
+    title: 'Ticari Araçlarda Kazanç Kaybı (Yatış Parası) ve Değer Kaybı Nasıl Alınır?',
+    excerpt: 'Ticari araç sahipleri kaza sonrası hem değer kaybı hem de yatış parası (kazanç kaybı) talep edebilir. Taksi, dolmuş, servis ve nakliye araçları için tazminat rehberi.',
+    slug: 'ticari-araclarda-kazanc-kaybi-yatis-parasi-ve-deger-kaybi-nasil-alinir',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    imageUrl: '/images/blog/blog_2.jpg',
+  },
+  {
+    id: '3',
+    title: 'Ağır Hasarlı (Pert) Araçlar İçin Değer Kaybı Alınabilir mi? Yargıtay Kararları Ne Diyor?',
+    excerpt: 'Pert (ağır hasarlı) araçlar için değer kaybı tazminatı alınabilir mi? Yargıtay kararları, istisnai durumlar ve pert araç sahiplerinin hakları hakkında detaylı rehber.',
+    slug: 'pert-araclar-deger-kaybi-alinabilir-mi-yargitay-kararlari',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    imageUrl: '/images/blog/blog_3.jpg',
+  },
 ];
 
 export default function BlogPage() {

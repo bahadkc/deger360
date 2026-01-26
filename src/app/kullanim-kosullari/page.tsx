@@ -175,7 +175,7 @@ export default function KullanimKosullariPage() {
             </p>
             <div className="bg-neutral-50 p-4 rounded-lg mt-4">
               <p><strong>E-posta:</strong> info@deger360.net</p>
-              <p><strong>Telefon:</strong> 0505 705 33 05</p>
+              <p><strong>Telefon:</strong> +90 505 705 33 05</p>
               <p><strong>Adres:</strong> Şirinyalı mahallesi, 1501 sokak, no: 9/5, Muratpaşa/ANTALYA</p>
             </div>
           </section>

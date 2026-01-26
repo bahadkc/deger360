@@ -70,6 +70,7 @@ export function Header() {
     { label: 'Hakkımızda', sectionId: 'hakkimizda' },
     { label: 'İletişim', sectionId: 'iletisim' },
     { label: 'SSS', sectionId: 'sss' },
+    { label: 'Bloglar', href: '/blog' },
   ];
 
   return (
@@ -145,6 +146,19 @@ export function Header() {
                 <div className="absolute top-full left-0 pt-2 bg-transparent">
                   <div className="bg-white shadow-lg rounded-lg py-2 min-w-[180px] border border-neutral-200 z-50">
                     {companyMenuItems.map((item) => {
+                      // Bloglar için direkt link
+                      if (item.href) {
+                        return (
+                          <Link
+                            key={item.label}
+                            href={item.href}
+                            onClick={() => setCompanyMenuOpen(false)}
+                            className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors block"
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      }
                       // Hakkımızda ve SSS için akıllı linkleme
                       if (item.sectionId === 'hakkimizda' || item.sectionId === 'sss') {
                         if (isHomePage) {
@@ -174,18 +188,21 @@ export function Header() {
                         );
                       }
                       // İletişim için scroll-to-section
-                      return (
-                        <button
-                          key={item.label}
-                          onClick={() => {
-                            scrollToSection(item.sectionId);
-                            setCompanyMenuOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors"
-                        >
-                          {item.label}
-                        </button>
-                      );
+                      if (item.sectionId) {
+                        return (
+                          <button
+                            key={item.label}
+                            onClick={() => {
+                              scrollToSection(item.sectionId!);
+                              setCompanyMenuOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-neutral-800 hover:bg-primary-orange/10 hover:text-primary-orange transition-colors"
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      }
+                      return null;
                     })}
                   </div>
                 </div>
@@ -302,6 +319,13 @@ export function Header() {
                 SSS
               </Link>
             )}
+            <Link
+              href="/blog"
+              className="block w-full text-left py-2 text-neutral-800 hover:text-primary-orange font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Bloglar
+            </Link>
             {!isTeklifPage && (
               <div className="mt-4 space-y-2">
                 <Link
