@@ -43,7 +43,13 @@ export async function GET() {
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>${baseUrl}/blog/arac-deger-kaybi-hesaplama-formulu</loc>
+    <loc>${baseUrl}/blog/ticari-araclarda-kazanc-kaybi-yatis-parasi-ve-deger-kaybi-nasil-alinir</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/blog/pert-araclar-deger-kaybi-alinabilir-mi-yargitay-kararlari</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
