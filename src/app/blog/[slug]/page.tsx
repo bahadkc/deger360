@@ -47,6 +47,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'Pert araçlar için değer kaybı tazminatı alınabilir mi? Yargıtay kararları, istisnai durumlar, rayiç bedel itirazı ve pert araç sahiplerinin hakları hakkında detaylı bilgi.',
   },
+  'kiralik-arac-rent-a-car-deger-kaybi-kim-oder': {
+    id: '4',
+    title: 'Kiralık Araçla (Rent a Car) Kaza Yaptım: Değer Kaybını Sürücü mü Öder?',
+    excerpt: 'Kiralık araçla kaza yaptığınızda değer kaybını kim öder? Rent a car firmaları, kusur durumları, sigorta paketleri ve sürücü sorumlulukları hakkında detaylı rehber.',
+    slug: 'kiralik-arac-rent-a-car-deger-kaybi-kim-oder',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    metaDescription: 'Kiralık araçla kaza yaptığınızda değer kaybını kim öder? Rent a car firmaları, kusur durumları, sigorta paketleri, yatış bedeli ve sürücü sorumlulukları hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -216,6 +225,35 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         }
       }
     ]
+  } : slug === 'kiralik-arac-rent-a-car-deger-kaybi-kim-oder' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Full kasko (Muafiyetsiz) yaptırdım, yine de değer kaybı öder miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Eğer kiralama sırasında \"Lastik, Cam, Far (LCF)\" dahil tam güvence paketi satın aldıysanız ve sözleşmenizde \"değer kaybı muafiyeti\" maddesi varsa ödemezsiniz. Ancak standart kasko sadece hasarı öder, değer kaybını kapsamaz. Sözleşmenizi kontrol etmelisiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kiralama şirketi benden değer kaybı için senet istiyor, ne yapmalıyım?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kurumsal firmalar genellikle kredi kartına bloke (provizyon) koyar. Açık senet imzalamak hukuki açıdan risklidir. Eğer hasar bedeli belliyse, sadece o tutar kadar ödeme yapmanız veya yasal süreci beklemeniz daha sağlıklıdır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kiralık araçla kaza yaptım, \"Yatış Parası\" yasal mı?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, yasaldır. Ticari araçların (taksi, dolmuş, kiralık araç) kaza nedeniyle çalışamadığı günlerin geliri, kusurlu taraftan talep edilebilir. Rent a car firması, aracın o dönemdeki günlük kira bedeli üzerinden bu tutarı sizden isteyebilir."
+        }
+      }
+    ]
   } : null;
 
   return (
@@ -273,7 +311,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   {/* Görsel - SEO için alt text ile */}
                   <div className="my-8 rounded-lg overflow-hidden shadow-md">
                     <Image
-                      src="/images/blog/blog_2.jpg"
+                      src="/images/blog/ticari-arac-yatis-parasi-kazanc-kaybi-tazminati.jpg"
                       alt="ticari araç kazanç kaybı ve değer kaybı tazminatı"
                       width={1200}
                       height={630}
@@ -448,7 +486,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {/* Görsel - SEO için alt text ile */}
               <div className="my-8 rounded-lg overflow-hidden shadow-md">
                 <Image
-                  src="/images/blog/degerkaybihesaplama.png"
+                  src="/images/blog/deger-kaybi-hesaplama.png"
                   alt="Araç değer kaybı hesaplama"
                   width={1200}
                   height={630}
@@ -622,7 +660,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   {/* Görsel - SEO için alt text ile */}
                   <div className="my-8 rounded-lg overflow-hidden shadow-md">
                     <Image
-                      src="/images/blog/blog_3.jpg"
+                      src="/images/blog/agir-hasarli-pert-arac-deger-kaybi-yargitay-kararlari.jpg"
                       alt="pert araç değer kaybı yargıtay kararları"
                       width={1200}
                       height={630}
@@ -743,6 +781,173 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Değer kaybı davası değil, "Rayiç Bedel Uyuşmazlığı" için Sigorta Tahkim Komisyonu'na başvurmalısınız. Bu konuda da hukuki destek almanız, gerçek piyasa değerini almanız için önemlidir.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'kiralik-arac-rent-a-car-deger-kaybi-kim-oder' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    Kiralık bir araçla kaza yaptığınızda, hasar masraflarından daha çok korkulan şey, kiralama şirketinin sonradan talep edebileceği "ekstra" bedellerdir. Bu bedellerin başında <strong>"Araç Değer Kaybı"</strong> ve <strong>"Yatış Bedeli"</strong> (Ticari Kazanç Kaybı) gelir.
+                  </p>
+
+                  <p>
+                    <strong>En kısa ve net cevap şudur:</strong> Kiralık araçla yaptığınız kazada <strong>kusur karşı taraftaysa</strong>, değer kaybını siz ödemezsiniz; karşı tarafın trafik sigortası öder. Ancak <strong>kusur sizdeyse</strong>, imzaladığınız kiralama sözleşmesi ve satın aldığınız sigorta paketi (Mini hasar sigortası, LCF vb.) belirleyici olur. Standart kaskolar genellikle kendi aracınızın değer kaybını karşılamaz, bu nedenle Rent a Car firması bu kaybı sözleşmeye dayanarak sizden talep edebilir.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/kiralik-arac-rent-a-car-deger-kaybi-kim-oder.jpeg"
+                      alt="kiralık araç rent a car değer kaybı kim öder"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Kiralık Araç Kazalarında Sorumluluk Tablosu
+                  </h2>
+
+                  <p>
+                    20 yıllık hukuk ve sektör tecrübemizle, sürücülerin en çok karıştırdığı "Kim, Neyi Öder?" sorusunu netleştirelim:
+                  </p>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    1. Senaryo: Kazada %100 Karşı Taraf Kusurlu
+                  </h3>
+                  <p className="font-semibold text-dark-blue mb-2">Rahat bir nefes alabilirsiniz.</p>
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Hasar:</strong> Karşı tarafın trafik sigortası öder.</li>
+                    <li><strong>Değer Kaybı:</strong> Karşı tarafın trafik sigortası, kiralama şirketine öder.</li>
+                    <li><strong>Sizin Sorumluluğunuz:</strong> Sadece tutanakları ve evrakları kiralama şirketine teslim etmeniz yeterlidir. Cebinizden para çıkmaz.</li>
+                  </ul>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    2. Senaryo: Kazada %100 Siz Kusurlusunuz
+                  </h3>
+                  <p className="font-semibold text-dark-blue mb-2">Riskli senaryo budur.</p>
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Hasar:</strong> Kiralık aracın "Rent a Car Kaskosu" varsa hasarı kasko öder. (Alkol, ehliyetsizlik gibi durumlar yoksa).</li>
+                    <li><strong>Değer Kaybı:</strong> İşte burası kritiktir. Standart kasko poliçeleri, <strong>aracın kendi değer kaybını ödemez.</strong> Kiralama şirketi, aracın 2. el piyasasındaki değer düşüşünü, Türk Borçlar Kanunu'na ve aranızdaki sözleşmeye dayanarak <strong>sürücüden (sizden) talep edebilir.</strong></li>
+                  </ul>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Rent a Car Firması Sizden Neleri İsteyebilir?
+                  </h2>
+
+                  <p>
+                    Eğer kusurluysanız ve "Süper Güvence" paketi gibi ek korumalar satın almadıysanız, şirket size şu kalemler için fatura (yansıtma) çıkarabilir:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-3 my-4">
+                    <li><strong>Değer Kaybı Bedeli:</strong> Aracın onarım sonrası piyasa değerindeki düşüş.</li>
+                    <li><strong>Yatış Bedeli (Ticari Kazanç Kaybı):</strong> Aracın serviste kaldığı gün boyunca şirketin "kira gelirinden mahrum kalması" bedelidir.</li>
+                    <li><strong>Dosya Masrafları:</strong> Ekspertiz ve takip giderleri.</li>
+                  </ol>
+
+                  <div className="bg-orange-50 border-l-4 border-primary-orange p-4 my-6 rounded">
+                    <p className="font-semibold text-dark-blue mb-2">Önemli Uyarı:</p>
+                    <p>
+                      Bazı merdiven altı firmalar, küçük çizikler için bile fahiş değer kaybı bedelleri isteyebilir. Şirketin sizden talep ettiği tutarın resmi bir eksper raporuna dayanıp dayanmadığını mutlaka sorun.
+                    </p>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Filo Sahipleri ve Rent a Car Firmaları İçin: Gelir Kaybını Nasıl Önlersiniz?
+                  </h2>
+
+                  <p>
+                    Eğer bu yazıyı okuyan bir <strong>Rent a Car işletmecisiyseniz</strong>, filonuzdaki araçların değer kaybını ve yatış bedellerini takip etmek zorlu bir süreç olabilir.
+                  </p>
+
+                  <p>
+                    <strong>Değer360</strong> olarak, kurumsal filo kiralama şirketlerine özel çözümler sunuyoruz:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Toplu Dosya Yönetimi:</strong> Filonuzdaki 10, 50 veya 500 aracın kaza süreçlerini tek panelden yönetiyoruz.</li>
+                    <li><strong>Yatış Bedeli Tahsili:</strong> Sadece değer kaybını değil, aracın çalışmadığı günlerin parasını da kusurlu taraftan tahsil etmenize yardımcı oluyoruz.</li>
+                    <li><strong>Sıfır Maliyet:</strong> Tıpkı bireysel müşterilerimizde olduğu gibi, ön ödeme almadan, sadece tahsilat üzerinden başarı primiyle çalışıyoruz.</li>
+                  </ul>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Kendi Aracınızla Bir Kiralık Araca Çarptıysanız?
+                  </h2>
+
+                  <p>
+                    Eğer siz kendi aracınızla bir Rent a Car aracına çarptıysanız, karşı taraf (kiralama şirketi) sizin sigortanızdan değer kaybı talep edecektir. Trafik sigortanız limitleri (2024 yılı itibariyle araç başına belirli bir tutara kadar) dahilinde bunu karşılar. Limitleri aşan kısım için size rücu edilebilir.
+                  </p>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Hakkınızı Arayın, Belirsizlikte Kalmayın
+                  </h2>
+
+                  <p>
+                    İster kaza yapan bir <strong>sürücü</strong>, ister filosu hasar gören bir <strong>şirket sahibi</strong> olun; değer kaybı süreçleri uzmanlık gerektirir.
+                  </p>
+
+                  <p>
+                    Aracınızın (veya kaza yaptığınız aracın) ne kadar değer kaybı olduğunu merak ediyor musunuz?
+                    Aşağıdaki linkten 1 dakikada ücretsiz sorgulama yapabilirsiniz.
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Ücretsiz Değer Kaybı Hesaplama ve Teklif Formu
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Full kasko (Muafiyetsiz) yaptırdım, yine de değer kaybı öder miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Eğer kiralama sırasında "Lastik, Cam, Far (LCF)" dahil tam güvence paketi satın aldıysanız ve sözleşmenizde "değer kaybı muafiyeti" maddesi varsa ödemezsiniz. Ancak standart kasko sadece hasarı öder, değer kaybını kapsamaz. Sözleşmenizi kontrol etmelisiniz.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Kiralama şirketi benden değer kaybı için senet istiyor, ne yapmalıyım?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Kurumsal firmalar genellikle kredi kartına bloke (provizyon) koyar. Açık senet imzalamak hukuki açıdan risklidir. Eğer hasar bedeli belliyse, sadece o tutar kadar ödeme yapmanız veya yasal süreci beklemeniz daha sağlıklıdır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Kiralık araçla kaza yaptım, "Yatış Parası" yasal mı?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet, yasaldır. Ticari araçların (taksi, dolmuş, kiralık araç) kaza nedeniyle çalışamadığı günlerin geliri, kusurlu taraftan talep edilebilir. Rent a car firması, aracın o dönemdeki günlük kira bedeli üzerinden bu tutarı sizden isteyebilir.
                       </p>
                     </div>
                   </div>

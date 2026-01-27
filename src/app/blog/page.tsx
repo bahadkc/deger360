@@ -17,7 +17,7 @@ const samplePosts: BlogPost[] = [
     slug: 'kaza-yaptim-simdi-ne-olacak-aracinizdaki-gizli-parayi-deger-kaybini-nasil-geri-alirsiniz',
     publishedAt: '2024-12-20',
     category: 'Rehber',
-    imageUrl: '/images/blog/blog_1.jpg',
+    imageUrl: '/images/blog/kaza-sonrasi-yapilacaklar-deger-kaybi-basvurusu.jpg',
   },
   {
     id: '2',
@@ -26,7 +26,7 @@ const samplePosts: BlogPost[] = [
     slug: 'ticari-araclarda-kazanc-kaybi-yatis-parasi-ve-deger-kaybi-nasil-alinir',
     publishedAt: '2025-01-26',
     category: 'Rehber',
-    imageUrl: '/images/blog/blog_2.jpg',
+    imageUrl: '/images/blog/ticari-arac-yatis-parasi-kazanc-kaybi-tazminati.jpg',
   },
   {
     id: '3',
@@ -35,7 +35,16 @@ const samplePosts: BlogPost[] = [
     slug: 'pert-araclar-deger-kaybi-alinabilir-mi-yargitay-kararlari',
     publishedAt: '2025-01-26',
     category: 'Rehber',
-    imageUrl: '/images/blog/blog_3.jpg',
+    imageUrl: '/images/blog/agir-hasarli-pert-arac-deger-kaybi-yargitay-kararlari.jpg',
+  },
+  {
+    id: '4',
+    title: 'Kiralık Araçla (Rent a Car) Kaza Yaptım: Değer Kaybını Sürücü mü Öder?',
+    excerpt: 'Kiralık araçla kaza yaptığınızda değer kaybını kim öder? Rent a car firmaları, kusur durumları, sigorta paketleri ve sürücü sorumlulukları hakkında detaylı rehber.',
+    slug: 'kiralik-arac-rent-a-car-deger-kaybi-kim-oder',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    imageUrl: '/images/blog/kiralik-arac-rent-a-car-deger-kaybi-kim-oder.jpeg',
   },
 ];
 
