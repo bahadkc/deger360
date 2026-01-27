@@ -34,6 +34,8 @@ const DOCUMENT_CATEGORIES = [
   { key: 'bilir_kisi_raporu', label: 'Eksper Raporu' },
   { key: 'ruhsat', label: 'Ruhsat' },
   { key: 'kimlik', label: 'Kimlik' },
+  { key: 'karsi_tarafin_ruhsati', label: 'Karşı Tarafın Ruhsatı' },
+  { key: 'karsi_tarafin_ehliyeti', label: 'Karşı Tarafın Ehliyeti' },
   { key: 'sigortaya_gonderilen_ihtarname', label: 'Sigortaya Yapılan Başvuru' },
   { key: 'hakem_karari', label: 'Hakem Kararı' },
   { key: 'sigorta_odeme_dekontu', label: 'Sigorta Ödeme Dekontu' },

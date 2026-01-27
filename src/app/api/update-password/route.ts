@@ -49,19 +49,144 @@ export async function POST(request: Request) {
 
     // Eğer userId yoksa, customerEmail'den bul
     let targetUserId = userId;
+    let customerId: string | null = null;
+    
     if (!targetUserId && customerEmail) {
-        // Email'den auth user ID bul
-        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-        if (listError) {
-            console.error('Error listing users:', listError);
-            return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
+        // Normalize email (trim and lowercase for comparison)
+        const normalizedEmail = customerEmail.trim().toLowerCase();
+        
+        // Email'den auth user ID bul - tüm sayfaları kontrol et
+        let targetUser = null;
+        let page = 0;
+        const pageSize = 1000;
+        
+        while (true) {
+            const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                page: page,
+                perPage: pageSize,
+            });
+            
+            if (listError) {
+                console.error('Error listing users:', listError);
+                break;
+            }
+            
+            // Check if usersData exists and has users array
+            if (!usersData || !usersData.users) {
+                break;
+            }
+            
+            // Normalize edilmiş email ile karşılaştır
+            targetUser = usersData.users.find(u => 
+                u.email?.trim().toLowerCase() === normalizedEmail
+            );
+            
+            if (targetUser || usersData.users.length < pageSize) {
+                break; // Bulundu veya son sayfa
+            }
+            
+            page++;
         }
         
-        const targetUser = users.find(u => u.email === customerEmail);
         if (!targetUser) {
-            return NextResponse.json({ error: 'Müşteri bulunamadı' }, { status: 404 });
+            // Auth user yoksa, önce customer'ı bul ve auth user oluştur
+            const { data: customerData, error: customerError } = await supabaseAdmin
+                .from('customers')
+                .select('id')
+                .eq('email', customerEmail)
+                .maybeSingle();
+            
+            if (customerError || !customerData) {
+                return NextResponse.json({ error: 'Müşteri bulunamadı' }, { status: 404 });
+            }
+            
+            customerId = customerData.id;
+            
+            // Create auth user
+            const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
+                email: customerEmail.trim(),
+                password: turkishToEnglish(newPassword),
+                email_confirm: true,
+            });
+            
+            if (createAuthError) {
+                // Eğer email zaten kayıtlı hatası alırsak, tekrar ara (case sensitivity veya whitespace sorunu olabilir)
+                if (createAuthError.message?.includes('already been registered') || 
+                    createAuthError.message?.includes('already registered')) {
+                    
+                    // Tüm sayfaları tekrar kontrol et (normalize edilmiş email ile)
+                    let retryTargetUser = null;
+                    let retryPage = 0;
+                    
+                    while (true) {
+                        const { data: retryUsersData, error: retryListError } = await supabaseAdmin.auth.admin.listUsers({
+                            page: retryPage,
+                            perPage: pageSize,
+                        });
+                        
+                        if (retryListError) {
+                            break;
+                        }
+                        
+                        // Check if retryUsersData exists and has users array
+                        if (!retryUsersData || !retryUsersData.users) {
+                            break;
+                        }
+                        
+                        retryTargetUser = retryUsersData.users.find(u => 
+                            u.email?.trim().toLowerCase() === normalizedEmail
+                        );
+                        
+                        if (retryTargetUser || retryUsersData.users.length < pageSize) {
+                            break;
+                        }
+                        
+                        retryPage++;
+                    }
+                    
+                    if (retryTargetUser) {
+                        // Kullanıcı bulundu, şifresini güncelle
+                        targetUserId = retryTargetUser.id;
+                    } else {
+                        console.error('Error creating auth user:', createAuthError);
+                        return NextResponse.json({ 
+                            error: 'Email zaten kayıtlı ancak kullanıcı bulunamadı. Lütfen sistem yöneticisine başvurun.' 
+                        }, { status: 500 });
+                    }
+                } else {
+                    console.error('Error creating auth user:', createAuthError);
+                    return NextResponse.json({ error: 'Auth kullanıcısı oluşturulamadı: ' + createAuthError.message }, { status: 500 });
+                }
+            } else if (authData?.user) {
+                targetUserId = authData.user.id;
+                
+                // Create user_auth record
+                const { error: userAuthError } = await supabaseAdmin
+                    .from('user_auth')
+                    .insert({
+                        id: targetUserId,
+                        customer_id: customerId,
+                        role: 'customer',
+                        password: turkishToEnglish(newPassword),
+                    });
+                
+                if (userAuthError) {
+                    console.error('Error creating user_auth record:', userAuthError);
+                    // Don't fail, auth user was created successfully
+                }
+            }
+        } else {
+            targetUserId = targetUser.id;
+            
+            // Get customer_id from user_auth if available
+            const { data: userAuthData } = await supabaseAdmin
+                .from('user_auth')
+                .select('customer_id')
+                .eq('id', targetUserId)
+                .maybeSingle();
+            
+            customerId = userAuthData?.customer_id || null;
         }
-        targetUserId = targetUser.id;
     }
 
     if (!targetUserId) {

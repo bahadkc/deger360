@@ -45,6 +45,20 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     required: true,
   },
   {
+    key: 'karsi_tarafin_ruhsati',
+    name: 'Karşı Tarafın Ruhsatı',
+    category: 'expected',
+    description: 'Karşı tarafın araç ruhsatı',
+    required: false,
+  },
+  {
+    key: 'karsi_tarafin_ehliyeti',
+    name: 'Karşı Tarafın Ehliyeti',
+    category: 'expected',
+    description: 'Karşı tarafın ehliyet belgesi',
+    required: false,
+  },
+  {
     key: 'sigortaya_gonderilen_ihtarname',
     name: 'Sigortaya Yapılan Başvuru',
     category: 'legal',
