@@ -93,6 +93,8 @@ export function PortalHeader({
               height={50}
               className="h-8 sm:h-10 md:h-12 w-auto"
               priority
+              sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
+              quality={90}
             />
           </Link>
 

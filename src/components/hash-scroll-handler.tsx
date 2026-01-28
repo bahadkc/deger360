@@ -14,18 +14,20 @@ export function HashScrollHandler() {
     const hash = window.location.hash.replace('#', '');
     if (!hash) return;
 
-    // Scroll işlemini yap
+    // Scroll işlemini yap (requestAnimationFrame ile optimize edilmiş)
     const scrollToSection = () => {
       const element = document.getElementById(hash);
       if (element) {
-        const headerHeight = 64; // Header yüksekliği
-        const offset = hash === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
-        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - headerHeight - offset;
-        
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
+        requestAnimationFrame(() => {
+          const headerHeight = 64; // Header yüksekliği
+          const offset = hash === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - headerHeight - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
         });
         return true;
       }

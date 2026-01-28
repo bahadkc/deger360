@@ -800,6 +800,9 @@ export default function DashboardPage() {
                 height={100}
                 className="h-32 md:h-40 lg:h-48 w-auto"
                 style={{ filter: 'brightness(0) invert(1)' }}
+                loading="lazy"
+                sizes="(max-width: 768px) 200px, (max-width: 1024px) 300px, 400px"
+                quality={75}
               />
             </div>
             

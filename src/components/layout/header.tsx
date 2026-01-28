@@ -28,14 +28,16 @@ export function Header() {
       const tryScroll = () => {
         const element = document.getElementById(sectionId);
         if (element) {
-          const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
-          const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
-          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-          const offsetPosition = elementPosition - headerHeight - offset;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
+          requestAnimationFrame(() => {
+            const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+            const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerHeight - offset;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
           });
           return true;
         }
@@ -87,6 +89,8 @@ export function Header() {
                 height={50}
                 className="h-8 sm:h-10 md:h-12 w-auto"
                 priority
+                sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
+                quality={90}
               />
             </Link>
           </div>

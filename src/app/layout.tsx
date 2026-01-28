@@ -4,7 +4,12 @@ import Script from 'next/script';
 import './globals.css';
 import { ConditionalLayout } from './conditional-layout';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-inter',
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://deger360.net';
 

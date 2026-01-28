@@ -15,33 +15,55 @@ export function StickyMobileCTA() {
       return;
     }
 
-    const handleScroll = () => {
-      // Hero section'ı (contact-form) bul
-      const heroSection = document.getElementById('contact-form');
-      
-      if (!heroSection) {
-        // Hero section bulunamazsa butonu göster
-        setIsVisible(true);
-        return;
-      }
+    let ticking = false;
+    let rafId: number | null = null;
 
-      // Hero section'ın alt pozisyonunu al
-      const heroSectionBottom = heroSection.getBoundingClientRect().bottom;
-      
-      // Eğer hero section tamamen geçildiyse butonu göster
-      setIsVisible(heroSectionBottom < 0);
+    const handleScroll = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(() => {
+          // Hero section'ı (contact-form) bul
+          const heroSection = document.getElementById('contact-form');
+          
+          if (!heroSection) {
+            // Hero section bulunamazsa butonu göster
+            setIsVisible(true);
+            ticking = false;
+            return;
+          }
+
+          // Hero section'ın alt pozisyonunu al (requestAnimationFrame içinde)
+          const heroSectionBottom = heroSection.getBoundingClientRect().bottom;
+          
+          // Eğer hero section tamamen geçildiyse butonu göster
+          setIsVisible(heroSectionBottom < 0);
+          ticking = false;
+        });
+      }
+    };
+
+    // Debounced resize handler
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        handleScroll();
+      }, 150);
     };
 
     // İlk kontrol
     handleScroll();
 
     // Scroll event listener ekle
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      clearTimeout(resizeTimeout);
     };
   }, [pathname]);
 

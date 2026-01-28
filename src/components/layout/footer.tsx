@@ -23,14 +23,16 @@ export function Footer() {
       const tryScroll = () => {
         const element = document.getElementById(sectionId);
         if (element) {
-          const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
-          const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
-          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-          const offsetPosition = elementPosition - headerHeight - offset;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
+          requestAnimationFrame(() => {
+            const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+            const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerHeight - offset;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
           });
           return true;
         }

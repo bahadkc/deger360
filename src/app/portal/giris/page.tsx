@@ -173,6 +173,8 @@ export default function GirisPage() {
                   height={450}
                   className="mx-auto w-full max-w-[600px] h-auto"
                   priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 600px"
+                  quality={85}
                   unoptimized={portalImageUrl.startsWith('http')} // Supabase URL'leri için unoptimized
                 />
               </div>
@@ -203,6 +205,8 @@ export default function GirisPage() {
                     height={50}
                     className="h-10 w-auto"
                     priority
+                    sizes="(max-width: 640px) 120px, 150px"
+                    quality={90}
                   />
                 </Link>
               </div>
