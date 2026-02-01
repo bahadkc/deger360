@@ -53,7 +53,7 @@ const samplePosts: BlogPost[] = [
     slug: 'motosiklet-kazalarinda-deger-kaybi-ve-ekipman-hasari-tazminati',
     publishedAt: '2025-01-26',
     category: 'Rehber',
-    imageUrl: '/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpg',
+    imageUrl: '/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpeg',
   },
 ];
 

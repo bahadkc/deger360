@@ -1018,7 +1018,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   {/* Görsel - SEO için alt text ile */}
                   <div className="my-8 rounded-lg overflow-hidden shadow-md">
                     <Image
-                      src="/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpg"
+                      src="/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpeg"
                       alt="motosiklet değer kaybı ve ekipman hasarı tazminatı"
                       width={1200}
                       height={630}
