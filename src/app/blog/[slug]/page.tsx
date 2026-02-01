@@ -56,6 +56,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'Kiralık araçla kaza yaptığınızda değer kaybını kim öder? Rent a car firmaları, kusur durumları, sigorta paketleri, yatış bedeli ve sürücü sorumlulukları hakkında detaylı bilgi.',
   },
+  'motosiklet-kazalarinda-deger-kaybi-ve-ekipman-hasari-tazminati': {
+    id: '5',
+    title: 'Motosiklet Kazalarında Değer Kaybı ve Ekipman Hasarı Tazminatı Nasıl Hesaplanır?',
+    excerpt: 'Motosiklet kazalarında hem motosiklet değer kaybı hem de kask, mont, eldiven gibi ekipman hasarı tazminatı talep edilebilir. Fatura şartı, hesaplama yöntemi ve süreç hakkında rehber.',
+    slug: 'motosiklet-kazalarinda-deger-kaybi-ve-ekipman-hasari-tazminati',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    metaDescription: 'Motosiklet kazalarında değer kaybı ve ekipman hasarı tazminatı nasıl hesaplanır? Kask, mont, eldiven tazminatı, fatura şartı, pert motosiklet ve kurye kazanç kaybı hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -251,6 +260,35 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Evet, yasaldır. Ticari araçların (taksi, dolmuş, kiralık araç) kaza nedeniyle çalışamadığı günlerin geliri, kusurlu taraftan talep edilebilir. Rent a car firması, aracın o dönemdeki günlük kira bedeli üzerinden bu tutarı sizden isteyebilir."
+        }
+      }
+    ]
+  } : slug === 'motosiklet-kazalarinda-deger-kaybi-ve-ekipman-hasari-tazminati' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Motosikletim \"Ağır Hasarlı\" (Pert) sayıldı, ekipman parasını alabilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet. Motosikletiniz pert olsa ve motor için değer kaybı alamasanız bile, üzerinizdeki hasarlı kıyafet ve ekipmanların parasını ayrıca talep edebilirsiniz. Bu iki tazminat kalemi birbirinden bağımsızdır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Ekipmanlarımın faturası yok, internet fiyatı üzerinden mi ödenir?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet. Fatura ibrazı zorunlu değildir (olsa daha iyi olur). Fatura yoksa, ürünün marka/modelinin güncel internet satış fiyatları (Trendyol, yetkili satıcı vb.) referans alınarak bilirkişi tarafından değer tespiti yapılır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kuryeyim, motorum serviste yatarken çalışamadım. Paramı alabilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet. Ticari olarak kullanılan (Getir, Yemeksepeti, Trendyol Go vb. veya şahsi kurye) motosikletler için \"Ticari Kazanç Kaybı\" (Yatış Parası) talep edilebilir. Bunun için vergi levhası veya çalışma kaydı sunmanız gerekir."
         }
       }
     ]
@@ -948,6 +986,187 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Evet, yasaldır. Ticari araçların (taksi, dolmuş, kiralık araç) kaza nedeniyle çalışamadığı günlerin geliri, kusurlu taraftan talep edilebilir. Rent a car firması, aracın o dönemdeki günlük kira bedeli üzerinden bu tutarı sizden isteyebilir.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'motosiklet-kazalarinda-deger-kaybi-ve-ekipman-hasari-tazminati' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    Motosiklet kazalarında tazminat hakkı, sadece motosikletin kaporta veya mekanik onarımıyla sınırlı değildir. Eğer kazada %100 kusurlu değilseniz; hem motosikletinizde oluşan <strong>değer kaybını</strong> hem de kaza sırasında zarar gören <strong>kask, mont, eldiven, interkom ve koruma demiri</strong> gibi ekipmanlarınızın bedelini karşı tarafın trafik sigortasından nakit olarak talep edebilirsiniz.
+                  </p>
+
+                  <p>
+                    Pek çok motosiklet sürücüsü, <em>"Sigorta sadece aracı öder"</em> yanılgısıyla, toplam değeri bazen motosikletin kendisine yaklaşan ekipman hasarlarını cebinden karşılamaktadır.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpg"
+                      alt="motosiklet değer kaybı ve ekipman hasarı tazminatı"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Motosikletçilerin 2 Ayrı Tazminat Hakkı Vardır
+                  </h2>
+
+                  <p>
+                    20 yıllık tecrübemizle yönettiğimiz dosyalarda gördüğümüz en büyük eksiklik, sürücülerin haklarını tam bilmemesidir. Sigorta mevzuatına göre talep edebileceğiniz kalemler şunlardır:
+                  </p>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    1. Motosiklet Değer Kaybı
+                  </h3>
+                  <p>
+                    Tıpkı otomobillerde olduğu gibi, motosikletiniz onarılsa dahi TRAMER kaydı oluşur ve "kazalı motor" statüsüne düşer. Satarken <em>"Abi bu kazalı, fiyatı düş"</em> denilen o rakam farkı, sizin yasal hakkınızdır.
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Hesaplama Kriteri:</strong> Motosikletin KM'si, markası, modeli ve değişen parçaların (şasi, gidon, grenaj vb.) niteliğine göre hesaplanır.</li>
+                  </ul>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    2. Ekipman ve Aksesuar Tazminatı (Maddi Hasar)
+                  </h3>
+                  <p>
+                    Kaskınız yere bir kez çarptığında koruyuculuk özelliğini yitirir ve yenilenmesi gerekir. Sigorta şirketleri bunu "kişisel eşya" gibi görüp ödemek istemese de, Yargıtay kararlarına göre bu bir <strong>"Doğrudan Maddi Zarar"</strong>dır.
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Neler İstenebilir?:</strong> Kask, motosiklet montu, pantolonu, botlar, eldivenler, takılı olan çantalar (topcase/sidecase) ve interkom cihazları.</li>
+                  </ul>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Ekipman Tazminatı Nasıl Hesaplanır? Fatura Şart Mı?
+                  </h2>
+
+                  <p>
+                    En çok sorulan soru şudur: <em>"Ekipmanlarımı 2 yıl önce aldım, faturasını bulamıyorum. Yine de para alabilir miyim?"</em>
+                  </p>
+
+                  <p className="font-semibold text-dark-blue mb-4">
+                    <strong>Cevap: Evet, alabilirsiniz.</strong>
+                  </p>
+
+                  <p>
+                    Sigorta Tahkim Komisyonu ve mahkemeler, ekipmanlarınızın faturası olmasa dahi, kaza tarihindeki <strong>"Piyasa Rayiç Bedeli"</strong> üzerinden ödeme yapılmasına hükmeder.
+                  </p>
+
+                  <p className="font-semibold text-dark-blue mt-6 mb-3">
+                    Süreç Şöyle İşler:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-3 my-4">
+                    <li><strong>Kanıt:</strong> Kaza yerinde veya sonrasında hasarlı ekipmanların fotoğraflarını çekmelisiniz. (Yırtılmış mont, çizilmiş kask vb.)</li>
+                    <li><strong>Tespit:</strong> Ekipmanların marka ve modellerini (Örn: Shoei NXR2 Kask, Revit Mont) belirleriz.</li>
+                    <li><strong>Rayiç Bedel:</strong> Bu ürünlerin güncel piyasa fiyatlarını emsal linklerle dosyaya ekleriz. Sigorta eksperleri, yıpranma payını (kullanım süresine göre) düşerek size ödeme yapar.</li>
+                  </ol>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Değer360 ile "Çifte Tazminat" Süreci
+                  </h2>
+
+                  <p>
+                    Motosiklet dosyaları, otomobil dosyalarından daha hassastır. Çünkü hasar gören bir şasi veya ön çatal, motosikletin sürüş güvenliğini doğrudan etkiler ve değer kaybı çok yüksek çıkabilir.
+                  </p>
+
+                  <p>
+                    <strong>Değer360</strong> olarak motosiklet dosyalarınıza şu şekilde yaklaşıyoruz:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Bütüncül Yaklaşım:</strong> Sadece motor için değil, üzerinizdeki ekipmanlar için de dosya açıyoruz.</li>
+                    <li><strong>Sıfır Risk:</strong> Dosya masrafı, eksper ücreti veya başvuru harcı ödemiyorsunuz.</li>
+                    <li><strong>Adil Kesinti:</strong> Tazminatı kazanırsak, sadece aldığımız tutar üzerinden hizmet bedelimizi kesiyoruz. (Motor için ayrı, ekipman için ayrı koşturmanıza gerek kalmaz).</li>
+                  </ul>
+
+                  <div className="bg-orange-50 border-l-4 border-primary-orange p-4 my-6 rounded">
+                    <p className="font-semibold text-dark-blue mb-2">Önemli Not:</p>
+                    <p>
+                      Kaza sonrası kaskınızı veya hasarlı ekipmanlarınızı çöpe atmayın! Sigorta şirketi ödeme onayı verene kadar bu ekipmanları saklamanız, ispat açısından önemlidir.
+                    </p>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Motorunuzun ve Ekipmanınızın Hakkını Bırakmayın
+                  </h2>
+
+                  <p>
+                    Motosiklet kültürü pahalı bir hobidir/ulaşım yoludur. Başkasının hatası yüzünden binlerce liralık zarar etmeyin.
+                  </p>
+
+                  <p className="text-lg font-semibold text-dark-blue mt-6 mb-4">
+                    Motosikletiniz ve ekipmanlarınız için ne kadar ödeme alabileceğinizi öğrenmek ister misiniz?
+                    Aşağıdaki linkten ücretsiz analiz talep edebilirsiniz:
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Motosiklet Değer Kaybı ve Ekipman Hasarı Teklif Formu
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular (Motosiklet Özel)
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Motosikletim "Ağır Hasarlı" (Pert) sayıldı, ekipman parasını alabilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet. Motosikletiniz pert olsa ve motor için değer kaybı alamasanız bile, üzerinizdeki hasarlı kıyafet ve ekipmanların parasını <strong>ayrıca</strong> talep edebilirsiniz. Bu iki tazminat kalemi birbirinden bağımsızdır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Ekipmanlarımın faturası yok, internet fiyatı üzerinden mi ödenir?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet. Fatura ibrazı zorunlu değildir (olsa daha iyi olur). Fatura yoksa, ürünün marka/modelinin güncel internet satış fiyatları (Trendyol, yetkili satıcı vb.) referans alınarak bilirkişi tarafından değer tespiti yapılır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Sonradan taktığım aksesuarlar (Egzoz, Koruma Demiri) ödenir mi?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Motosikletin orijinalinde olmayıp sonradan eklediğiniz aksesuarlar, kaza anında hasar gördüyse ve fotoğraflarla ispatlanabiliyorsa tazminata dahil edilebilir. Ancak bu aksesuarların trafik mevzuatına uygun olması önemlidir.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Kuryeyim, motorum serviste yatarken çalışamadım. Paramı alabilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet. Ticari olarak kullanılan (Getir, Yemeksepeti, Trendyol Go vb. veya şahsi kurye) motosikletler için "Ticari Kazanç Kaybı" (Yatış Parası) talep edilebilir. Bunun için vergi levhası veya çalışma kaydı sunmanız gerekir.
                       </p>
                     </div>
                   </div>

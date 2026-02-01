@@ -46,6 +46,15 @@ const samplePosts: BlogPost[] = [
     category: 'Rehber',
     imageUrl: '/images/blog/kiralik-arac-rent-a-car-deger-kaybi-kim-oder.jpeg',
   },
+  {
+    id: '5',
+    title: 'Motosiklet Kazalarında Değer Kaybı ve Ekipman Hasarı Tazminatı Nasıl Hesaplanır?',
+    excerpt: 'Motosiklet kazalarında hem motosiklet değer kaybı hem de kask, mont, eldiven gibi ekipman hasarı tazminatı talep edilebilir. Fatura şartı, hesaplama yöntemi ve süreç hakkında rehber.',
+    slug: 'motosiklet-kazalarinda-deger-kaybi-ve-ekipman-hasari-tazminati',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    imageUrl: '/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpg',
+  },
 ];
 
 export default function BlogPage() {
