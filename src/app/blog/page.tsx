@@ -55,6 +55,15 @@ const samplePosts: BlogPost[] = [
     category: 'Rehber',
     imageUrl: '/images/blog/motosiklet-deger-kaybi-ve-ekipman-hasari-tazminati.jpeg',
   },
+  {
+    id: '6',
+    title: 'Değer Kaybı Davaları Ne Kadar Sürer? (Tahkim ve Mahkeme Süreçleri)',
+    excerpt: 'Değer kaybı davası ne kadar sürer? Sigorta Tahkim Komisyonu 2-6 ay, klasik mahkeme 1.5-2 yıl sürebilir. Süreç adımları, tahkim vs mahkeme karşılaştırması ve süreci hızlandırma yöntemleri.',
+    slug: 'deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    imageUrl: '/images/blog/deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci.jpeg',
+  },
 ];
 
 export default function BlogPage() {

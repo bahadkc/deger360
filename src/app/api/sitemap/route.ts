@@ -67,6 +67,12 @@ export async function GET() {
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>${baseUrl}/blog/deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/iletisim</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>

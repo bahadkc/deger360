@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Script from 'next/script';
+import { notFound } from 'next/navigation';
 import { Calendar, ArrowLeft, CheckCircle } from 'lucide-react';
 import { PageCTASection } from '@/components/sections/page-cta-section';
 import { ScrollAnimation } from '@/components/ui/scroll-animation';
@@ -65,6 +66,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'Motosiklet kazalarında değer kaybı ve ekipman hasarı tazminatı nasıl hesaplanır? Kask, mont, eldiven tazminatı, fatura şartı, pert motosiklet ve kurye kazanç kaybı hakkında detaylı bilgi.',
   },
+  'deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci': {
+    id: '6',
+    title: 'Değer Kaybı Davaları Ne Kadar Sürer? (Tahkim ve Mahkeme Süreçleri)',
+    excerpt: 'Değer kaybı davası ne kadar sürer? Sigorta Tahkim Komisyonu 2-6 ay, klasik mahkeme 1.5-2 yıl sürebilir. Süreç adımları, tahkim vs mahkeme karşılaştırması ve süreci hızlandırma yöntemleri.',
+    slug: 'deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    metaDescription: 'Değer kaybı davası ne kadar sürer? Sigorta Tahkim Komisyonu süreçleri, klasik mahkeme süreleri, tahkim vs mahkeme karşılaştırması, zamanaşımı ve ödeme süreleri hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -72,9 +82,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = blogPosts[slug];
   
   if (!post) {
-    return {
-      title: 'Blog Yazısı Bulunamadı',
-    };
+    notFound();
   }
 
   return {
@@ -88,16 +96,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = blogPosts[slug];
 
   if (!post) {
-    return (
-      <main className="min-h-screen py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-dark-blue mb-4">Blog Yazısı Bulunamadı</h1>
-          <Link href="/blog" className="text-primary-orange hover:text-orange-600">
-            Blog sayfasına dön
-          </Link>
-        </div>
-      </main>
-    );
+    notFound();
   }
 
   const formatDate = (dateString: string) => {
@@ -289,6 +288,35 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Evet. Ticari olarak kullanılan (Getir, Yemeksepeti, Trendyol Go vb. veya şahsi kurye) motosikletler için \"Ticari Kazanç Kaybı\" (Yatış Parası) talep edilebilir. Bunun için vergi levhası veya çalışma kaydı sunmanız gerekir."
+        }
+      }
+    ]
+  } : slug === 'deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Değer kaybı davasında zamanaşımı süresi ne kadardır?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kaza tarihinden itibaren 2 yıl içinde başvuru yapmanız gerekir. Eğer kazada yaralanma veya ölüm varsa bu süre 8 yıla kadar (Ceza zamanaşımı) uzayabilir. Ancak sadece maddi hasarlı kazalarda 2 yılı geçirmemelisiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Tazminat kazandık, para ne zaman hesabıma yatar?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tahkim Komisyonu karar verdikten sonra, sigorta şirketine kararı (ilamı) göndeririz. Sigorta şirketleri genellikle yasal faiz işlememesi için karardan sonraki 1-2 hafta içinde ödemeyi yapar."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Dosya sonuçlanmadan aracı satabilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, satabilirsiniz. Değer kaybı hakkı \"kaza tarihindeki ruhsat sahibine\" aittir. Aracı satmış olmanız, geçmişteki kazadan doğan tazminat hakkınızı kaybetmenize neden olmaz."
         }
       }
     ]
@@ -1167,6 +1195,213 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Evet. Ticari olarak kullanılan (Getir, Yemeksepeti, Trendyol Go vb. veya şahsi kurye) motosikletler için "Ticari Kazanç Kaybı" (Yatış Parası) talep edilebilir. Bunun için vergi levhası veya çalışma kaydı sunmanız gerekir.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    Araç değer kaybı tazminat süreçleri, başvuru yapılan merciye göre değişmekle birlikte; Sigorta Tahkim Komisyonu üzerinden yürütüldüğünde ortalama <strong>2 ile 6 ay</strong> arasında sonuçlanır. Klasik Asliye Hukuk Mahkemelerinde bu süreç 1.5 - 2 yılı bulabilirken, Değer360 olarak tercih ettiğimiz Tahkim yolu, mağduriyetin en hızlı ve kesin şekilde giderilmesini sağlar.
+                  </p>
+
+                  <p>
+                    Sürecin uzunluğunu belirleyen temel faktör, sigorta şirketinin ilk başvuruya verdiği cevap ve dosyanın eksik evrak durumudur.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci.jpeg"
+                      alt="değer kaybı davası ne kadar sürer tahkim süreci"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Süreç Neden Değişkenlik Gösterir? (Adım Adım Zaman Çizelgesi)
+                  </h2>
+
+                  <p>
+                    Değer360 olarak yönettiğimiz 750+ yıllık dosya hacmine dayanarak, süreci 3 ana evreye ayırabiliriz:
+                  </p>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    1. Evre: Sigorta Şirketine İlk Başvuru (15 Gün)
+                  </h3>
+                  <p>
+                    Yasa gereği, dava veya tahkim yoluna gitmeden önce ilgili sigorta şirketine yazılı başvuru yapılması zorunludur.
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Süre:</strong> Sigorta şirketinin yasal olarak <strong>15 iş günü</strong> cevap verme süresi vardır.</li>
+                    <li><strong>Sonuç:</strong> Şirket ya ödeme yapar (genelde düşük tutar), ya reddeder ya da cevap vermez. Cevap gelmezse veya eksik gelirse 2. evreye geçilir.</li>
+                  </ul>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    2. Evre: Sigorta Tahkim Komisyonu (Ortalama 4 Ay)
+                  </h3>
+                  <p>
+                    Sigorta şirketiyle anlaşamazsak (ki %90 anlaşamayız çünkü düşük teklif ederler), dosyanızı "Sigorta Tahkim Komisyonu"na taşırız. Burası mahkeme statüsünde ama çok daha hızlı çalışan bir kurumdur.
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Bilirkişi Ataması:</strong> Dosyaya bağımsız bir hakem ve bilirkişi atanır.</li>
+                    <li><strong>Rapor Süreci:</strong> Bilirkişi aracın gerçek değer kaybını hesaplar.</li>
+                    <li><strong>Karar:</strong> Hakem heyeti kararı verir. Bu süreç dosya yoğunluğuna göre <strong>3 ila 5 ay</strong> sürebilir.</li>
+                  </ul>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    3. Evre: İtiraz ve Kesinleşme (Opsiyonel +2 Ay)
+                  </h3>
+                  <p>
+                    Karar verilen tutar belirli bir sınırın üzerindeyse (örn: çok yüksek tazminatlar), sigorta şirketi itiraz edebilir. İtiraz süreci de ortalama <strong>2 ay</strong> ekleyebilir. Ancak standart hasarlarda genellikle itiraz sınırı altında kalındığı için karar hemen kesinleşir.
+                  </p>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Klasik Mahkeme vs. Tahkim: Neden Biz Tahkimi Seçiyoruz?
+                  </h2>
+
+                  <p>
+                    Pek çok avukat, alışkanlık gereği dosyayı Asliye Hukuk Mahkemelerine açar. Bu, vatandaş için bir zaman kaybı tuzağıdır.
+                  </p>
+
+                  <div className="overflow-x-auto my-6">
+                    <table className="min-w-full border-collapse border border-neutral-300 rounded-lg">
+                      <thead>
+                        <tr className="bg-primary-blue text-white">
+                          <th className="border border-neutral-300 px-4 py-3 text-left font-bold">Kriter</th>
+                          <th className="border border-neutral-300 px-4 py-3 text-left font-bold">Klasik Mahkeme (Dava)</th>
+                          <th className="border border-neutral-300 px-4 py-3 text-left font-bold">Sigorta Tahkim Komisyonu</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="bg-white">
+                          <td className="border border-neutral-300 px-4 py-3 font-semibold">Ortalama Süre</td>
+                          <td className="border border-neutral-300 px-4 py-3">1.5 - 2 Yıl</td>
+                          <td className="border border-neutral-300 px-4 py-3"><strong>2 - 6 Ay</strong></td>
+                        </tr>
+                        <tr className="bg-neutral-50">
+                          <td className="border border-neutral-300 px-4 py-3 font-semibold">Maliyet</td>
+                          <td className="border border-neutral-300 px-4 py-3">Yüksek harçlar çıkabilir</td>
+                          <td className="border border-neutral-300 px-4 py-3">Daha düşük maliyetli</td>
+                        </tr>
+                        <tr className="bg-white">
+                          <td className="border border-neutral-300 px-4 py-3 font-semibold">Uzmanlık</td>
+                          <td className="border border-neutral-300 px-4 py-3">Hakim her konuya bakar</td>
+                          <td className="border border-neutral-300 px-4 py-3">Hakemler sadece sigorta uzmanıdır</td>
+                        </tr>
+                        <tr className="bg-neutral-50">
+                          <td className="border border-neutral-300 px-4 py-3 font-semibold">Sonuç</td>
+                          <td className="border border-neutral-300 px-4 py-3">Yıllarca duruşma beklersiniz</td>
+                          <td className="border border-neutral-300 px-4 py-3">Dosya üzerinden hızlı karar verilir</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <p>
+                    <strong>Değer360</strong> olarak %97 başarı oranımızı, dosyaları doğru merciye (Tahkim) hızlıca iletmeye ve eksiksiz evrak yönetimine borçluyuz.
+                  </p>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Süreci Hızlandırmak Sizin Elinizde mi?
+                  </h2>
+
+                  <p>
+                    Evet. Dosyanızın "bekleme odasında" kalmaması için şu evrakların kaza anında tam olması kritik önem taşır:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-2 my-4">
+                    <li>Kaza Tespit Tutanağı (Islak imzalı veya e-devlet çıktısı).</li>
+                    <li>Kaza anı fotoğrafları (Plakalar net okunmalı).</li>
+                    <li>Aracın onarıldığı servisten alınan parça/işçilik listesi.</li>
+                    <li>Ruhsat ve Ehliyet fotokopisi.</li>
+                  </ol>
+
+                  <div className="bg-orange-50 border-l-4 border-primary-orange p-4 my-6 rounded">
+                    <p className="font-semibold text-dark-blue mb-2">Değer360 Farkı:</p>
+                    <p>
+                      "Dosyam ne zaman sonuçlanacak?" diye her gün aramanıza gerek yok. Web sitemizdeki Dosyam Nerede? paneli üzerinden, dosyanızın hangi aşamada olduğunu (Bilirkişide mi? Karar aşamasında mı?) 7/24 şeffaf bir şekilde takip edebilirsiniz.
+                    </p>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    2 Yıl Beklemeyin, 2 Ayda Çözülsün
+                  </h2>
+
+                  <p>
+                    Zaman en değerli varlığınızdır. Hakkınız olan parayı enflasyon karşısında eritmemek için hızlı hareket etmelisiniz.
+                  </p>
+
+                  <p className="text-lg font-semibold text-dark-blue mt-6 mb-4">
+                    Dosyanızın ne kadar sürede sonuçlanacağını ve tahmini ne kadar tazminat alacağınızı öğrenmek için aşağıdaki linki kullanın.
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Hızlı Değer Kaybı Sorgulama ve Teklif Formu
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular (Süreç Hakkında)
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Değer kaybı davasında zamanaşımı süresi ne kadardır?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Kaza tarihinden itibaren <strong>2 yıl</strong> içinde başvuru yapmanız gerekir. Eğer kazada yaralanma veya ölüm varsa bu süre 8 yıla kadar (Ceza zamanaşımı) uzayabilir. Ancak sadece maddi hasarlı kazalarda 2 yılı geçirmemelisiniz.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Tazminat kazandık, para ne zaman hesabıma yatar?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Tahkim Komisyonu karar verdikten sonra, sigorta şirketine kararı (ilamı) göndeririz. Sigorta şirketleri genellikle yasal faiz işlememesi için karardan sonraki <strong>1-2 hafta içinde</strong> ödemeyi yapar.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Dosya sonuçlanmadan aracı satabilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet, satabilirsiniz. Değer kaybı hakkı <strong>"kaza tarihindeki ruhsat sahibine"</strong> aittir. Aracı satmış olmanız, geçmişteki kazadan doğan tazminat hakkınızı kaybetmenize neden olmaz.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Süreci kendim takip etsem daha mı hızlı olur?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Hayır, muhtemelen daha yavaş olur veya reddedilir. Sigorta şirketleri bireysel başvurularda "eksik evrak" bahanesiyle süreci uzatabilir veya reddedebilir. Profesyonel bir vekil ile çalışmak, yasal süreleri (15 gün, 5 gün vb.) kaçırmamanızı ve dosyanın bilirkişiye doğru sorularla gitmesini sağlar.
                       </p>
                     </div>
                   </div>
