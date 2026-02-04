@@ -19,12 +19,28 @@ export const trackFormSubmission = () => {
   trackEvent('Lead', 'form_submission', 'Contact Form');
 };
 
-// Page view tracking
+// Page view tracking - optimized to prevent forced reflows
 export const trackPageView = (url: string) => {
   if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
-      page_path: url,
-    });
+    // Use requestIdleCallback to defer DOM queries and prevent forced reflows
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(() => {
+        if ((window as any).gtag) {
+          (window as any).gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
+            page_path: url,
+          });
+        }
+      }, { timeout: 2000 });
+    } else {
+      // Fallback: defer with setTimeout
+      setTimeout(() => {
+        if ((window as any).gtag) {
+          (window as any).gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
+            page_path: url,
+          });
+        }
+      }, 100);
+    }
   }
 };
 

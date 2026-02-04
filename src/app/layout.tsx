@@ -3,12 +3,20 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { ConditionalLayout } from './conditional-layout';
+import { ResourceHints } from '@/components/performance/resource-hints';
 
 const inter = Inter({ 
   subsets: ['latin'],
-  display: 'swap',
+  // Use 'optional' for faster initial render - browser uses fallback if font not ready
+  // Falls back to 'swap' if 'optional' causes layout issues
+  display: 'optional',
   preload: true,
   variable: '--font-inter',
+  // Optimize font loading
+  adjustFontFallback: true,
+  fallback: ['system-ui', 'arial'],
+  // Reduce font file size by only loading necessary weights
+  weight: ['400', '500', '600', '700'],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://deger360.net';
@@ -82,16 +90,43 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
+      <head>
+        <ResourceHints />
+      </head>
       <body className={inter.className}>
-        {/* Google Tag Manager */}
-        <Script id="google-tag-manager" strategy="beforeInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-NLXPVM2R');`}
-        </Script>
-        {/* End Google Tag Manager */}
+        {/* Google Tag Manager - Optimized to prevent forced reflows and reduce unused JS */}
+        {/* Load GTM with lazyOnload to defer loading and reduce unused JavaScript */}
+        <Script
+          id="google-tag-manager"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){
+                w[l]=w[l]||[];
+                w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+                // Use requestIdleCallback to defer DOM queries and prevent forced reflows
+                if (window.requestIdleCallback) {
+                  requestIdleCallback(function() {
+                    var f=d.getElementsByTagName(s)[0],
+                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+                    j.async=true;
+                    j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+                    f.parentNode.insertBefore(j,f);
+                  }, { timeout: 2000 });
+                } else {
+                  // Fallback for browsers without requestIdleCallback
+                  setTimeout(function() {
+                    var f=d.getElementsByTagName(s)[0],
+                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+                    j.async=true;
+                    j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+                    f.parentNode.insertBefore(j,f);
+                  }, 1);
+                }
+              })(window,document,'script','dataLayer','GTM-NLXPVM2R');
+            `,
+          }}
+        />
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe 
@@ -101,20 +136,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             style={{display:'none',visibility:'hidden'}}
           />
         </noscript>
-        {/* End Google Tag Manager (noscript) */}
-        {/* Google tag (gtag.js) - Script component automatically adds to head */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-DW3NXFD2DY"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-DW3NXFD2DY');
-          `}
-        </Script>
+        {/* Note: Google Analytics is loaded via GoogleAnalytics component in ConditionalLayout */}
         {/* Schema.org Structured Data */}
         <Script
           id="schema-org"

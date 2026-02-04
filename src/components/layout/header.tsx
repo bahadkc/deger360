@@ -90,7 +90,9 @@ export function Header() {
                 className="h-8 sm:h-10 md:h-12 w-auto"
                 priority
                 sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
-                quality={90}
+                quality={75}
+                // Ensure fetchpriority is set by using priority prop
+                // Next.js should automatically add fetchpriority="high" when priority is true
               />
             </Link>
           </div>

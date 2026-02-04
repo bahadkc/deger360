@@ -68,6 +68,7 @@ export function Footer() {
               height={50}
               className="h-10 w-auto mb-4"
               loading="lazy"
+              quality={75}
             />
             <p className="text-neutral-200">
               Aracınızın değer kaybı tazminatını almak için yanınızdayız. Profesyonel ekibimizle haklarınızı koruyoruz.

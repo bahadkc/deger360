@@ -11,7 +11,8 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [75, 85],
+    // Note: quality is set per Image component (default is 75 in Next.js 16)
+    // We've already set quality={75} on logo images to optimize file size
     minimumCacheTTL: 60,
     remotePatterns: [
       {
@@ -36,7 +37,18 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
+    optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion', '@supabase/supabase-js'],
+  },
+  // Note: Next.js 16 uses Turbopack by default which handles code splitting automatically
+  // The webpack config has been removed as Turbopack provides better performance
+  // Turbopack automatically optimizes chunk splitting and reduces unused JavaScript
+  // Compiler configuration for modern JavaScript
+  // Target modern browsers to avoid unnecessary polyfills
+  compiler: {
+    // Remove console.log in production (optional, but good practice)
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
   // Rewrites for admin panel security
   // Note: Proxy is automatically detected from src/proxy.ts in Next.js 16

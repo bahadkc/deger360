@@ -23,23 +23,38 @@ function GoogleAnalyticsInner() {
 
   return (
     <>
+      {/* Initialize dataLayer early to prevent errors */}
       <Script
-        strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-      />
-      <Script
-        id="google-analytics"
-        strategy="afterInteractive"
+        id="google-analytics-init"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${gaId}', {
-              page_path: window.location.pathname,
-            });
+            window.gtag = gtag;
+            // Defer gtag config to prevent forced reflows
+            if (window.requestIdleCallback) {
+              requestIdleCallback(function() {
+                gtag('js', new Date());
+                gtag('config', '${gaId}', {
+                  page_path: window.location.pathname,
+                });
+              }, { timeout: 2000 });
+            } else {
+              setTimeout(function() {
+                gtag('js', new Date());
+                gtag('config', '${gaId}', {
+                  page_path: window.location.pathname,
+                });
+              }, 100);
+            }
           `,
         }}
+      />
+      {/* Load gtag.js with lazyOnload to prevent forced reflows */}
+      <Script
+        strategy="lazyOnload"
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
       />
     </>
   );

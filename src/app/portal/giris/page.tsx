@@ -206,7 +206,7 @@ export default function GirisPage() {
                     className="h-10 w-auto"
                     priority
                     sizes="(max-width: 640px) 120px, 150px"
-                    quality={90}
+                    quality={75}
                   />
                 </Link>
               </div>

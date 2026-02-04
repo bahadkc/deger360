@@ -1,7 +1,13 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { BlogCard, BlogPost } from '@/components/sections/blog-card';
-import { PageCTASection } from '@/components/sections/page-cta-section';
 import { ScrollAnimation } from '@/components/ui/scroll-animation';
+
+// Dynamically import non-critical below-the-fold components to reduce initial bundle size
+const PageCTASection = dynamic(
+  () => import('@/components/sections/page-cta-section').then((mod) => ({ default: mod.PageCTASection })),
+  { ssr: true }
+);
 
 export const metadata: Metadata = {
   title: 'Blog - Araç Değer Kaybı Hakkında Bilgiler',

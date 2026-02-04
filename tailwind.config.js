@@ -5,6 +5,18 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Optimize CSS output by removing unused styles
+  // Tailwind automatically purges unused CSS in production builds
+  purge: {
+    enabled: process.env.NODE_ENV === 'production',
+    content: [
+      './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+      './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+      './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    ],
+    // Safelist any classes that might be dynamically generated
+    safelist: [],
+  },
   theme: {
     extend: {
       colors: {

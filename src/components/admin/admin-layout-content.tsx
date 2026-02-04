@@ -185,7 +185,7 @@ export function AdminLayoutContent({ children }: AdminLayoutContentProps) {
                 className="h-8 sm:h-10 md:h-12 w-auto"
                 priority
                 sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
-                quality={90}
+                quality={75}
               />
               <h1 className="text-lg sm:text-xl font-bold text-primary-blue hidden sm:block">Admin Panel</h1>
             </div>
