@@ -10,12 +10,15 @@
 
 /* CSS Containment for layout optimization - reduces main-thread work */
 /* Isolates layout calculations to specific containers */
+/* Note: Using 'layout style' instead of 'layout style paint' to avoid creating stacking contexts that interfere with dropdowns */
 main {
   contain: layout style;
 }
 
 section {
-  contain: layout style paint;
+  contain: layout style;
+  /* Removed 'paint' containment to prevent stacking context issues with dropdowns */
+  /* Paint containment can create new stacking contexts that interfere with z-index */
 }
 
 /* Optimize transitions to use GPU acceleration */

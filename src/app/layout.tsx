@@ -105,7 +105,7 @@ export default function RootLayout({
             *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
             html{scroll-behavior:smooth;overflow-y:scroll;-webkit-text-size-adjust:100%}
             body{font-family:var(--font-inter),system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;text-rendering:optimizeSpeed}
-            header{position:fixed;top:0;left:0;right:0;background-color:#fff;z-index:50;box-shadow:0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);contain:layout style paint}
+            header{position:fixed;top:0;left:0;right:0;background-color:#fff;z-index:50;box-shadow:0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);isolation:isolate}
             main{padding-top:4rem;contain:layout style}
             .container{width:100%;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
             @media(min-width:640px){.container{padding-left:1.5rem;padding-right:1.5rem}}

@@ -105,7 +105,7 @@ export const Header = memo(function Header() {
   ], []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50" style={{ isolation: 'isolate' }}>
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-4 h-16">
           {/* Logo - Optimized with Next.js Image Optimization API (AVIF/WebP conversion, responsive sizes) */}
@@ -155,7 +155,7 @@ export const Header = memo(function Header() {
             
             {/* Şirketimiz Dropdown */}
             <div 
-              className="relative"
+              className="relative z-[60]"
               onMouseEnter={() => setCompanyMenuOpen(true)}
               onMouseLeave={() => setCompanyMenuOpen(false)}
             >
@@ -167,8 +167,8 @@ export const Header = memo(function Header() {
               </button>
               
               {companyMenuOpen && (
-                <div className="absolute top-full left-0 pt-2 bg-transparent">
-                  <div className="bg-white shadow-lg rounded-lg py-2 min-w-[180px] border border-neutral-200 z-50">
+                <div className="absolute top-full left-0 pt-2 bg-transparent z-[60]">
+                  <div className="bg-white shadow-lg rounded-lg py-2 min-w-[180px] border border-neutral-200 relative z-[60]">
                     {companyMenuItems.map((item) => {
                       // Bloglar için direkt link
                       if (item.href) {
