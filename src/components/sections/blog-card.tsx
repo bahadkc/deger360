@@ -28,10 +28,11 @@ export function BlogCard({ post }: BlogCardProps) {
                 alt={post.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 loading="lazy"
-                quality={85}
+                quality={75}
                 unoptimized={false}
+                priority={false}
               />
               {/* Gradient overlay - alt kısımda */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />

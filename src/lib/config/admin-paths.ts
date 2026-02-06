@@ -15,6 +15,7 @@ export const adminRoutes = {
   dashboard: `${ADMIN_PATH}`,
   customers: `${ADMIN_PATH}/musteriler`,
   customerDetail: (id: string) => `${ADMIN_PATH}/musteriler/${id}`,
+  documentsSummary: `${ADMIN_PATH}/dokuman-ozeti`,
   reports: `${ADMIN_PATH}/raporlar`,
   admins: `${ADMIN_PATH}/adminler`,
   adminDetail: (id: string) => `${ADMIN_PATH}/adminler/${id}`,

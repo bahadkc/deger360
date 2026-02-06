@@ -15,10 +15,13 @@ const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
   'arac_fotograflari': 'arac_fotograflari',
   'ruhsat': 'ruhsat_fotokopisi',
   'kimlik': 'kimlik_fotokopisi',
+  'karsi_tarafin_ruhsati': 'karsi_tarafin_ruhsati_alindi',
+  'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
   'bilir_kisi_raporu': 'eksper_raporu_alindi',
   'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
-  'sigortaya_gonderilen_ihtarname': 'sigorta_basvurusu_yapildi',
-  'hakem_karari': 'tahkim_sonucu_belirlendi',
+  'sigortaya_gonderilen_ihtarname': 'sigortaya_yapilan_basvuru_dokumani_eklendi',
+  'hakem_karari': 'hakem_karari_dokumani_eklendi',
+  // sigorta_odeme_dekontu is handled specially based on case board_stage
 };
 
 export async function POST(request: NextRequest) {
@@ -213,7 +216,27 @@ export async function POST(request: NextRequest) {
     // Auto-mark checklist items based on uploaded documents
     // Only mark if document was successfully uploaded
     if (uploadedDocuments.length > 0) {
-      const taskKeyToMark = DOCUMENT_TO_TASK_MAPPING[category];
+      let taskKeyToMark: string | undefined = DOCUMENT_TO_TASK_MAPPING[category];
+      
+      // Special handling for sigorta_odeme_dekontu - determine based on case insurance_response or board_stage
+      if (category === 'sigorta_odeme_dekontu') {
+        // Get case insurance_response and board_stage to determine which section
+        const { data: caseData } = await supabaseAdmin
+          .from('cases')
+          .select('insurance_response, board_stage')
+          .eq('id', caseId)
+          .single();
+        
+        // If insurance_response is 'rejected', use tahkim checklist item
+        // If insurance_response is 'accepted' or null/undefined, use müzakere checklist item
+        // Also check board_stage as fallback
+        if (caseData?.insurance_response === 'rejected' || caseData?.board_stage === 'tahkim') {
+          taskKeyToMark = 'sigortanin_yaptigi_odeme_dekontu_tahkim';
+        } else {
+          // Default to müzakere (accepted or no response)
+          taskKeyToMark = 'sigortanin_yaptigi_odeme_dekontu_muzakere';
+        }
+      }
       
       if (taskKeyToMark) {
         try {

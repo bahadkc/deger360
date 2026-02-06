@@ -8,6 +8,7 @@ import { LogOut, User } from 'lucide-react';
 import { logout } from '@/lib/supabase/auth';
 import { getCurrentUserCases } from '@/lib/supabase/auth';
 import { cn } from '@/lib/utils';
+import { OptimizedLogo } from '@/components/ui/optimized-logo';
 
 interface PortalHeaderProps {
   onMenuToggle?: () => void;
@@ -84,18 +85,9 @@ export function PortalHeader({
     <header className="fixed top-0 left-0 right-0 w-full bg-white shadow-md border-b border-neutral-200 z-[100]">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo - Sol taraf */}
+          {/* Logo - Sol taraf - Optimized with Next.js Image Optimization API */}
           <Link href="/portal" className="flex items-center">
-            <Image
-              src="/images/logo.png"
-              alt="Değer360 - Araç Değer Kaybı Tazminatı Danışmanlığı Logo"
-              width={150}
-              height={50}
-              className="h-8 sm:h-10 md:h-12 w-auto"
-              priority
-              sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
-              quality={75}
-            />
+            <OptimizedLogo />
           </Link>
 
           {/* Menu Toggle Button - Mobile */}

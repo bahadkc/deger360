@@ -17,25 +17,42 @@ export function StickyMobileCTA() {
 
     let ticking = false;
     let rafId: number | null = null;
+    // Cache the hero section element to avoid repeated DOM queries
+    let heroSection: HTMLElement | null = null;
+    // Cache visibility state to avoid unnecessary state updates
+    let lastVisibilityState = false;
 
     const handleScroll = () => {
       if (!ticking) {
+        ticking = true;
         rafId = requestAnimationFrame(() => {
-          // Hero section'ı (contact-form) bul
-          const heroSection = document.getElementById('contact-form');
+          // Cache element lookup to avoid repeated DOM queries
+          if (!heroSection) {
+            heroSection = document.getElementById('contact-form');
+          }
           
           if (!heroSection) {
             // Hero section bulunamazsa butonu göster
-            setIsVisible(true);
+            if (!lastVisibilityState) {
+              setIsVisible(true);
+              lastVisibilityState = true;
+            }
             ticking = false;
             return;
           }
 
-          // Hero section'ın alt pozisyonunu al (requestAnimationFrame içinde)
+          // Batch layout read: getBoundingClientRect() is called once per frame
+          // This is acceptable as it's already inside requestAnimationFrame
+          // However, we optimize by caching the result and only updating state when it changes
           const heroSectionBottom = heroSection.getBoundingClientRect().bottom;
+          const shouldBeVisible = heroSectionBottom < 0;
           
-          // Eğer hero section tamamen geçildiyse butonu göster
-          setIsVisible(heroSectionBottom < 0);
+          // Only update state if visibility changed to avoid unnecessary re-renders
+          if (shouldBeVisible !== lastVisibilityState) {
+            setIsVisible(shouldBeVisible);
+            lastVisibilityState = shouldBeVisible;
+          }
+          
           ticking = false;
         });
       }

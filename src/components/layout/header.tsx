@@ -3,17 +3,19 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { usePathname } from 'next/navigation';
+import { OptimizedLogo } from '@/components/ui/optimized-logo';
 
-export function Header() {
+export const Header = memo(function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [companyMenuOpen, setCompanyMenuOpen] = useState(false);
   const isTeklifPage = pathname === '/teklif';
   const isHomePage = pathname === '/';
 
-  const scrollToSection = (sectionId: string | null) => {
+  // Memoize scrollToSection to prevent unnecessary re-renders
+  const scrollToSection = useCallback((sectionId: string | null) => {
     if (!sectionId) {
       window.location.href = '/';
       return;
@@ -21,79 +23,95 @@ export function Header() {
     
     // Ana sayfadaysak direkt scroll et
     if (window.location.pathname === '/') {
-      // Element'i bulmak için birkaç kez deneme yap (animasyon gecikmesi için)
-      let attempts = 0;
-      const maxAttempts = 10;
-      
-      const tryScroll = () => {
+      // Use requestIdleCallback to avoid forced reflows - batch layout reads
+      const performScroll = () => {
         const element = document.getElementById(sectionId);
-        if (element) {
-          requestAnimationFrame(() => {
-            const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
-            const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - headerHeight - offset;
-            
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth'
-            });
-          });
-          return true;
-        }
-        return false;
+        if (!element) return false;
+        
+        // Batch all layout reads together before any writes to prevent forced reflows
+        // Use scrollIntoView with CSS scroll-margin instead of manual calculations
+        // This avoids reading getBoundingClientRect() which forces layout recalculation
+        const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+        const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+        
+        // Set scroll-margin-top temporarily to account for header and offset
+        const originalScrollMargin = element.style.scrollMarginTop;
+        element.style.scrollMarginTop = `${headerHeight + offset}px`;
+        
+        // Use scrollIntoView which is optimized by the browser and doesn't force reflow
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        
+        // Restore original scroll-margin after a delay
+        setTimeout(() => {
+          element.style.scrollMarginTop = originalScrollMargin;
+        }, 1000);
+        
+        return true;
       };
       
-      // İlk deneme
-      if (!tryScroll()) {
-        // Element bulunamazsa birkaç kez daha dene
-        const interval = setInterval(() => {
-          attempts++;
-          if (tryScroll() || attempts >= maxAttempts) {
-            clearInterval(interval);
+      // Use requestIdleCallback for non-critical scroll operations to avoid blocking
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          if (!performScroll()) {
+            // Element not found, try again after a short delay
+            let attempts = 0;
+            const maxAttempts = 10;
+            const interval = setInterval(() => {
+              attempts++;
+              if (performScroll() || attempts >= maxAttempts) {
+                clearInterval(interval);
+              }
+            }, 100);
           }
-        }, 100);
+        }, { timeout: 500 });
+      } else {
+        // Fallback: use requestAnimationFrame
+        requestAnimationFrame(() => {
+          if (!performScroll()) {
+            let attempts = 0;
+            const maxAttempts = 10;
+            const interval = setInterval(() => {
+              attempts++;
+              if (performScroll() || attempts >= maxAttempts) {
+                clearInterval(interval);
+              }
+            }, 100);
+          }
+        });
       }
     } else {
       // Başka sayfadaysak ana sayfaya yönlendir
       window.location.href = '/#' + sectionId;
     }
     setMobileMenuOpen(false);
-  };
+  }, []);
 
-  const menuItems = [
+  // Memoize menu items to prevent unnecessary re-renders
+  const menuItems = useMemo(() => [
     { label: 'Değer Kaybı Hesaplama', sectionId: 'contact-form' },
     { label: 'Değer Kaybı Nedir?', sectionId: 'nedir' },
     { label: 'Süreç', sectionId: 'surec' },
     { label: 'Neden Biz?', sectionId: 'neden-biz' },
-  ];
+  ], []);
 
-  const companyMenuItems = [
+  const companyMenuItems = useMemo(() => [
     { label: 'Hakkımızda', sectionId: 'hakkimizda' },
     { label: 'İletişim', sectionId: 'iletisim' },
     { label: 'SSS', sectionId: 'sss' },
     { label: 'Bloglar', href: '/blog' },
-  ];
+  ], []);
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-4 h-16">
-          {/* Logo */}
+          {/* Logo - Optimized with Next.js Image Optimization API (AVIF/WebP conversion, responsive sizes) */}
           <div className="flex-shrink-0 w-auto sm:w-[200px]">
             <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/images/logo.png"
-                alt="Değer360 - Araç Değer Kaybı Tazminatı Danışmanlığı Logo"
-                width={150}
-                height={50}
-                className="h-8 sm:h-10 md:h-12 w-auto"
-                priority
-                sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
-                quality={75}
-                // Ensure fetchpriority is set by using priority prop
-                // Next.js should automatically add fetchpriority="high" when priority is true
-              />
+              <OptimizedLogo />
             </Link>
           </div>
 
@@ -355,4 +373,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+});

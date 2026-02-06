@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase/client';
+import { OptimizedLogo } from '@/components/ui/optimized-logo';
 
 const loginSchema = z.object({
   dosyaTakipNumarasi: z
@@ -195,18 +196,12 @@ export default function GirisPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              {/* Logo */}
+              {/* Logo - Optimized with Next.js Image Optimization API */}
               <div className="mb-8 flex justify-center lg:justify-start">
                 <Link href="/" className="flex items-center">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Değer360 Logo"
-                    width={150}
-                    height={50}
+                  <OptimizedLogo 
                     className="h-10 w-auto"
-                    priority
                     sizes="(max-width: 640px) 120px, 150px"
-                    quality={75}
                   />
                 </Link>
               </div>

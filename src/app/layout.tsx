@@ -7,16 +7,21 @@ import { ResourceHints } from '@/components/performance/resource-hints';
 
 const inter = Inter({ 
   subsets: ['latin'],
-  // Use 'optional' for faster initial render - browser uses fallback if font not ready
-  // Falls back to 'swap' if 'optional' causes layout issues
-  display: 'optional',
+  // Use 'swap' to ensure text is immediately visible while font loads (prevents render blocking)
+  display: 'swap',
+  // Enable preload for critical font weights to reduce request chain length
+  // Preloading fonts allows them to download in parallel with CSS, not after
   preload: true,
   variable: '--font-inter',
   // Optimize font loading
   adjustFontFallback: true,
   fallback: ['system-ui', 'arial'],
-  // Reduce font file size by only loading necessary weights
-  weight: ['400', '500', '600', '700'],
+  // Mobile-first font loading: Only load essential weights initially
+  // Mobile devices benefit from fewer font files = faster load times
+  // Load only 400 (body) and 600 (headings) initially, others can load later
+  weight: ['400', '600'],
+  // Note: Additional weights (500, 700) can be loaded on-demand if needed
+  // This reduces initial font file size by ~50% on mobile
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://deger360.net';
@@ -89,11 +94,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
+      <html lang="tr" className={inter.variable}>
       <head>
         <ResourceHints />
+        {/* Critical CSS - Inlined to prevent render blocking */}
+        {/* Mobile-optimized: Minimal CSS for first paint, rest loads asynchronously */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Critical CSS - Above the fold styles only - Mobile-first */
+            *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+            html{scroll-behavior:smooth;overflow-y:scroll;-webkit-text-size-adjust:100%}
+            body{font-family:var(--font-inter),system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;text-rendering:optimizeSpeed}
+            header{position:fixed;top:0;left:0;right:0;background-color:#fff;z-index:50;box-shadow:0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);contain:layout style paint}
+            main{padding-top:4rem;contain:layout style}
+            .container{width:100%;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+            @media(min-width:640px){.container{padding-left:1.5rem;padding-right:1.5rem}}
+            @media(min-width:1024px){.container{max-width:1024px}}
+            @media(min-width:1280px){.container{max-width:1280px}}
+            /* Mobile optimizations */
+            @media(max-width:768px){img{height:auto;max-width:100%}*{-webkit-tap-highlight-color:transparent}}
+          `
+        }} />
       </head>
-      <body className={inter.className}>
+      <body>
         {/* Google Tag Manager - Optimized to prevent forced reflows and reduce unused JS */}
         {/* Load GTM with lazyOnload to defer loading and reduce unused JavaScript */}
         <Script

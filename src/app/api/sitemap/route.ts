@@ -73,6 +73,12 @@ export async function GET() {
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>${baseUrl}/blog/arac-deger-kaybi-hesaplama-2026-eksperler-tazminati-hangi-formulle-belirliyor</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/iletisim</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>

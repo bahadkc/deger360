@@ -34,10 +34,13 @@ const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
   'arac_fotograflari': 'arac_fotograflari',
   'ruhsat': 'ruhsat_fotokopisi',
   'kimlik': 'kimlik_fotokopisi',
+  'karsi_tarafin_ruhsati': 'karsi_tarafin_ruhsati_alindi',
+  'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
   'bilir_kisi_raporu': 'eksper_raporu_alindi',
   'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
-  'sigortaya_gonderilen_ihtarname': 'sigorta_basvurusu_yapildi',
-  'hakem_karari': 'tahkim_sonucu_belirlendi',
+  'sigortaya_gonderilen_ihtarname': 'sigortaya_yapilan_basvuru_dokumani_eklendi',
+  'hakem_karari': 'hakem_karari_dokumani_eklendi',
+  // sigorta_odeme_dekontu is handled specially in upload-document route based on case board_stage
 };
 
 export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
@@ -140,11 +143,46 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
       }
     });
 
+    // Special handling for sigorta_odeme_dekontu - determine based on insurance_response
+    const hasSigortaOdemeDekontu = currentDocuments.some(doc => doc.category === 'sigorta_odeme_dekontu');
+    if (hasSigortaOdemeDekontu) {
+      // Determine which checklist item to mark based on insurance_response
+      const taskKeyForSigortaOdeme = insuranceResponse === 'rejected' 
+        ? 'sigortanin_yaptigi_odeme_dekontu_tahkim'
+        : 'sigortanin_yaptigi_odeme_dekontu_muzakere';
+      
+      const checklistItem = currentChecklist.find(item => item.task_key === taskKeyForSigortaOdeme);
+      
+      if (checklistItem && !checklistItem.completed) {
+        syncPromises.push(
+          fetch('/api/update-checklist', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              caseId,
+              taskKey: taskKeyForSigortaOdeme,
+              completed: true,
+            }),
+          }).then(async (res) => {
+            if (res.ok) {
+              // Reload checklist after sync
+              await loadChecklist();
+            }
+          }).catch(err => {
+            console.error(`Error syncing ${taskKeyForSigortaOdeme}:`, err);
+          })
+        );
+      }
+    }
+
     if (syncPromises.length > 0) {
       await Promise.all(syncPromises);
       onUpdate();
     }
-  }, [caseId, loadChecklist, onUpdate]);
+  }, [caseId, insuranceResponse, loadChecklist, onUpdate]);
 
   useEffect(() => {
     loadChecklist();

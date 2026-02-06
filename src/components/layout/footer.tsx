@@ -16,38 +16,64 @@ export function Footer() {
     
     // Ana sayfadaysak direkt scroll et
     if (window.location.pathname === '/') {
-      // Element'i bulmak için birkaç kez deneme yap (animasyon gecikmesi için)
-      let attempts = 0;
-      const maxAttempts = 10;
-      
-      const tryScroll = () => {
+      // Use requestIdleCallback to avoid forced reflows - batch layout reads
+      const performScroll = () => {
         const element = document.getElementById(sectionId);
-        if (element) {
-          requestAnimationFrame(() => {
-            const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
-            const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - headerHeight - offset;
-            
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth'
-            });
-          });
-          return true;
-        }
-        return false;
+        if (!element) return false;
+        
+        // Batch all layout reads together before any writes to prevent forced reflows
+        // Use scrollIntoView with CSS scroll-margin instead of manual calculations
+        // This avoids reading getBoundingClientRect() which forces layout recalculation
+        const headerHeight = 64; // Header yüksekliği (h-16 = 64px)
+        const offset = sectionId === 'iletisim' ? 120 : 80; // İletişim için daha fazla offset
+        
+        // Set scroll-margin-top temporarily to account for header and offset
+        const originalScrollMargin = element.style.scrollMarginTop;
+        element.style.scrollMarginTop = `${headerHeight + offset}px`;
+        
+        // Use scrollIntoView which is optimized by the browser and doesn't force reflow
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        
+        // Restore original scroll-margin after a delay
+        setTimeout(() => {
+          element.style.scrollMarginTop = originalScrollMargin;
+        }, 1000);
+        
+        return true;
       };
       
-      // İlk deneme
-      if (!tryScroll()) {
-        // Element bulunamazsa birkaç kez daha dene
-        const interval = setInterval(() => {
-          attempts++;
-          if (tryScroll() || attempts >= maxAttempts) {
-            clearInterval(interval);
+      // Use requestIdleCallback for non-critical scroll operations to avoid blocking
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          if (!performScroll()) {
+            // Element not found, try again after a short delay
+            let attempts = 0;
+            const maxAttempts = 10;
+            const interval = setInterval(() => {
+              attempts++;
+              if (performScroll() || attempts >= maxAttempts) {
+                clearInterval(interval);
+              }
+            }, 100);
           }
-        }, 100);
+        }, { timeout: 500 });
+      } else {
+        // Fallback: use requestAnimationFrame
+        requestAnimationFrame(() => {
+          if (!performScroll()) {
+            let attempts = 0;
+            const maxAttempts = 10;
+            const interval = setInterval(() => {
+              attempts++;
+              if (performScroll() || attempts >= maxAttempts) {
+                clearInterval(interval);
+              }
+            }, 100);
+          }
+        });
       }
     } else {
       // Başka sayfadaysak ana sayfaya yönlendir

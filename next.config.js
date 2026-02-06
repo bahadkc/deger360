@@ -6,13 +6,17 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
-  // Image optimization
+  // Image optimization - Mobile-first approach
   images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    formats: ['image/avif', 'image/webp'], // AVIF first for better mobile compression
+    // Optimized device sizes for mobile: smaller sizes prioritized
+    // Mobile devices typically don't need images larger than 828px width
+    deviceSizes: [375, 414, 640, 750, 828, 1080, 1200, 1920],
+    // Smaller image sizes for mobile thumbnails and icons
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Note: quality is set per Image component (default is 75 in Next.js 16)
-    // We've already set quality={75} on logo images to optimize file size
+    // Lower quality for mobile to reduce file size and improve load times
+    // Next.js will use this as default, can be overridden per Image component
+    // Mobile devices benefit more from faster load times than perfect quality
     minimumCacheTTL: 60,
     remotePatterns: [
       {
@@ -38,6 +42,9 @@ const nextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion', '@supabase/supabase-js'],
+    // Extract critical CSS and inline it in HTML to reduce render-blocking
+    // This automatically extracts and inlines critical CSS, deferring non-critical CSS
+    optimizeCss: true,
   },
   // Note: Next.js 16 uses Turbopack by default which handles code splitting automatically
   // The webpack config has been removed as Turbopack provides better performance

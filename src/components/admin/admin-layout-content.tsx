@@ -1,15 +1,16 @@
 'use client';
 
-import { ReactNode, useEffect, useState, useCallback } from 'react';
+import { ReactNode, useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Users, FileText, LogOut, UserPlus, Shield, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, LogOut, UserPlus, Shield, Menu, X, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isAdmin, getCurrentAdmin, isSuperAdmin } from '@/lib/supabase/admin-auth';
 import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { adminRoutes } from '@/lib/config/admin-paths';
+import { OptimizedLogo } from '@/components/ui/optimized-logo';
 
 interface AdminLayoutContentProps {
   children: ReactNode;
@@ -109,6 +110,21 @@ export function AdminLayoutContent({ children }: AdminLayoutContentProps) {
     router.push(adminRoutes.login);
   };
 
+  // Check if user can see documents summary (superadmin, admin, lawyer)
+  // IMPORTANT: Hook'lar her zaman aynı sırada çağrılmalı, bu yüzden erken return'den önce çağrıyoruz
+  const canSeeDocumentsSummary = useMemo(() => {
+    return adminUser?.role === 'superadmin' || 
+           adminUser?.role === 'admin' || 
+           adminUser?.role === 'lawyer';
+  }, [adminUser?.role]);
+
+  const navItems = useMemo(() => [
+    { href: adminRoutes.dashboard, label: 'Dashboard', icon: LayoutDashboard },
+    { href: adminRoutes.customers, label: 'Müşteriler', icon: Users },
+    ...(canSeeDocumentsSummary ? [{ href: adminRoutes.documentsSummary, label: 'Döküman Özeti', icon: ClipboardList }] : []),
+    { href: adminRoutes.reports, label: 'Raporlar', icon: FileText },
+  ], [canSeeDocumentsSummary]);
+
   // Don't show layout on login page
   if (pathname === adminRoutes.login) {
     return <>{children}</>;
@@ -148,12 +164,6 @@ export function AdminLayoutContent({ children }: AdminLayoutContentProps) {
     );
   }
 
-  const navItems = [
-    { href: adminRoutes.dashboard, label: 'Dashboard', icon: LayoutDashboard },
-    { href: adminRoutes.customers, label: 'Müşteriler', icon: Users },
-    { href: adminRoutes.reports, label: 'Raporlar', icon: FileText },
-  ];
-
   // Superadmin only items
   const superAdminNavItems = [
     { href: adminRoutes.createAdmin, label: 'Admin Oluştur', icon: UserPlus },
@@ -177,15 +187,8 @@ export function AdminLayoutContent({ children }: AdminLayoutContentProps) {
                   <Menu className="w-5 h-5" />
                 )}
               </button>
-              <Image
-                src="/images/logo.png"
+              <OptimizedLogo 
                 alt="Değer360 Logo"
-                width={150}
-                height={50}
-                className="h-8 sm:h-10 md:h-12 w-auto"
-                priority
-                sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
-                quality={75}
               />
               <h1 className="text-lg sm:text-xl font-bold text-primary-blue hidden sm:block">Admin Panel</h1>
             </div>

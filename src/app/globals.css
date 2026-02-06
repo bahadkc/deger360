@@ -8,12 +8,57 @@
   box-sizing: border-box;
 }
 
+/* CSS Containment for layout optimization - reduces main-thread work */
+/* Isolates layout calculations to specific containers */
+main {
+  contain: layout style;
+}
+
+section {
+  contain: layout style paint;
+}
+
+/* Optimize transitions to use GPU acceleration */
+.transition-all {
+  will-change: transform, opacity;
+}
+
+/* Reduce layout thrashing by using transform instead of position changes */
+.translate-y-0,
+.translate-y-10 {
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce repaints on mobile by containing animations */
+  * {
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight for better performance */
+  }
+  
+  /* Optimize images on mobile - prevent layout shifts */
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+  
+  /* Reduce animation complexity on mobile for better performance */
+  .transition-all {
+    transition-duration: 0.3s; /* Shorter transitions on mobile */
+  }
+  
+  /* Optimize scrolling on mobile */
+  body {
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Inter', 'system-ui', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+  font-family: var(--font-inter), 'system-ui', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;

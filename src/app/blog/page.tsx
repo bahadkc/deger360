@@ -4,9 +4,13 @@ import { BlogCard, BlogPost } from '@/components/sections/blog-card';
 import { ScrollAnimation } from '@/components/ui/scroll-animation';
 
 // Dynamically import non-critical below-the-fold components to reduce initial bundle size
+// Mobile-optimized: More aggressive lazy loading
 const PageCTASection = dynamic(
   () => import('@/components/sections/page-cta-section').then((mod) => ({ default: mod.PageCTASection })),
-  { ssr: true }
+  { 
+    ssr: true,
+    loading: () => null, // No loading state to prevent layout shift on mobile
+  }
 );
 
 export const metadata: Metadata = {
@@ -69,6 +73,15 @@ const samplePosts: BlogPost[] = [
     publishedAt: '2025-01-26',
     category: 'Rehber',
     imageUrl: '/images/blog/deger-kaybi-davasi-ne-kadar-surer-tahkim-sureci.jpeg',
+  },
+  {
+    id: '7',
+    title: 'Araç Değer Kaybı Hesaplama 2026: Eksperler Tazminatı Hangi Formülle Belirliyor?',
+    excerpt: 'Araç değer kaybı hesaplama formülü 2026: Hazine Müsteşarlığı standart formülü, rayiç bedel, kilometre katsayısı, hasar büyüklüğü ve parça niteliği. Otomatik hesaplama araçları neden yanıltıcı?',
+    slug: 'arac-deger-kaybi-hesaplama-2026-eksperler-tazminati-hangi-formulle-belirliyor',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    imageUrl: '/images/blog/arac-deger-kaybi-hesaplama-2026-formulu.jpg',
   },
 ];
 

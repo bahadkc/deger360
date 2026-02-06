@@ -28,28 +28,28 @@ export const CHECKLIST_SECTIONS: ChecklistSection[] = [
     title: 'Evrak Toplama ve Eksper',
     emoji: '📋',
     boardStage: 'evrak_ekspertiz',
-    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'eksper_raporu_alindi'],
+    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'karsi_tarafin_ruhsati_alindi', 'karsi_tarafin_ehliyeti_alindi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'eksper_raporu_alindi'],
   },
   {
     id: 3,
     title: 'Sigorta Başvurusu',
     emoji: '📮',
     boardStage: 'sigorta_basvurusu',
-    taskKeys: ['sigorta_basvurusu_yapildi', 'sigortadan_kabul_cevabi_geldi', 'sigortadan_red_cevabi_geldi'],
+    taskKeys: ['sigorta_basvurusu_yapildi', 'sigortaya_yapilan_basvuru_dokumani_eklendi', 'sigortadan_kabul_cevabi_geldi', 'sigortadan_red_cevabi_geldi'],
   },
   {
     id: 4,
     title: 'Müzakere',
     emoji: '🤝',
     boardStage: 'muzakere',
-    taskKeys: ['odeme_bekleniyor_muzakere', 'odeme_alindi_muzakere'],
+    taskKeys: ['odeme_bekleniyor_muzakere', 'odeme_alindi_muzakere', 'sigortanin_yaptigi_odeme_dekontu_muzakere'],
   },
   {
     id: 7,
     title: 'Tahkim',
     emoji: '⚖️',
     boardStage: 'tahkim',
-    taskKeys: ['tahkime_basvuru_yapildi', 'bilirkisi_rapor_hazirlandi', 'tahkim_sonucu_belirlendi', 'odeme_bekleniyor_tahkim', 'odeme_alindi_tahkim'],
+    taskKeys: ['tahkime_basvuru_yapildi', 'bilirkisi_rapor_hazirlandi', 'tahkim_sonucu_belirlendi', 'hakem_karari_dokumani_eklendi', 'odeme_bekleniyor_tahkim', 'odeme_alindi_tahkim', 'sigortanin_yaptigi_odeme_dekontu_tahkim'],
   },
   {
     id: 5,
@@ -77,6 +77,8 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   { key: 'arac_fotograflari', title: 'Araç fotoğrafları alındı' },
   { key: 'ruhsat_fotokopisi', title: 'Ruhsat fotokopisi alındı' },
   { key: 'kimlik_fotokopisi', title: 'Kimlik fotokopisi alındı' },
+  { key: 'karsi_tarafin_ruhsati_alindi', title: 'Karşı tarafın ruhsatı alındı' },
+  { key: 'karsi_tarafin_ehliyeti_alindi', title: 'Karşı tarafın ehliyeti alındı' },
   
   // Eksper Raporu
   { key: 'arac_incelendi', title: 'Araç İncelendi' },
@@ -85,19 +87,23 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   
   // Sigorta Başvurusu
   { key: 'sigorta_basvurusu_yapildi', title: 'Karşı tarafın sigortasına başvuru yapıldı' },
+  { key: 'sigortaya_yapilan_basvuru_dokumani_eklendi', title: 'Sigortaya yapılan başvuru dökümanı eklendi' },
   { key: 'sigortadan_kabul_cevabi_geldi', title: 'Sigortadan kabul cevabı geldi' },
   { key: 'sigortadan_red_cevabi_geldi', title: 'Sigortadan red cevabı geldi' },
   
   // Müzakere
   { key: 'odeme_bekleniyor_muzakere', title: 'Ödeme bekleniyor' },
   { key: 'odeme_alindi_muzakere', title: 'Ödeme alındı' },
+  { key: 'sigortanin_yaptigi_odeme_dekontu_muzakere', title: 'Sigortanın yaptığı ödeme dekontu yüklendi' },
   
   // Tahkim
   { key: 'tahkime_basvuru_yapildi', title: 'Tahkime başvuru yapıldı' },
   { key: 'bilirkisi_rapor_hazirlandi', title: 'Bilirkişi rapor hazırlandı' },
   { key: 'tahkim_sonucu_belirlendi', title: 'Tahkim sonucu belirlendi' },
+  { key: 'hakem_karari_dokumani_eklendi', title: 'Hakem kararı dökümanı eklendi' },
   { key: 'odeme_bekleniyor_tahkim', title: 'Ödeme bekleniyor' },
   { key: 'odeme_alindi_tahkim', title: 'Ödeme alındı' },
+  { key: 'sigortanin_yaptigi_odeme_dekontu_tahkim', title: 'Sigortanın yaptığı ödeme dekontu yüklendi' },
   
   // Ödeme
   { key: 'musteriye_odeme_yapildi', title: 'Müşteriye ödeme yapıldı' },

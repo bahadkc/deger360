@@ -75,6 +75,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'Değer kaybı davası ne kadar sürer? Sigorta Tahkim Komisyonu süreçleri, klasik mahkeme süreleri, tahkim vs mahkeme karşılaştırması, zamanaşımı ve ödeme süreleri hakkında detaylı bilgi.',
   },
+  'arac-deger-kaybi-hesaplama-2026-eksperler-tazminati-hangi-formulle-belirliyor': {
+    id: '7',
+    title: 'Araç Değer Kaybı Hesaplama 2026: Eksperler Tazminatı Hangi Formülle Belirliyor?',
+    excerpt: 'Araç değer kaybı hesaplama formülü 2026: Hazine Müsteşarlığı standart formülü, rayiç bedel, kilometre katsayısı, hasar büyüklüğü ve parça niteliği. Otomatik hesaplama araçları neden yanıltıcı?',
+    slug: 'arac-deger-kaybi-hesaplama-2026-eksperler-tazminati-hangi-formulle-belirliyor',
+    publishedAt: '2025-01-26',
+    category: 'Rehber',
+    metaDescription: 'Araç değer kaybı hesaplama formülü 2026: Hazine Müsteşarlığı standart formülü, rayiç bedel, kilometre katsayısı, hasar büyüklüğü, parça niteliği ve otomatik hesaplama araçlarının neden yanıltıcı olduğu hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -317,6 +326,43 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Evet, satabilirsiniz. Değer kaybı hakkı \"kaza tarihindeki ruhsat sahibine\" aittir. Aracı satmış olmanız, geçmişteki kazadan doğan tazminat hakkınızı kaybetmenize neden olmaz."
+        }
+      }
+    ]
+  } : slug === 'arac-deger-kaybi-hesaplama-2026-eksperler-tazminati-hangi-formulle-belirliyor' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Tampon değişimi değer kaybı yaratır mı?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Genellikle hayır. Plastik aksamlar (tamponlar), camlar, jantlar ve vidalı sökülebilir parçalar (far, stop lambası), aracın \"mekanik veya kaporta bütünlüğünü\" bozmadığı kabul edildiği için değer kaybı hesaplamasına dahil edilmez veya etkisi çok düşüktür."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "165.000 KM sınırı kalktı mı?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, Anayasa Mahkemesi'nin ilgili kararıyla kilometre sınırı esnetilmiştir. Eskiden 165.000 km üzerindeki araçlara ödeme yapılmıyordu, şimdi ise Yargıtay kararları ışığında hesaplama yapılabiliyor. Ancak KM arttıkça alınacak tazminat miktarının düştüğü unutulmamalıdır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Tramer kaydındaki tutar ile alacağım para aynı mı?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hayır, kesinlikle değildir. Tramer (Hasar) kaydı, servisin aracı onarmak için harcadığı paradır. Değer kaybı tazminatı ise aracın piyasa değerindeki düşüştür. 50.000 TL hasar kaydı olan bir araç için 20.000 TL de değer kaybı çıkabilir, 0 TL de çıkabilir. Bu tamamen hasarın yerine bağlıdır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Karşı tarafın sigortası yoksa hesaplama nasıl yapılır?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hesaplama değişmez ancak muhatap değişir. Karşı tarafın trafik sigortası yoksa, hesaplanan değer kaybı tutarını Güvence Hesabı ödemez. Bu durumda hesaplanan tutarı doğrudan kazaya sebep olan sürücüden ve araç sahibinden icra/dava yoluyla talep ederiz."
         }
       }
     ]
@@ -1402,6 +1448,183 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Hayır, muhtemelen daha yavaş olur veya reddedilir. Sigorta şirketleri bireysel başvurularda "eksik evrak" bahanesiyle süreci uzatabilir veya reddedebilir. Profesyonel bir vekil ile çalışmak, yasal süreleri (15 gün, 5 gün vb.) kaçırmamanızı ve dosyanın bilirkişiye doğru sorularla gitmesini sağlar.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'arac-deger-kaybi-hesaplama-2026-eksperler-tazminati-hangi-formulle-belirliyor' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    <strong>Araç değer kaybı hesaplaması;</strong> Hazine Müsteşarlığı'nın belirlediği standart formüle göre, aracın <strong>piyasa rayiç değeri</strong>, <strong>kilometresi</strong>, <strong>geçmiş hasar durumu</strong> ve <strong>onarımın niteliği</strong> (parça değişimi/boya/işçilik) baz alınarak yapılan teknik bir işlemdir. 2026 yılı itibariyle güncel hesaplamada en belirleyici faktör; aracın "Kaza Öncesi 2. El Piyasa Değeri" ile "Onarım Sonrası Hali" arasındaki reel farktır. İnternetteki basit robotların aksine, gerçek tazminat tutarı ancak lisanslı bir sigorta eksperi veya uzman hukukçu tarafından, parça bazlı analizle belirlenebilir.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/arac-deger-kaybi-hesaplama-2026-formulu.jpg"
+                      alt="araç değer kaybı hesaplama 2026 formülü"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Hesaplamayı Etkileyen 4 Ana Çarpan (Formülün İçeriği)
+                  </h2>
+
+                  <p>
+                    Sigorta şirketleri ve Sigorta Tahkim Komisyonu, ödeme yaparken <strong>"Karayolları Motorlu Araçlar Zorunlu Mali Sorumluluk Sigortası Genel Şartları"</strong> ekinde yer alan formülü kullanır. Bu formül şu 4 temel sütuna dayanır:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-4 my-6">
+                    <li>
+                      <strong>Baz Değer (Rayiç Bedel):</strong><br />
+                      Aracınızın kaza tarihindeki 2. el piyasa satış fiyatıdır. (Örn: Sarı sitedeki ilan fiyatları değil, resmi bilirkişi verileri esas alınır).
+                    </li>
+                    <li>
+                      <strong>Kilometre Katsayısı:</strong><br />
+                      Aracın kilometresi ne kadar düşükse, kaza sonrası değer kaybı o kadar yüksek olur.
+                      <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li><em>0 - 15.000 km:</em> En yüksek katsayı (Yüksek tazminat).</li>
+                        <li><em>75.000 km ve üzeri:</em> Katsayı düşmeye başlar.</li>
+                      </ul>
+                    </li>
+                    <li>
+                      <strong>Hasar Büyüklüğü ve Niteliği:</strong><br />
+                      Aracın hangi parçasının hasar gördüğü hayati önem taşır.
+                      <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
+                        <li><strong>Vida ile sökülen parçalar (Tampon, Far, Cam):</strong> Genellikle değer kaybı oluşturmaz veya çok az oluşturur.</li>
+                        <li><strong>Kaynaklı parçalar (Şasi, Arka Çamurluk, Podye):</strong> Aracın iskeletini etkilediği için çok yüksek değer kaybı tazminatı çıkarır.</li>
+                      </ul>
+                    </li>
+                    <li>
+                      <strong>Kullanım Amacı:</strong><br />
+                      Hususi (şahsi) araçlar ile ticari (taksi, kiralık) araçların katsayıları farklılık gösterir.
+                    </li>
+                  </ol>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Neden İnternetteki "Otomatik Hesaplama" Araçlarına Güvenmemelisiniz?
+                  </h2>
+
+                  <p>
+                    Google'da karşınıza çıkan "Değer Kaybı Hesapla" butonları genellikle yanıltıcıdır. Çünkü bir yazılım, aracınızın hasar fotoğrafına bakıp şunları anlayamaz:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><em>"Bu çamurluk onarıldı mı, yoksa orijinaliyle mi değişti?"</em> (İkisi arasındaki tazminat farkı büyüktür).</li>
+                    <li><em>"Bu araç daha önce aynı bölgeden kaza yapmış mı?"</em> (Eğer yapmışsa tazminat alamazsınız, robot bunu bilmeden size para vaat eder).</li>
+                    <li><em>"Aracın donanım paketi (Opsiyonel özellikler) fiyata dahil mi?"</em></li>
+                  </ul>
+
+                  <div className="bg-orange-50 border-l-4 border-primary-orange p-4 my-6 rounded">
+                    <p className="font-semibold text-dark-blue mb-2">Uzman Uyarısı:</p>
+                    <p>
+                      "Basit hesaplama araçları size 50.000 TL alacağınızı söyleyebilir ancak eksper incelemesinde bu rakam 15.000 TL'ye düşebilir veya tam tersi olabilir. Kesin rakam için dosyanın bir insan (uzman) gözüyle incelenmesi şarttır."
+                    </p>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Değer360 Olarak Hesaplamayı Nasıl Yapıyoruz?
+                  </h2>
+
+                  <p>
+                    Biz, otomatik bir yazılım değil, 20 yıllık avukatlık tecrübesi ve lisanslı eksper desteği kullanıyoruz.
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-3 my-4">
+                    <li><strong>Manuel İnceleme:</strong> Gönderdiğiniz hasar fotoğraflarını ve ekspertiz raporunu teknik ekibimiz inceler.</li>
+                    <li><strong>Emsal Kararlar:</strong> Yılda yönettiğimiz <strong>750+ davanın</strong> veri tabanını kullanarak, <em>"Benzer bir kazada Tahkim Komisyonu ne kadar ödemiş?"</em> sorusuna göre en gerçekçi tahmini yaparız.</li>
+                    <li><strong>Maksimum Talep:</strong> Sigorta şirketinin teklif ettiği minimum tutarı değil, mevzuatın izin verdiği en yüksek tutarı talep ederiz.</li>
+                  </ol>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    2026'da Hakkınız Olanı Alın
+                  </h2>
+
+                  <p>
+                    Hesap kitap işleriyle kafanızı yormayın. Yanlış hesaplama yapıp az paraya razı olmayın.
+                  </p>
+
+                  <p>
+                    Değer360 olarak;
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Ön Ödeme Yok.</strong></li>
+                    <li><strong>Eksper Ücreti Yok.</strong></li>
+                    <li>Sadece tazminatı kazanırsak komisyon alıyoruz.</li>
+                  </ul>
+
+                  <p className="text-lg font-semibold text-dark-blue mt-6 mb-4">
+                    Aracınızın gerçek değer kaybını <strong>ücretsiz</strong> öğrenmek için aşağıdaki formu doldurun, uzmanlarımız size net rakamı söylesin:
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Ücretsiz Eksper Görüşü ve Değer Kaybı Teklifi Alın
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular (Hesaplama Hakkında)
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Tampon değişimi değer kaybı yaratır mı?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Genellikle hayır. Plastik aksamlar (tamponlar), camlar, jantlar ve vidalı sökülebilir parçalar (far, stop lambası), aracın "mekanik veya kaporta bütünlüğünü" bozmadığı kabul edildiği için değer kaybı hesaplamasına dahil edilmez veya etkisi çok düşüktür.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        165.000 KM sınırı kalktı mı?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet, Anayasa Mahkemesi'nin ilgili kararıyla kilometre sınırı esnetilmiştir. Eskiden 165.000 km üzerindeki araçlara ödeme yapılmıyordu, şimdi ise Yargıtay kararları ışığında hesaplama yapılabiliyor. Ancak KM arttıkça alınacak tazminat miktarının düştüğü unutulmamalıdır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Tramer kaydındaki tutar ile alacağım para aynı mı?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Hayır, kesinlikle değildir. Tramer (Hasar) kaydı, servisin aracı onarmak için harcadığı paradır. Değer kaybı tazminatı ise aracın piyasa değerindeki düşüştür. 50.000 TL hasar kaydı olan bir araç için 20.000 TL de değer kaybı çıkabilir, 0 TL de çıkabilir. Bu tamamen hasarın yerine bağlıdır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Karşı tarafın sigortası yoksa hesaplama nasıl yapılır?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Hesaplama değişmez ancak muhatap değişir. Karşı tarafın trafik sigortası yoksa, hesaplanan değer kaybı tutarını Güvence Hesabı ödemez. Bu durumda hesaplanan tutarı doğrudan kazaya sebep olan sürücüden ve araç sahibinden icra/dava yoluyla talep ederiz.
                       </p>
                     </div>
                   </div>
