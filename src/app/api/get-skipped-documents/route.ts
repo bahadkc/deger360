@@ -22,19 +22,12 @@ export async function GET(request: NextRequest) {
 
     // Get authenticated user from session
     const cookieStore = await cookies();
-    
-    // Also get cookies from request headers (for better compatibility)
     const requestCookies = request.cookies.getAll();
     
-    // Merge cookies from both sources
     const allCookiesMap = new Map<string, { name: string; value: string }>();
-    
-    // Add cookies from cookieStore
     cookieStore.getAll().forEach(c => {
       allCookiesMap.set(c.name, { name: c.name, value: c.value });
     });
-    
-    // Add cookies from request (override if exists)
     requestCookies.forEach(c => {
       allCookiesMap.set(c.name, { name: c.name, value: c.value });
     });
@@ -85,59 +78,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const role = (userAuth as { role: string }).role;
-    const isSuperAdmin = role === 'superadmin';
-
-    // Check if user has access to this case
-    if (!isSuperAdmin) {
-      const { data: caseAdmin, error: caseAdminError } = await supabaseAdmin
-        .from('case_admins')
-        .select('case_id')
-        .eq('case_id', caseId)
-        .eq('admin_id', user.id)
-        .maybeSingle();
-
-      if (caseAdminError || !caseAdmin) {
-        return NextResponse.json(
-          { error: 'Access denied. This case is not assigned to you.' },
-          { status: 403 }
-        );
-      }
-    }
-
     // Fetch skipped document categories
-    const { data: skippedData } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('skipped_documents')
       .select('category')
       .eq('case_id', caseId);
 
-    const skippedCategories = new Set((skippedData || []).map((item: { category: string }) => item.category));
-
-    // Fetch documents
-    const { data, error } = await supabaseAdmin
-      .from('documents')
-      .select('*')
-      .eq('case_id', caseId)
-      .order('uploaded_at', { ascending: false });
-
     if (error) {
-      console.error('Error fetching documents:', error);
+      console.error('Error fetching skipped documents:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch documents' },
+        { error: 'Failed to fetch skipped documents' },
         { status: 500 }
       );
     }
 
-    // Filter out documents from skipped categories for admin view
-    const filteredDocuments = (data || []).filter((doc: any) => !skippedCategories.has(doc.category));
+    const categories = (data || []).map((item: { category: string }) => item.category);
 
-    return NextResponse.json({ documents: filteredDocuments });
+    return NextResponse.json({ categories });
   } catch (error: any) {
-    console.error('Error in get-documents API:', error);
+    console.error('Error in get-skipped-documents API:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

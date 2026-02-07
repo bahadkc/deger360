@@ -104,8 +104,83 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Document category to checklist task key mapping
+    const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
+      'kaza_tespit_tutanagi': 'kaza_tespit_tutanagi',
+      'arac_fotograflari': 'arac_fotograflari',
+      'ruhsat': 'ruhsat_fotokopisi',
+      'kimlik': 'kimlik_fotokopisi',
+      'karsi_tarafin_ruhsati': 'karsi_tarafin_ruhsati_alindi',
+      'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
+      'bilir_kisi_raporu': 'eksper_raporu_alindi',
+      'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
+      'hakem_karari': 'hakem_karari_dokumani_eklendi',
+    };
+
+    // Fetch skipped documents for all cases at once
+    const caseIds = (data || []).map((c: any) => c.id);
+    let skippedDocumentsMap = new Map<string, Set<string>>();
+    
+    if (caseIds.length > 0) {
+      const { data: skippedData } = await supabaseAdmin
+        .from('skipped_documents')
+        .select('case_id, category')
+        .in('case_id', caseIds);
+      
+      // Group skipped categories by case_id
+      (skippedData || []).forEach((item: { case_id: string; category: string }) => {
+        if (!skippedDocumentsMap.has(item.case_id)) {
+          skippedDocumentsMap.set(item.case_id, new Set());
+        }
+        skippedDocumentsMap.get(item.case_id)!.add(item.category);
+      });
+    }
+
+    // Process each case to filter out skipped documents and checklist items
+    const processedCases = (data || []).map((caseItem: any) => {
+      const caseId = caseItem.id;
+      const skippedCategories = skippedDocumentsMap.get(caseId) || new Set<string>();
+      
+      // Filter out documents from skipped categories
+      const filteredDocuments = (caseItem.documents || []).filter((doc: any) => 
+        !skippedCategories.has(doc.category)
+      );
+      
+      // Get task keys that correspond to skipped document categories
+      const skippedTaskKeys = new Set<string>();
+      Object.entries(DOCUMENT_TO_TASK_MAPPING).forEach(([docCategory, taskKey]) => {
+        if (skippedCategories.has(docCategory)) {
+          skippedTaskKeys.add(taskKey);
+        }
+      });
+      
+      // Special handling for sigorta_odeme_dekontu
+      const insuranceResponse = caseItem.insurance_response;
+      if (skippedCategories.has('sigorta_odeme_dekontu')) {
+        if (insuranceResponse === 'accepted') {
+          skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+        } else if (insuranceResponse === 'rejected') {
+          skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+        } else {
+          skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+          skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+        }
+      }
+      
+      // Filter out checklist items that correspond to skipped document categories
+      const filteredChecklist = (caseItem.admin_checklist || []).filter((item: any) => 
+        !skippedTaskKeys.has(item.task_key)
+      );
+      
+      return {
+        ...caseItem,
+        documents: filteredDocuments,
+        admin_checklist: filteredChecklist,
+      };
+    });
+
     return NextResponse.json(
-      { cases: data || [] },
+      { cases: processedCases },
       {
         headers: {
           'Content-Type': 'application/json',

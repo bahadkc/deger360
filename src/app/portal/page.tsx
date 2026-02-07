@@ -175,6 +175,55 @@ export default function DashboardPage() {
   }, [caseData, getChecklistItemsForProgress, calculateProgressPercentage]);
 
   const loadChecklistData = useCallback(async (caseId: string, insuranceResponse?: string | null) => {
+    // Get skipped document categories
+    let skippedCategories = new Set<string>();
+    try {
+      const skippedResponse = await fetch(`/api/get-skipped-documents-customer?caseId=${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (skippedResponse.ok) {
+        const skippedData = await skippedResponse.json();
+        skippedCategories = new Set(skippedData.categories || []);
+      }
+    } catch (error) {
+      console.error('Error fetching skipped documents:', error);
+    }
+
+    // Document category to checklist task key mapping
+    const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
+      'kaza_tespit_tutanagi': 'kaza_tespit_tutanagi',
+      'arac_fotograflari': 'arac_fotograflari',
+      'ruhsat': 'ruhsat_fotokopisi',
+      'kimlik': 'kimlik_fotokopisi',
+      'karsi_tarafin_ruhsati': 'karsi_tarafin_ruhsati_alindi',
+      'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
+      'bilir_kisi_raporu': 'eksper_raporu_alindi',
+      'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
+      'hakem_karari': 'hakem_karari_dokumani_eklendi',
+    };
+
+    // Get task keys that correspond to skipped document categories
+    const skippedTaskKeys = new Set<string>();
+    Object.entries(DOCUMENT_TO_TASK_MAPPING).forEach(([docCategory, taskKey]) => {
+      if (skippedCategories.has(docCategory)) {
+        skippedTaskKeys.add(taskKey);
+      }
+    });
+    
+    // Special handling for sigorta_odeme_dekontu - it maps to different task keys based on insurance response
+    if (skippedCategories.has('sigorta_odeme_dekontu')) {
+      if (insuranceResponse === 'accepted') {
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+      } else if (insuranceResponse === 'rejected') {
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+      } else {
+        // If no response yet, add both possibilities
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+      }
+    }
+
     const { data: checklistData, error: checklistError } = await supabase
       .from('admin_checklist')
       .select('*')
@@ -194,9 +243,12 @@ export default function DashboardPage() {
         };
       });
 
+      // Filter out skipped checklist items before determining current section
+      const visibleChecklist = mergedChecklist.filter((item) => !skippedTaskKeys.has(item.task_key));
+      
       // Mevcut section'ı belirle
       const currentSection = getCurrentSection(
-        mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
+        visibleChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
       );
 
       // Section'ları ProgressStep formatına dönüştür (Tamamlandı section'ını müşteri portalında gizle)
@@ -218,14 +270,19 @@ export default function DashboardPage() {
           return true;
         }
       ).map((section) => {
-        const sectionItems = mergedChecklist.filter((item) =>
-          section.taskKeys.includes(item.task_key)
-        );
+        // Filter out checklist items that correspond to skipped document categories
+        const sectionItems = mergedChecklist.filter((item) => {
+          const isInSection = section.taskKeys.includes(item.task_key);
+          if (!isInSection) return false;
+          
+          // Exclude items that correspond to skipped document categories
+          return !skippedTaskKeys.has(item.task_key);
+        });
         
         // Special handling for Sigorta Başvurusu section
         if (section.boardStage === 'sigorta_basvurusu') {
-          const kabulCevabi = mergedChecklist.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi');
-          const redCevabi = mergedChecklist.find(item => item.task_key === 'sigortadan_red_cevabi_geldi');
+          const kabulCevabi = sectionItems.find(item => item.task_key === 'sigortadan_kabul_cevabi_geldi');
+          const redCevabi = sectionItems.find(item => item.task_key === 'sigortadan_red_cevabi_geldi');
           const kabulCompleted = kabulCevabi?.completed || false;
           const redCompleted = redCevabi?.completed || false;
           
@@ -267,7 +324,7 @@ export default function DashboardPage() {
         
         const sectionCompleted = isSectionCompleted(
           section,
-          mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
+          visibleChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
         );
         const isCurrentSection = currentSection?.id === section.id;
 
@@ -334,11 +391,32 @@ export default function DashboardPage() {
       .eq('case_id', caseId)
       .order('created_at', { ascending: false }) as { data: any[] | null; error: any };
 
+    // Get skipped document categories for this case (via API since customers can't access skipped_documents table)
+    let skippedCategories = new Set<string>();
+    try {
+      const skippedResponse = await fetch(`/api/get-skipped-documents-customer?caseId=${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (skippedResponse.ok) {
+        const skippedData = await skippedResponse.json();
+        skippedCategories = new Set(skippedData.categories || []);
+      }
+    } catch (error) {
+      console.error('Error fetching skipped documents:', error);
+    }
+
     if (!docsError && documentsData) {
-      // Create document display list from expected documents
-      const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => {
+      // Filter out documents from skipped categories
+      const filteredDocuments = documentsData.filter((doc) => !skippedCategories.has(doc.category));
+
+      // Filter out skipped categories from expected documents list
+      const filteredExpectedDocs = EXPECTED_DOCUMENTS.filter((doc) => !skippedCategories.has(doc.key));
+
+      // Create document display list from expected documents (excluding skipped ones)
+      const documentDisplayList: DocumentDisplay[] = filteredExpectedDocs.map((expectedDoc) => {
         // Find all uploaded documents matching this expected document category
-        const uploadedDocs = documentsData.filter((doc) => doc.category === expectedDoc.key);
+        const uploadedDocs = filteredDocuments.filter((doc) => doc.category === expectedDoc.key);
         return {
           key: expectedDoc.key,
           name: expectedDoc.name,
@@ -358,10 +436,10 @@ export default function DashboardPage() {
       });
       setDocuments(documentDisplayList);
 
-      // Add documents to relevant steps
+      // Add documents to relevant steps (excluding skipped documents)
       setProgressSteps((prevSteps) =>
         prevSteps.map((step) => {
-          const stepDocs = documentsData.filter((doc) => {
+          const stepDocs = filteredDocuments.filter((doc) => {
             if (step.title.includes('Ekspertiz') && doc.category === 'bilir_kisi_raporu')
               return true;
             if (step.title.includes('Kaza') && doc.category === 'kaza_tespit_tutanagi')
@@ -401,6 +479,56 @@ export default function DashboardPage() {
         // Use checklist data from API if available, otherwise load separately
         if (currentCase.admin_checklist && Array.isArray(currentCase.admin_checklist) && currentCase.admin_checklist.length > 0) {
           console.log('Dashboard: Using checklist data from API');
+          
+          // Get skipped document categories
+          let skippedCategories = new Set<string>();
+          try {
+            const skippedResponse = await fetch(`/api/get-skipped-documents-customer?caseId=${currentCase.id}`, {
+              method: 'GET',
+              credentials: 'include',
+            });
+            if (skippedResponse.ok) {
+              const skippedData = await skippedResponse.json();
+              skippedCategories = new Set(skippedData.categories || []);
+            }
+          } catch (error) {
+            console.error('Error fetching skipped documents:', error);
+          }
+
+          // Document category to checklist task key mapping
+          const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
+            'kaza_tespit_tutanagi': 'kaza_tespit_tutanagi',
+            'arac_fotograflari': 'arac_fotograflari',
+            'ruhsat': 'ruhsat_fotokopisi',
+            'kimlik': 'kimlik_fotokopisi',
+            'karsi_tarafin_ruhsati': 'karsi_tarafin_ruhsati_alindi',
+            'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
+            'bilir_kisi_raporu': 'eksper_raporu_alindi',
+            'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
+            'hakem_karari': 'hakem_karari_dokumani_eklendi',
+          };
+
+          // Get task keys that correspond to skipped document categories
+          const skippedTaskKeys = new Set<string>();
+          Object.entries(DOCUMENT_TO_TASK_MAPPING).forEach(([docCategory, taskKey]) => {
+            if (skippedCategories.has(docCategory)) {
+              skippedTaskKeys.add(taskKey);
+            }
+          });
+          
+          // Special handling for sigorta_odeme_dekontu
+          const insuranceResponse = currentCase.insurance_response;
+          if (skippedCategories.has('sigorta_odeme_dekontu')) {
+            if (insuranceResponse === 'accepted') {
+              skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+            } else if (insuranceResponse === 'rejected') {
+              skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+            } else {
+              skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+              skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+            }
+          }
+          
           // Process checklist data directly
           const mergedChecklist = CHECKLIST_ITEMS.map((item) => {
             const existing = currentCase.admin_checklist.find((c: any) => c.task_key === item.key);
@@ -414,11 +542,12 @@ export default function DashboardPage() {
             };
           });
 
-          const currentSection = getCurrentSection(
-            mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
-          );
+          // Filter out skipped checklist items
+          const visibleChecklist = mergedChecklist.filter((item) => !skippedTaskKeys.has(item.task_key));
 
-          const insuranceResponse = currentCase.insurance_response;
+          const currentSection = getCurrentSection(
+            visibleChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
+          );
           
           const formattedSteps: ProgressStep[] = CHECKLIST_SECTIONS.filter(
             (section) => {
@@ -438,7 +567,8 @@ export default function DashboardPage() {
               return true;
             }
           ).map((section) => {
-            const sectionItems = mergedChecklist.filter((item) =>
+            // Filter out checklist items that correspond to skipped document categories
+            const sectionItems = visibleChecklist.filter((item) =>
               section.taskKeys.includes(item.task_key)
             );
             
@@ -486,7 +616,7 @@ export default function DashboardPage() {
             
             const sectionCompleted = isSectionCompleted(
               section,
-              mergedChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
+              visibleChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed }))
             );
             const isCurrentSection = currentSection?.id === section.id;
 
@@ -548,10 +678,32 @@ export default function DashboardPage() {
         // Use documents data from API if available, otherwise load separately
         if (currentCase.documents && Array.isArray(currentCase.documents) && currentCase.documents.length >= 0) {
           console.log('Dashboard: Using documents data from API');
+          
+          // Get skipped document categories
+          let skippedCategories = new Set<string>();
+          try {
+            const skippedResponse = await fetch(`/api/get-skipped-documents-customer?caseId=${currentCase.id}`, {
+              method: 'GET',
+              credentials: 'include',
+            });
+            if (skippedResponse.ok) {
+              const skippedData = await skippedResponse.json();
+              skippedCategories = new Set(skippedData.categories || []);
+            }
+          } catch (error) {
+            console.error('Error fetching skipped documents:', error);
+          }
+          
+          // Filter out documents from skipped categories
+          const filteredDocuments = currentCase.documents.filter((doc: any) => !skippedCategories.has(doc.category));
+          
+          // Filter out skipped categories from expected documents list
+          const filteredExpectedDocs = EXPECTED_DOCUMENTS.filter((doc) => !skippedCategories.has(doc.key));
+          
           // Process documents data directly - support multiple files per category
-          const documentDisplayList: DocumentDisplay[] = EXPECTED_DOCUMENTS.map((expectedDoc) => {
+          const documentDisplayList: DocumentDisplay[] = filteredExpectedDocs.map((expectedDoc) => {
             // Find all uploaded documents matching this expected document category
-            const uploadedDocs = currentCase.documents.filter((doc: any) => doc.category === expectedDoc.key);
+            const uploadedDocs = filteredDocuments.filter((doc: any) => doc.category === expectedDoc.key);
             return {
               key: expectedDoc.key,
               name: expectedDoc.name,
@@ -571,10 +723,10 @@ export default function DashboardPage() {
           });
           setDocuments(documentDisplayList);
 
-          // Add documents to relevant steps
+          // Add documents to relevant steps (excluding skipped documents)
           setProgressSteps((prevSteps) =>
             prevSteps.map((step) => {
-              const stepDocs = currentCase.documents.filter((doc: any) => {
+              const stepDocs = filteredDocuments.filter((doc: any) => {
                 if (step.title.includes('Ekspertiz') && doc.category === 'bilir_kisi_raporu')
                   return true;
                 if (step.title.includes('Kaza') && doc.category === 'kaza_tespit_tutanagi')
@@ -690,10 +842,31 @@ export default function DashboardPage() {
           },
           () => {
             console.log('Documents updated, refreshing...');
-            // Reload documents data
-            if (caseId) {
-              loadDocumentsData(caseId);
-            }
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
+            loadDashboardData();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to skipped_documents changes
+      const skippedDocumentsChannel = supabase
+        .channel(`skipped_documents_updates_${caseId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'skipped_documents',
+            filter: `case_id=eq.${caseId}`,
+          },
+          () => {
+            console.log('Skipped documents updated, refreshing...');
+            // Clear cache and reload data
+            const { clearCasesCache } = require('@/lib/supabase/auth');
+            clearCasesCache();
+            loadDashboardData();
           }
         )
         .subscribe();
@@ -704,6 +877,7 @@ export default function DashboardPage() {
         supabase.removeChannel(caseChannel);
         supabase.removeChannel(checklistChannel);
         supabase.removeChannel(documentsChannel);
+        supabase.removeChannel(skippedDocumentsChannel);
       };
     }
   }, [loadDashboardData, customerId, caseId, caseData, loadChecklistData, loadDocumentsData]);

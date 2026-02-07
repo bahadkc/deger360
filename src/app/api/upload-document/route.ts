@@ -19,7 +19,6 @@ const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
   'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
   'bilir_kisi_raporu': 'eksper_raporu_alindi',
   'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
-  'sigortaya_gonderilen_ihtarname': 'sigortaya_yapilan_basvuru_dokumani_eklendi',
   'hakem_karari': 'hakem_karari_dokumani_eklendi',
   // sigorta_odeme_dekontu is handled specially based on case board_stage
 };

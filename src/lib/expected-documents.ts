@@ -59,13 +59,6 @@ export const EXPECTED_DOCUMENTS: ExpectedDocument[] = [
     required: false,
   },
   {
-    key: 'sigortaya_gonderilen_ihtarname',
-    name: 'Sigortaya Yapılan Başvuru',
-    category: 'legal',
-    description: 'Sigorta şirketine gönderilen resmi ihtarname',
-    required: true,
-  },
-  {
     key: 'hakem_karari',
     name: 'Hakem Kararı',
     category: 'legal',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Download, Trash2, Image as ImageIcon, X, Receipt } from 'lucide-react';
@@ -36,7 +37,6 @@ const DOCUMENT_CATEGORIES = [
   { key: 'kimlik', label: 'Kimlik' },
   { key: 'karsi_tarafin_ruhsati', label: 'Karşı Tarafın Ruhsatı' },
   { key: 'karsi_tarafin_ehliyeti', label: 'Karşı Tarafın Ehliyeti' },
-  { key: 'sigortaya_gonderilen_ihtarname', label: 'Sigortaya Yapılan Başvuru' },
   { key: 'hakem_karari', label: 'Hakem Kararı' },
   { key: 'sigorta_odeme_dekontu', label: 'Sigorta Ödeme Dekontu' },
   { key: 'bilirkisi_raporu', label: 'Bilirkişi Raporu' },
@@ -50,6 +50,12 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
   const [showNoReceiptModal, setShowNoReceiptModal] = useState(false);
   const [paymentDate, setPaymentDate] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [skippedCategories, setSkippedCategories] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const loadDocuments = useCallback(async () => {
     try {
@@ -69,6 +75,20 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
 
       const data = await response.json();
       setDocuments(data.documents || []);
+      
+      // Load skipped document categories
+      const skippedResponse = await fetch(`/api/get-skipped-documents?caseId=${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (skippedResponse.ok) {
+        const skippedData = await skippedResponse.json();
+        setSkippedCategories(new Set(skippedData.categories || []));
+      }
     } catch (error) {
       console.error('Error loading documents:', error);
       setDocuments([]);
@@ -234,7 +254,72 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
   };
 
   const getDocumentsForCategory = (category: string) => {
-    return documents.filter((doc) => doc.category === category);
+    // Filter out skipped documents from admin view
+    return documents.filter((doc) => doc.category === category && !skippedCategories.has(category));
+  };
+
+  const handleSkipDocument = async (category: string) => {
+    if (!confirm(`"${DOCUMENT_CATEGORIES.find(c => c.key === category)?.label}" kategorisini "yüklenmeyecek" olarak işaretlemek istediğinize emin misiniz?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/skip-document', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId,
+          category,
+          skip: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `HTTP ${response.status}: Failed to skip document`;
+        console.error('Skip document API error:', errorData);
+        throw new Error(errorMessage);
+      }
+
+      await loadDocuments();
+      onUpdate();
+      window.dispatchEvent(new CustomEvent('documents-updated'));
+    } catch (error: any) {
+      console.error('Error skipping document:', error);
+      alert(`Döküman atlanırken bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
+    }
+  };
+
+  const handleUnskipDocument = async (category: string) => {
+    try {
+      const response = await fetch('/api/skip-document', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId,
+          category,
+          skip: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to unskip document');
+      }
+
+      await loadDocuments();
+      onUpdate();
+      window.dispatchEvent(new CustomEvent('documents-updated'));
+    } catch (error: any) {
+      console.error('Error unskipping document:', error);
+      alert(`Döküman geri alınırken bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`);
+    }
   };
 
   if (loading) {
@@ -339,25 +424,49 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
               {/* Upload Component */}
               {canEditData && (
                 <div className="mt-auto space-y-2">
-                  <MultiFileUpload
-                    caseId={caseId}
-                    category={category.key}
-                    onUploadComplete={handleUploadComplete}
-                    onUploadError={(error) => {
-                      alert(`Hata: ${error}`);
-                    }}
-                    disabled={loading}
-                  />
-                  {/* Dekont Yok butonu - sadece acente ödeme dekontu için */}
-                  {category.key === 'acenteye_atilan_dekont' && (
+                  {!skippedCategories.has(category.key) ? (
+                    <>
+                      <MultiFileUpload
+                        caseId={caseId}
+                        category={category.key}
+                        onUploadComplete={handleUploadComplete}
+                        onUploadError={(error) => {
+                          alert(`Hata: ${error}`);
+                        }}
+                        disabled={loading}
+                      />
+                      {/* Dekont Yok butonu - sadece acente ödeme dekontu için */}
+                      {category.key === 'acenteye_atilan_dekont' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowNoReceiptModal(true)}
+                          className="w-full mt-2"
+                        >
+                          <Receipt className="w-4 h-4 mr-2" />
+                          Dekont Yok
+                        </Button>
+                      )}
+                      {/* Döküman Yüklenmeyecek butonu */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSkipDocument(category.key)}
+                        className="w-full mt-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Döküman Yüklenmeyecek
+                      </Button>
+                    </>
+                  ) : (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowNoReceiptModal(true)}
-                      className="w-full mt-2"
+                      onClick={() => handleUnskipDocument(category.key)}
+                      className="w-full mt-2 text-green-600 border-green-300 hover:bg-green-50"
                     >
-                      <Receipt className="w-4 h-4 mr-2" />
-                      Dekont Yok
+                      <FileText className="w-4 h-4 mr-2" />
+                      Yüklenmeyecek İşaretini Kaldır
                     </Button>
                   )}
                 </div>
@@ -367,9 +476,9 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
         })}
       </div>
 
-      {/* No Receipt Modal */}
-      {showNoReceiptModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      {/* No Receipt Modal - Using Portal to render at document root */}
+      {showNoReceiptModal && mounted && typeof window !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
           <Card className="w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-neutral-800">Dekont Yok</h3>
@@ -429,7 +538,8 @@ export function DocumentsTab({ caseId, caseData, onUpdate }: DocumentsTabProps) 
               </div>
             </div>
           </Card>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

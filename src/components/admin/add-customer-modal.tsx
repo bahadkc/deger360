@@ -60,7 +60,6 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
         kimlik: [],
         karsi_tarafin_ruhsati: [],
         karsi_tarafin_ehliyeti: [],
-        sigortaya_gonderilen_ihtarname: [],
         hakem_karari: [],
         sigorta_odeme_dekontu: [],
       });
@@ -95,7 +94,6 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
     kimlik: [],
     karsi_tarafin_ruhsati: [],
     karsi_tarafin_ehliyeti: [],
-    sigortaya_gonderilen_ihtarname: [],
     hakem_karari: [],
     sigorta_odeme_dekontu: [],
   });
@@ -108,7 +106,6 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
     kimlik: 'Kimlik',
     karsi_tarafin_ruhsati: 'Karşı Tarafın Ruhsatı',
     karsi_tarafin_ehliyeti: 'Karşı Tarafın Ehliyeti',
-    sigortaya_gonderilen_ihtarname: 'Sigortaya Yapılan Başvuru',
     hakem_karari: 'Hakem Kararı',
     sigorta_odeme_dekontu: 'Sigorta Ödeme Dekontu',
   };
@@ -277,7 +274,6 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
         bilir_kisi_raporu: [],
         ruhsat: [],
         kimlik: [],
-        sigortaya_gonderilen_ihtarname: [],
         hakem_karari: [],
         sigorta_odeme_dekontu: [],
       });

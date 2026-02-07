@@ -167,6 +167,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get skipped document categories for these cases
+    const { data: skippedData, error: skippedError } = await supabaseAdmin
+      .from('skipped_documents')
+      .select('case_id, category')
+      .in('case_id', caseIds);
+
+    if (skippedError) {
+      console.error('Error fetching skipped documents:', skippedError);
+    }
+
     // Group documents by case_id
     const documentsByCase = new Map<string, Set<string>>();
     (documentsData || []).forEach((doc: { case_id: string; category: string }) => {
@@ -174,6 +184,15 @@ export async function GET(request: NextRequest) {
         documentsByCase.set(doc.case_id, new Set());
       }
       documentsByCase.get(doc.case_id)!.add(doc.category);
+    });
+
+    // Group skipped documents by case_id
+    const skippedByCase = new Map<string, Set<string>>();
+    (skippedData || []).forEach((item: { case_id: string; category: string }) => {
+      if (!skippedByCase.has(item.case_id)) {
+        skippedByCase.set(item.case_id, new Set());
+      }
+      skippedByCase.get(item.case_id)!.add(item.category);
     });
 
     // Transform data to include document status
@@ -187,14 +206,18 @@ export async function GET(request: NextRequest) {
 
       const caseId = primaryCase.id;
       const uploadedCategories = documentsByCase.get(caseId) || new Set();
+      const skippedCategories = skippedByCase.get(caseId) || new Set();
 
       // Check each expected document
-      const documentStatus = EXPECTED_DOCUMENTS.map((expectedDoc) => ({
-        key: expectedDoc.key,
-        name: expectedDoc.name,
-        uploaded: uploadedCategories.has(expectedDoc.key),
-        required: expectedDoc.required,
-      }));
+      const documentStatus = EXPECTED_DOCUMENTS.map((expectedDoc) => {
+        const isSkipped = skippedCategories.has(expectedDoc.key);
+        return {
+          key: expectedDoc.key,
+          name: expectedDoc.name + (isSkipped ? ' (yüklenmeyecek)' : ''),
+          uploaded: uploadedCategories.has(expectedDoc.key) || isSkipped, // Show as uploaded if skipped
+          required: expectedDoc.required,
+        };
+      });
 
       return {
         id: customer.id,

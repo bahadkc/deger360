@@ -8,7 +8,6 @@ import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getAssignedCaseIds, isSuperAdmin, canEdit } from '@/lib/supabase/admin-auth';
 import { optimizedCustomersApi, cacheInvalidation } from '@/lib/supabase/optimized-api';
-import { useDebounce } from '@/lib/utils/debounce';
 
 export default function MusterilerPage() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -18,9 +17,6 @@ export default function MusterilerPage() {
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [assignedCaseIds, setAssignedCaseIds] = useState<string[]>([]);
   const [canEditData, setCanEditData] = useState(false);
-  
-  // Debounce search query to reduce API calls
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -39,12 +35,7 @@ export default function MusterilerPage() {
     loadCustomers();
   }, []);
 
-  // Reload when debounced search query changes
-  useEffect(() => {
-    loadCustomers(debouncedSearchQuery);
-  }, [debouncedSearchQuery]);
-
-  const loadCustomers = async (search?: string) => {
+  const loadCustomers = async () => {
     try {
       setLoading(true);
       
@@ -61,12 +52,11 @@ export default function MusterilerPage() {
         console.log('Superadmin: Loading all customers');
       }
 
-      // Use optimized API with caching and pagination
+      // Load all customers once - no search parameter
       // For superadmin, pass undefined (not empty array) to see all customers
       const data = await optimizedCustomersApi.getList({
-        search: search || undefined,
         assignedCaseIds: superAdmin ? undefined : (assignedIds.length > 0 ? assignedIds : undefined),
-        limit: 100, // Limit to prevent excessive data
+        limit: 1000, // Increase limit to load all customers for client-side filtering
       });
 
       console.log('Loaded customers:', data?.length || 0);
@@ -80,9 +70,21 @@ export default function MusterilerPage() {
     }
   };
 
+  // Client-side filtering like adminler page
+  const filterCustomers = (customers: any[]) => {
+    if (!searchQuery) return customers;
+    const query = searchQuery.toLowerCase();
+    return customers.filter(
+      (customer) =>
+        customer.full_name?.toLowerCase().includes(query) ||
+        customer.email?.toLowerCase().includes(query) ||
+        customer.phone?.toLowerCase().includes(query) ||
+        customer.dosya_takip_numarasi?.toLowerCase().includes(query) ||
+        customer.case?.case_number?.toLowerCase().includes(query)
+    );
+  };
 
-  // Filtering is now done server-side via optimized API
-  const filteredCustomers = customers;
+  const filteredCustomers = filterCustomers(customers);
 
   if (loading) {
     return (
@@ -135,7 +137,7 @@ export default function MusterilerPage() {
         onSuccess={() => {
           setIsAddModalOpen(false);
           cacheInvalidation.invalidateCustomer('all');
-          loadCustomers(debouncedSearchQuery);
+          loadCustomers();
         }}
       />
     </div>

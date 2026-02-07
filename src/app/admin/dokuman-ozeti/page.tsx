@@ -6,7 +6,6 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search, CheckCircle2, XCircle, FileText } from 'lucide-react';
 import { adminRoutes } from '@/lib/config/admin-paths';
-import { useDebounce } from '@/lib/utils/debounce';
 import { cn } from '@/lib/utils';
 
 interface DocumentStatus {
@@ -31,20 +30,15 @@ interface CustomerSummary {
 
 export default function DokumanOzetiPage() {
   const router = useRouter();
-  const [customers, setCustomers] = useState<CustomerSummary[]>([]);
+  const [allCustomers, setAllCustomers] = useState<CustomerSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     loadCustomers();
   }, []);
 
-  useEffect(() => {
-    loadCustomers(debouncedSearchQuery);
-  }, [debouncedSearchQuery]);
-
-  const loadCustomers = async (search?: string) => {
+  const loadCustomers = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/get-customers-documents-summary', {
@@ -61,31 +55,32 @@ export default function DokumanOzetiPage() {
       }
 
       const data = await response.json();
-      let customersData: CustomerSummary[] = data.customers || [];
-
-      // Client-side search filtering
-      if (search) {
-        const searchLower = search.toLowerCase();
-        customersData = customersData.filter((customer) => {
-          return (
-            customer.full_name?.toLowerCase().includes(searchLower) ||
-            customer.email?.toLowerCase().includes(searchLower) ||
-            customer.phone?.toLowerCase().includes(searchLower) ||
-            customer.dosya_takip_numarasi?.toLowerCase().includes(searchLower) ||
-            customer.case_number?.toLowerCase().includes(searchLower) ||
-            customer.vehicle_plate?.toLowerCase().includes(searchLower)
-          );
-        });
-      }
-
-      setCustomers(customersData);
+      setAllCustomers(data.customers || []);
     } catch (error) {
       console.error('Error loading customers:', error);
-      setCustomers([]);
+      setAllCustomers([]);
     } finally {
       setLoading(false);
     }
   };
+
+  // Client-side filtering like adminler page
+  const filterCustomers = (customers: CustomerSummary[]) => {
+    if (!searchQuery) return customers;
+    const searchLower = searchQuery.toLowerCase();
+    return customers.filter((customer) => {
+      return (
+        customer.full_name?.toLowerCase().includes(searchLower) ||
+        customer.email?.toLowerCase().includes(searchLower) ||
+        customer.phone?.toLowerCase().includes(searchLower) ||
+        customer.dosya_takip_numarasi?.toLowerCase().includes(searchLower) ||
+        customer.case_number?.toLowerCase().includes(searchLower) ||
+        customer.vehicle_plate?.toLowerCase().includes(searchLower)
+      );
+    });
+  };
+
+  const customers = filterCustomers(allCustomers);
 
   const handleCustomerClick = (caseId: string) => {
     router.push(adminRoutes.customerDetail(caseId));

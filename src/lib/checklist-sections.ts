@@ -28,14 +28,14 @@ export const CHECKLIST_SECTIONS: ChecklistSection[] = [
     title: 'Evrak Toplama ve Eksper',
     emoji: '📋',
     boardStage: 'evrak_ekspertiz',
-    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'karsi_tarafin_ruhsati_alindi', 'karsi_tarafin_ehliyeti_alindi', 'arac_incelendi', 'deger_kaybi_hesaplandi', 'eksper_raporu_alindi'],
+    taskKeys: ['kaza_tespit_tutanagi', 'arac_fotograflari', 'ruhsat_fotokopisi', 'kimlik_fotokopisi', 'karsi_tarafin_ruhsati_alindi', 'karsi_tarafin_ehliyeti_alindi', 'eksper_raporu_alindi'],
   },
   {
     id: 3,
     title: 'Sigorta Başvurusu',
     emoji: '📮',
     boardStage: 'sigorta_basvurusu',
-    taskKeys: ['sigorta_basvurusu_yapildi', 'sigortaya_yapilan_basvuru_dokumani_eklendi', 'sigortadan_kabul_cevabi_geldi', 'sigortadan_red_cevabi_geldi'],
+    taskKeys: ['sigorta_basvurusu_yapildi', 'sigortadan_kabul_cevabi_geldi', 'sigortadan_red_cevabi_geldi'],
   },
   {
     id: 4,
@@ -81,13 +81,10 @@ export const CHECKLIST_ITEMS: ChecklistItem[] = [
   { key: 'karsi_tarafin_ehliyeti_alindi', title: 'Karşı tarafın ehliyeti alındı' },
   
   // Eksper Raporu
-  { key: 'arac_incelendi', title: 'Araç İncelendi' },
-  { key: 'deger_kaybi_hesaplandi', title: 'Değer Kaybı Hesaplandı' },
   { key: 'eksper_raporu_alindi', title: 'Eksper Raporu alındı' },
   
   // Sigorta Başvurusu
   { key: 'sigorta_basvurusu_yapildi', title: 'Karşı tarafın sigortasına başvuru yapıldı' },
-  { key: 'sigortaya_yapilan_basvuru_dokumani_eklendi', title: 'Sigortaya yapılan başvuru dökümanı eklendi' },
   { key: 'sigortadan_kabul_cevabi_geldi', title: 'Sigortadan kabul cevabı geldi' },
   { key: 'sigortadan_red_cevabi_geldi', title: 'Sigortadan red cevabı geldi' },
   

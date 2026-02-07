@@ -38,7 +38,6 @@ const DOCUMENT_TO_TASK_MAPPING: Record<string, string> = {
   'karsi_tarafin_ehliyeti': 'karsi_tarafin_ehliyeti_alindi',
   'bilir_kisi_raporu': 'eksper_raporu_alindi',
   'bilirkisi_raporu': 'bilirkisi_rapor_hazirlandi',
-  'sigortaya_gonderilen_ihtarname': 'sigortaya_yapilan_basvuru_dokumani_eklendi',
   'hakem_karari': 'hakem_karari_dokumani_eklendi',
   // sigorta_odeme_dekontu is handled specially in upload-document route based on case board_stage
 };
@@ -48,7 +47,9 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
   const [loading, setLoading] = useState(true);
   const [canEditData, setCanEditData] = useState(false);
   const [insuranceResponse, setInsuranceResponse] = useState<string | null>(null);
+  const [boardStage, setBoardStage] = useState<string | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [skippedCategories, setSkippedCategories] = useState<Set<string>>(new Set());
 
   const loadChecklist = useCallback(async () => {
     try {
@@ -94,6 +95,20 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
 
       const data = await response.json();
       setDocuments(data.documents || []);
+
+      // Load skipped document categories
+      const skippedResponse = await fetch(`/api/get-skipped-documents?caseId=${caseId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (skippedResponse.ok) {
+        const skippedData = await skippedResponse.json();
+        setSkippedCategories(new Set(skippedData.categories || []));
+      }
     } catch (error) {
       console.error('Error loading documents:', error);
       setDocuments([]);
@@ -195,39 +210,11 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
 
     // Listen for document updates from other tabs
     const handleDocumentUpdate = async () => {
-      // Reload documents first
-      const response = await fetch(`/api/get-documents?caseId=${caseId}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const updatedDocuments = data.documents || [];
-        setDocuments(updatedDocuments);
-        
-        // Reload checklist to get current state
-        const checklistResponse = await fetch(`/api/get-checklist?caseId=${caseId}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (checklistResponse.ok) {
-          const checklistData = await checklistResponse.json();
-          const updatedChecklist = checklistData.checklist || [];
-          setChecklist(updatedChecklist);
-          setInsuranceResponse(checklistData.insuranceResponse || null);
-          
-          // Now sync documents with checklist (only check items when documents exist)
-          await syncDocumentsWithChecklist(updatedDocuments, updatedChecklist);
-        }
-      }
+      // Reload documents and skipped categories
+      await loadDocuments();
+      
+      // Reload checklist to get current state
+      await loadChecklist();
     };
     
     // Listen for custom event when documents are updated
@@ -236,7 +223,7 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
     return () => {
       window.removeEventListener('documents-updated', handleDocumentUpdate);
     };
-  }, [caseId, loadChecklist, loadDocuments, syncDocumentsWithChecklist]);
+  }, [caseId, loadChecklist, loadDocuments]);
 
 
   // Section advancement is now handled by the API route
@@ -491,16 +478,51 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
     return Math.min(Math.round(totalProgress), 100);
   };
 
-  const progressPercentage = calculateProgressPercentage(checklist, insuranceResponse);
-  const currentSection = getCurrentSection(checklist.map(item => ({ task_key: item.task_key, completed: item.completed })));
-  
-  // Calculate completed and total counts for display
-  const completedCount = checklist.filter((item) => item.completed).length;
-  const totalCount = checklist.length;
+  // Filter out skipped document checklist items for progress calculation
+  const getSkippedTaskKeys = () => {
+    const skippedTaskKeys = new Set<string>();
+    Object.entries(DOCUMENT_TO_TASK_MAPPING).forEach(([docCategory, taskKey]) => {
+      if (skippedCategories.has(docCategory)) {
+        skippedTaskKeys.add(taskKey);
+      }
+    });
+    
+    // Special handling for sigorta_odeme_dekontu - it maps to different task keys based on insurance response
+    if (skippedCategories.has('sigorta_odeme_dekontu')) {
+      if (insuranceResponse === 'accepted') {
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+      } else if (insuranceResponse === 'rejected') {
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+      } else {
+        // If no response yet, add both possibilities
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_muzakere');
+        skippedTaskKeys.add('sigortanin_yaptigi_odeme_dekontu_tahkim');
+      }
+    }
+    
+    return skippedTaskKeys;
+  };
 
-  // Her section için item'ları filtrele ve sırala
+  const skippedTaskKeys = getSkippedTaskKeys();
+  
+  // Filter checklist to exclude skipped items for display and progress
+  const visibleChecklist = checklist.filter((item) => !skippedTaskKeys.has(item.task_key));
+  
+  const progressPercentage = calculateProgressPercentage(visibleChecklist, insuranceResponse);
+  const currentSection = getCurrentSection(visibleChecklist.map(item => ({ task_key: item.task_key, completed: item.completed })));
+  
+  // Calculate completed and total counts for display (excluding skipped items)
+  const completedCount = visibleChecklist.filter((item) => item.completed).length;
+  const totalCount = visibleChecklist.length;
+
+  // Her section için item'ları filtrele ve sırala (skip edilen dökümanların checklist item'larını gizle)
   const getSectionItems = (section: ChecklistSection): ChecklistItem[] => {
-    const items = checklist.filter((item) => section.taskKeys.includes(item.task_key));
+    // Use the already calculated skippedTaskKeys from above
+    const items = checklist.filter((item) => {
+      // Include item if it's in the section and not corresponding to a skipped document
+      return section.taskKeys.includes(item.task_key) && !skippedTaskKeys.has(item.task_key);
+    });
+    
     // Section'daki taskKeys sırasına göre sırala
     return items.sort((a, b) => {
       const indexA = section.taskKeys.indexOf(a.task_key);
@@ -561,9 +583,9 @@ export function ChecklistTab({ caseId, onUpdate }: ChecklistTabProps) {
           
           // Special handling for Sigorta Başvurusu section
           const isInsuranceSection = section.boardStage === 'sigorta_basvurusu';
-          const sigortaBasvurusuYapildi = checklist.find(item => item.task_key === 'sigorta_basvurusu_yapildi')?.completed || false;
+          const sigortaBasvurusuYapildi = visibleChecklist.find(item => item.task_key === 'sigorta_basvurusu_yapildi')?.completed || false;
           
-          let sectionCompleted = isSectionCompleted(section, checklist.map((item) => ({ task_key: item.task_key, completed: item.completed })));
+          let sectionCompleted = isSectionCompleted(section, visibleChecklist.map((item) => ({ task_key: item.task_key, completed: item.completed })));
           
           // Calculate section completed count - special handling for insurance section
           let sectionCompletedCount: number;
