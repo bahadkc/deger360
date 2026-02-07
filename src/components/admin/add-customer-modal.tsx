@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,11 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState<{ dosyaTakipNo: string; password: string } | null>(null);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Check if user is superadmin
   useEffect(() => {
@@ -290,8 +296,8 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  const modalContent = (
+    <div className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
@@ -639,4 +645,9 @@ export function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCustomerModa
       </Card>
     </div>
   );
+
+  // Use portal to render modal at document root for proper viewport positioning
+  if (!mounted || typeof window === 'undefined') return null;
+  
+  return createPortal(modalContent, document.body);
 }
