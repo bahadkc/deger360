@@ -83,6 +83,15 @@ const samplePosts: BlogPost[] = [
     category: 'Rehber',
     imageUrl: '/images/blog/arac-deger-kaybi-hesaplama-2026-formulu.jpg',
   },
+  {
+    id: '8',
+    title: 'TRAMER Kaydı Silinir mi? Hasar Kaydı ve Değer Kaybı Arasındaki Kritik Farklar',
+    excerpt: 'TRAMER kaydı silinir mi? Hasar kaydı ve değer kaybı arasındaki farklar, kayıt silme şartları, itiraz süreçleri ve değer kaybı tazminatı hakkında detaylı rehber.',
+    slug: 'tramer-kaydi-silinir-mi-hasar-kaydi-ve-deger-kaybi-arasindaki-kritik-farklar',
+    publishedAt: '2026-02-10',
+    category: 'Rehber',
+    imageUrl: '/images/blog/tramer-kaydi-silinir-mi-hasar-kaydi-sorgulama.jpg',
+  },
 ];
 
 export default function BlogPage() {

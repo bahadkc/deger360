@@ -79,6 +79,12 @@ export async function GET() {
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>${baseUrl}/blog/tramer-kaydi-silinir-mi-hasar-kaydi-ve-deger-kaybi-arasindaki-kritik-farklar</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/iletisim</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>

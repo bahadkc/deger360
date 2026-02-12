@@ -84,6 +84,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'Araç değer kaybı hesaplama formülü 2026: Hazine Müsteşarlığı standart formülü, rayiç bedel, kilometre katsayısı, hasar büyüklüğü, parça niteliği ve otomatik hesaplama araçlarının neden yanıltıcı olduğu hakkında detaylı bilgi.',
   },
+  'tramer-kaydi-silinir-mi-hasar-kaydi-ve-deger-kaybi-arasindaki-kritik-farklar': {
+    id: '8',
+    title: 'TRAMER Kaydı Silinir mi? Hasar Kaydı ve Değer Kaybı Arasındaki Kritik Farklar',
+    excerpt: 'TRAMER kaydı silinir mi? Hasar kaydı ve değer kaybı arasındaki farklar, kayıt silme şartları, itiraz süreçleri ve değer kaybı tazminatı hakkında detaylı rehber.',
+    slug: 'tramer-kaydi-silinir-mi-hasar-kaydi-ve-deger-kaybi-arasindaki-kritik-farklar',
+    publishedAt: '2026-02-10',
+    category: 'Rehber',
+    metaDescription: 'TRAMER kaydı silinir mi? Hasar kaydı ve değer kaybı arasındaki kritik farklar, kayıt silme şartları, itiraz süreçleri, bedelsiz hasar kaydı ve değer kaybı tazminatı hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -363,6 +372,43 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Hesaplama değişmez ancak muhatap değişir. Karşı tarafın trafik sigortası yoksa, hesaplanan değer kaybı tutarını Güvence Hesabı ödemez. Bu durumda hesaplanan tutarı doğrudan kazaya sebep olan sürücüden ve araç sahibinden icra/dava yoluyla talep ederiz."
+        }
+      }
+    ]
+  } : slug === 'tramer-kaydi-silinir-mi-hasar-kaydi-ve-deger-kaybi-arasindaki-kritik-farklar' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "5 yıl geçince TRAMER kaydı kendiliğinden silinir mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hayır, bu bir şehir efsanesidir. TRAMER kayıtları aracın şasi numarasına işlenir ve araç hurdaya ayrılana kadar (veya sonsuza dek) sistemde kalır. Zaman aşımıyla silinme diye bir durum yoktur."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bedelsiz (Miktarsız) hasar kaydı ne anlama gelir?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sorgulamada \"Çarpma\" yazıyor ama tutar \"0 TL\" veya boş görünüyorsa; bu durum genellikle tutanağın tutulduğunu ancak sigorta şirketinin henüz ödeme yapmadığını veya dosyanın rücu aşamasında olduğunu gösterir. Bu durumda da değer kaybı başvurusu yapılabilir, ancak önce dosyanın kapanması gerekir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "TRAMER kaydı olmayan araçtan değer kaybı alınır mı?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Çok nadir de olsa evet. Bazen sigorta şirketi ödemeyi yapar ancak sisteme geç işler. Veya araç sahibi hasarı cepten yaptırır ama karşı taraftan değer kaybı ister. Önemli olan TRAMER'de yazması değil, aracın fiziksel olarak hasar görmüş ve onarılmış olmasıdır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Eksper raporuna itiraz edip hasar tutarını düşürebilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kaza sonrası eksperin yazdığı parça ve işçilik listesine, yasal süre (genellikle rapor tebliğinden itibaren 7 gün) içinde itiraz edebilirsiniz. Ancak dosya kapandıktan ve üzerinden zaman geçtikten sonra hasar tutarını düşürmek çok zordur, ancak maddi hata (yazım yanlışı) varsa düzeltilir."
         }
       }
     ]
@@ -1625,6 +1671,178 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Hesaplama değişmez ancak muhatap değişir. Karşı tarafın trafik sigortası yoksa, hesaplanan değer kaybı tutarını Güvence Hesabı ödemez. Bu durumda hesaplanan tutarı doğrudan kazaya sebep olan sürücüden ve araç sahibinden icra/dava yoluyla talep ederiz.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'tramer-kaydi-silinir-mi-hasar-kaydi-ve-deger-kaybi-arasindaki-kritik-farklar' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    <strong>Kısa Cevap:</strong> Genel kural olarak <strong>TRAMER (Hasar) kaydı silinmez.</strong> Sigorta Bilgi ve Gözetim Merkezi (SBM) veritabanına işlenen hasar kayıtları, aracın resmi sicilidir ve kaza gerçekse bu kayıt kalıcıdır. Ancak, kayıtta <strong>maddi bir hata</strong> (yanlış plaka girişi, karışan dosya, abartılı rakam, hiç yapılmamış kaza vb.) varsa, gerekli itirazlar yapılarak bu kayıt düzelttirilebilir veya sildirilebilir.
+                  </p>
+
+                  <p>
+                    Araç sahiplerinin asıl bilmesi gereken şudur: Hasar kaydını sildiremeseniz bile, bu kaydın aracınızda yarattığı piyasa değeri düşüşünü <strong>"Değer Kaybı Tazminatı"</strong> olarak sigorta şirketinden nakit geri alabilirsiniz.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/tramer-kaydi-silinir-mi-hasar-kaydi-sorgulama.jpg"
+                      alt="TRAMER kaydı silinir mi hasar kaydı sorgulama"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    TRAMER (Hasar Kaydı) ile Değer Kaybı Aynı Şey Değildir!
+                  </h2>
+
+                  <p>
+                    Sürücülerin en sık yaptığı hata, bu iki kavramı karıştırmaktır. Aradaki fark, cebinize girecek parayı belirler:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-4 my-6">
+                    <li>
+                      <strong>Hasar Kaydı (TRAMER):</strong> Aracın onarımı için servise ödenen parça ve işçilik maliyetidir. (Örn: Tampon değişti, far takıldı = 50.000 TL Hasar Kaydı). Bu parayı servis alır.
+                    </li>
+                    <li>
+                      <strong>Değer Kaybı:</strong> Onarım bitse bile, aracın "kazalı" etiketi yediği için ikinci el piyasasında ucuza satılmasıdır. (Örn: Aracınız 50.000 TL hasar kaydı yüzünden, emsallerinden 40.000 TL daha ucuza satılıyor). <strong>İşte bu 40.000 TL'yi siz alırsınız.</strong>
+                    </li>
+                  </ol>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Hangi Durumlarda TRAMER Kaydı Sildirilebilir?
+                  </h2>
+
+                  <p>
+                    Eğer aracınızdaki hasar kaydının haksız veya hatalı olduğunu düşünüyorsanız, aşağıdaki durumlarda itiraz hakkınız vardır:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Plaka Karışıklığı:</strong> Başka bir aracın kazasının sizin plakanıza yanlışlıkla işlenmesi.</li>
+                    <li><strong>Mükerrer Kayıt:</strong> Aynı kazanın sisteme iki kez girilmesi.</li>
+                    <li><strong>Rakam Hatası:</strong> Servisin veya eksperin onarım bedelini sisteme yanlış (fazla) girmesi.</li>
+                    <li><strong>Kaza Tespit Tutanağı İptali:</strong> Mahkeme kararıyla kazaya karışmadığınızın veya kusursuzluğunuzun ispatlanması sonucu tutanağın iptali.</li>
+                  </ul>
+
+                  <div className="bg-blue-50 border-l-4 border-primary-blue p-4 my-6 rounded">
+                    <p className="font-semibold text-dark-blue mb-2">Nasıl İtiraz Edilir?</p>
+                    <p>
+                      Hatalı kayıtlar için sigorta şirketinize dilekçe verebilir veya Sigorta Bilgi ve Gözetim Merkezi (SBM) üzerinden "Hasar Kaydı Düzeltme" talebi oluşturabilirsiniz.
+                    </p>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Kaydı Sildiremiyorsanız, "Parasını" Alın!
+                  </h2>
+
+                  <p>
+                    Eğer kaza gerçekse ve kayıt silinmiyorsa üzülmeyin. Türk Borçlar Kanunu, aracınızın siciline işlenen bu "lekenin" bedelini sigorta şirketinin ödemesini emreder.
+                  </p>
+
+                  <p>
+                    <strong>Değer360</strong> olarak biz burada devreye giriyoruz. Hasar kaydını silemeyiz (bu yasal olmaz), ancak o hasar kaydı yüzünden kaybettiğiniz parayı <strong>son 2 yıla dönük olarak</strong> tahsil edebiliriz.
+                  </p>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    Değer Kaybı Alıp Alamayacağınızı Belirleyen 3 Soru:
+                  </h3>
+
+                  <ol className="list-decimal list-inside space-y-2 my-4">
+                    <li>Kaza son 2 yıl içinde mi oldu?</li>
+                    <li>Kazada %100 kusurlu taraf siz değil misiniz? (Kısmi kusurda da ödeme alınır).</li>
+                    <li>Aracınızda parça değişimi veya boya işlemi yapıldı mı?</li>
+                  </ol>
+
+                  <p>
+                    Bu sorulara "Evet" diyorsanız, içeride bekleyen bir tazminatınız var demektir.
+                  </p>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Neden Değer360?
+                  </h2>
+
+                  <p>
+                    Hasar kaydı ve tazminat süreçleri karmaşıktır. Sigorta şirketleri genellikle <em>"Ödeme yaptık, dosya kapandı"</em> diyerek değer kaybını ödemezler.
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Güçlü Altyapı:</strong> 20 yıllık hukuk tecrübesi ve %97 başarı oranı.</li>
+                    <li><strong>Şeffaflık:</strong> <Link href="/portal" className="text-primary-orange hover:text-orange-600 underline">Dosyam Nerede?</Link> paneli ile 7/24 takip.</li>
+                    <li><strong>Risksiz:</strong> Cebinizden 5 kuruş çıkmaz. Biz sadece kazandırırsak hizmet bedeli alırız.</li>
+                  </ul>
+
+                  <p className="text-lg font-semibold text-dark-blue mt-6 mb-4">
+                    Aracınızdaki hasar kaydının size ne kadar "Değer Kaybı Tazminatı" getireceğini hemen öğrenin:
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Ücretsiz Sorgulama ve Değer Kaybı Teklifi
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular (TRAMER ve Kayıtlar Hakkında)
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        5 yıl geçince TRAMER kaydı kendiliğinden silinir mi?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Hayır, bu bir şehir efsanesidir. TRAMER kayıtları aracın şasi numarasına işlenir ve araç hurdaya ayrılana kadar (veya sonsuza dek) sistemde kalır. Zaman aşımıyla silinme diye bir durum yoktur.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Bedelsiz (Miktarsız) hasar kaydı ne anlama gelir?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Sorgulamada "Çarpma" yazıyor ama tutar "0 TL" veya boş görünüyorsa; bu durum genellikle tutanağın tutulduğunu ancak sigorta şirketinin henüz ödeme yapmadığını veya dosyanın rücu aşamasında olduğunu gösterir. Bu durumda da değer kaybı başvurusu yapılabilir, ancak önce dosyanın kapanması gerekir.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        TRAMER kaydı olmayan araçtan değer kaybı alınır mı?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Çok nadir de olsa evet. Bazen sigorta şirketi ödemeyi yapar ancak sisteme geç işler. Veya araç sahibi hasarı cepten yaptırır ama karşı taraftan değer kaybı ister. Önemli olan TRAMER'de yazması değil, aracın fiziksel olarak hasar görmüş ve onarılmış olmasıdır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Eksper raporuna itiraz edip hasar tutarını düşürebilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Kaza sonrası eksperin yazdığı parça ve işçilik listesine, yasal süre (genellikle rapor tebliğinden itibaren 7 gün) içinde itiraz edebilirsiniz. Ancak dosya kapandıktan ve üzerinden zaman geçtikten sonra hasar tutarını düşürmek çok zordur, ancak maddi hata (yazım yanlışı) varsa düzeltilir.
                       </p>
                     </div>
                   </div>
