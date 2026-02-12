@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 import { protectAPI, createProtectedResponse } from '@/lib/security/api-protection';
 import { turkishToEnglish } from '@/lib/utils';
+import { sendTeklifNotification } from '@/lib/email';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -136,6 +137,16 @@ export async function POST(request: NextRequest) {
           console.error('Error creating case:', caseError);
         }
 
+        // Send email notification (fire-and-forget, don't block response)
+        sendTeklifNotification({
+          adSoyad,
+          telefon,
+          email: providedEmail?.trim() || undefined,
+          aracMarkaModel,
+          hasarTutari,
+          dosyaTakipNo,
+        }).catch((err) => logger.error('Email notification failed', { error: err }));
+
         return NextResponse.json({
           success: true,
           customer: retryCustomer,
@@ -201,6 +212,16 @@ export async function POST(request: NextRequest) {
       // Log error but don't fail - customer is already created
       console.error('Error creating case:', caseError);
     }
+
+    // Send email notification (fire-and-forget, don't block response)
+    sendTeklifNotification({
+      adSoyad,
+      telefon,
+      email: providedEmail?.trim() || undefined,
+      aracMarkaModel,
+      hasarTutari,
+      dosyaTakipNo,
+    }).catch((err) => logger.error('Email notification failed', { error: err }));
 
     logger.info('Lead created successfully', { customerId: customer.id, dosyaTakipNo });
     

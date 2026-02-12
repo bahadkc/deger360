@@ -12,6 +12,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=BURAYA_ANON_PUBLIC_KEY_YAPIŞTIRIN
 SUPABASE_SERVICE_ROLE_KEY=BURAYA_SERVICE_ROLE_KEY_YAPIŞTIRIN
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
+# E-posta bildirimi (teklif formu doldurulduğunda Gmail'e bildirim)
+# Resend.com'dan ücretsiz API key alın: https://resend.com/api-keys
+RESEND_API_KEY=re_xxxxxxxxxxxx
+# Bildirimlerin gönderileceği e-posta (kendi Gmail adresiniz)
+NOTIFICATION_EMAIL=your-email@gmail.com
+
 # ==============================================
 # ÖNEMLİ NOTLAR:
 # ==============================================
@@ -34,5 +40,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 #    → Projenizi açın
 #    → Settings > API
 #    → Kopyalayın ve yapıştırın
+#
+# 5. E-posta bildirimi (opsiyonel):
+#    - Resend.com hesabı oluşturun, API key alın
+#    - NOTIFICATION_EMAIL'e kendi Gmail adresinizi yazın
+#    - Bu değişkenler yoksa form çalışır ama e-posta gönderilmez
 #
 # ==============================================

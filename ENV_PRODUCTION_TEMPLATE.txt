@@ -15,6 +15,10 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 
+# Email Notifications (teklif formu - Gmail'e bildirim)
+RESEND_API_KEY=re_xxxxxxxxxxxx
+NOTIFICATION_EMAIL=your-email@gmail.com
+
 # Google Analytics (Optional)
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
