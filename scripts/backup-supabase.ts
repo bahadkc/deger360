@@ -38,10 +38,8 @@ for (const name of [".env", ".env.local"]) {
   }
 }
 
-async function fetchAllRows(
-  supabase: ReturnType<typeof createClient>,
-  table: string
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchAllRows(supabase: any, table: string) {
   const rows: unknown[] = [];
   let from = 0;
   const pageSize = 500;
