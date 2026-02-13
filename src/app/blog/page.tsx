@@ -92,6 +92,15 @@ const samplePosts: BlogPost[] = [
     category: 'Rehber',
     imageUrl: '/images/blog/tramer-kaydi-silinir-mi-hasar-kaydi-sorgulama.jpg',
   },
+  {
+    id: '9',
+    title: 'Aracı Sattıktan Sonra Değer Kaybı Alınır mı? (Zamanaşımı ve Yasal Haklar)',
+    excerpt: 'Aracı sattıktan sonra değer kaybı alınır mı? Evet, değer kaybı tazminatı araca değil ruhsat sahibine aittir. Zamanaşımı süresi, başvuru şartları ve gerekli belgeler hakkında detaylı rehber.',
+    slug: 'araci-sattiktan-sonra-deger-kaybi-alinir-mi-zaman-asimi-ve-yasal-haklar',
+    publishedAt: '2026-02-13',
+    category: 'Rehber',
+    imageUrl: '/images/blog/satilan-arac-icin-deger-kaybi-basvurusu-zaman-asimi.jpg',
+  },
 ];
 
 export default function BlogPage() {

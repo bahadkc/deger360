@@ -15,6 +15,9 @@
     "start": "next start",
     "start:standalone": "node scripts/start-standalone.js",
     "lint": "next lint",
+    "supabase:backup": "tsx scripts/backup-supabase.ts",
+    "supabase:restore": "tsx scripts/restore-supabase.ts",
+    "supabase:copy-auth": "tsx scripts/copy-auth-users.ts",
     "supabase:migrate": "supabase db push",
     "supabase:reset": "supabase db reset",
     "docker:build": "docker build -t deger-kaybi-web .",
@@ -50,6 +53,7 @@
     "eslint-config-next": "^16.1.1",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
+    "tsx": "^4.21.0",
     "typescript": "^5.2.2"
   }
 }

@@ -1,12 +1,21 @@
 -- Import 40 sample customers and cases
 -- Assign all cases to acente account: yz@gmail.com (id: 8c295fe5-c5d2-40a4-8858-3e42d57b3455)
 
+-- Ensure insurance_company column exists (may be missing in some migration paths)
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS insurance_company TEXT;
+COMMENT ON COLUMN customers.insurance_company IS 'Müşterinin sigorta şirketi adı';
+
 DO $$
 DECLARE
     customer_id_val UUID;
     case_id_val UUID;
-    acente_admin_id UUID := '8c295fe5-c5d2-40a4-8858-3e42d57b3455';
+    acente_admin_id UUID;
 BEGIN
+    -- Use first admin/superadmin from auth if exists (new projects may not have ornekacente)
+    SELECT id INTO acente_admin_id FROM user_auth WHERE role IN ('superadmin', 'admin', 'acente') LIMIT 1;
+    IF acente_admin_id IS NULL THEN
+        SELECT id INTO acente_admin_id FROM auth.users LIMIT 1;
+    END IF;
     -- Helper function to insert customer and case
     -- Customer 1: Ahmet Yılmaz
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -22,7 +31,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-001';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 2: Fatma Kaya
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -38,7 +49,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-002';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 3: Mehmet Demir
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -54,7 +67,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-003';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 4: Ayşe Şahin
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -70,7 +85,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-004';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 5: Ali Veli
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -86,7 +103,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-005';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 6: Sinem Gür
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -102,7 +121,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-006';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 7: Can Yavuz
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -118,7 +139,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-007';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 8: Mert Sönmez
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -134,7 +157,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-008';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 9: Onur Gür
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -150,7 +175,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-009';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 10: Sinem Kılıç
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -166,7 +193,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-010';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 11: Berk Kaya
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -182,7 +211,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-011';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 12: Naz Kaplan
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -198,7 +229,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-012';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 13: Furkan Çetin
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -214,7 +247,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-013';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 14: Buse Aslan
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -230,7 +265,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-014';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 15: Derya Karaca
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -246,7 +283,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-015';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 16: Oğuz Çetin
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -262,7 +301,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-016';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 17: İrem Korkmaz
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -278,7 +319,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-017';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 18: Onur Aslan
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -294,7 +337,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-018';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 19: Gizem Polat
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -310,7 +355,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-019';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 20: Mert Koç
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -326,7 +373,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-020';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 21: Onur Aydın
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -342,7 +391,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-021';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 22: Tolga Karaca
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -358,7 +409,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-022';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 23: Burak Tuna
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -374,7 +427,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-023';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 24: Sinem Avcı
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -390,7 +445,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-024';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 25: Ceren Bulut
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -406,7 +463,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-025';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 26: Derya Kaplan
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -422,7 +481,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-026';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 27: Selin Karaca
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -438,7 +499,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-027';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 28: Mert Tuna
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -454,7 +517,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-028';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 29: Burak Korkmaz
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -470,7 +535,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-029';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 30: Deniz Polat
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -486,7 +553,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-030';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 31: Mert Yıldız
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -502,7 +571,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-031';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 32: Arda Tuna
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -518,7 +589,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-032';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 33: Deniz Erdem
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -534,7 +607,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-033';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 34: Oğuz Ergin
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -550,7 +625,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-034';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 35: Esra Avcı
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -566,7 +643,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-035';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 36: Eren Kaplan
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -582,7 +661,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-036';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 37: Yusuf Aslan
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -598,7 +679,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-037';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 38: Gizem Aydın
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -614,7 +697,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-038';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 39: Emre Polat
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -630,7 +715,9 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-039';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
     -- Customer 40: Leyla Toprak
     INSERT INTO customers (email, phone, full_name, address, tc_kimlik, dosya_takip_numarasi, iban, payment_person_name, insurance_company)
@@ -646,6 +733,8 @@ BEGIN
     RETURNING id INTO case_id_val;
     
     SELECT id INTO case_id_val FROM cases WHERE case_number = 'DK-2024-040';
-    INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    IF acente_admin_id IS NOT NULL THEN
+      INSERT INTO case_admins (case_id, admin_id) VALUES (case_id_val, acente_admin_id) ON CONFLICT DO NOTHING;
+    END IF;
 
 END $$;

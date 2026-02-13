@@ -93,6 +93,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'TRAMER kaydı silinir mi? Hasar kaydı ve değer kaybı arasındaki kritik farklar, kayıt silme şartları, itiraz süreçleri, bedelsiz hasar kaydı ve değer kaybı tazminatı hakkında detaylı bilgi.',
   },
+  'araci-sattiktan-sonra-deger-kaybi-alinir-mi-zaman-asimi-ve-yasal-haklar': {
+    id: '9',
+    title: 'Aracı Sattıktan Sonra Değer Kaybı Alınır mı? (Zamanaşımı ve Yasal Haklar)',
+    excerpt: 'Aracı sattıktan sonra değer kaybı alınır mı? Evet, değer kaybı tazminatı araca değil ruhsat sahibine aittir. Zamanaşımı süresi, başvuru şartları ve gerekli belgeler hakkında detaylı rehber.',
+    slug: 'araci-sattiktan-sonra-deger-kaybi-alinir-mi-zaman-asimi-ve-yasal-haklar',
+    publishedAt: '2026-02-13',
+    category: 'Rehber',
+    metaDescription: 'Aracı sattıktan sonra değer kaybı alınır mı? Evet, değer kaybı tazminatı araca değil ruhsat sahibine aittir. Zamanaşımı süresi, başvuru şartları, gerekli belgeler ve yasal haklar hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -409,6 +418,43 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Kaza sonrası eksperin yazdığı parça ve işçilik listesine, yasal süre (genellikle rapor tebliğinden itibaren 7 gün) içinde itiraz edebilirsiniz. Ancak dosya kapandıktan ve üzerinden zaman geçtikten sonra hasar tutarını düşürmek çok zordur, ancak maddi hata (yazım yanlışı) varsa düzeltilir."
+        }
+      }
+    ]
+  } : slug === 'araci-sattiktan-sonra-deger-kaybi-alinir-mi-zaman-asimi-ve-yasal-haklar' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Aracı alan kişi benden değer kaybı talep edebilir mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hayır, edemez. Aracı alan kişi, aracı mevcut hasar durumuyla ve o günkü piyasa fiyatıyla satın almıştır. Değer kaybı tazminatı, kaza anında aracın sahibi olan kişinin (sizin) hakkınızdır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Noter satış sözleşmesini kaybettim, ne yapmalıyım?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Endişelenmeyin. Satış işlemini yaptığınız notere giderek arşivden bir suret isteyebilirsiniz. Ayrıca e-Devlet üzerinde \"Adıma Tescilli Araç Sorgulama (Tüzel/Gerçek Kişi)\" hizmetinden geçmiş araçlarınızın dökümüne ulaşabilirsiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Parayı sigorta şirketi mi öder, aracı alan kişi mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Parayı kesinlikle karşı tarafın trafik sigortası öder. Aracı alan kişiyle veya sattığınız kişiyle hiçbir para alışverişiniz veya hukuki diyaloğunuz olmaz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "2 yıl geçti ama yaralanmalı kazaydı, başvurabilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet. Eğer kazada bir yaralanma veya ölüm varsa, zamanaşımı süresi Ceza Kanunu'na göre 8 yıla kadar uzayabilir. Bu durumda aracı satmış olsanız bile, 2 yıl sınırına takılmadan değer kaybı başvurusu yapabilirsiniz. Uzman görüşü almanızda fayda vardır."
         }
       }
     ]
@@ -1843,6 +1889,164 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Kaza sonrası eksperin yazdığı parça ve işçilik listesine, yasal süre (genellikle rapor tebliğinden itibaren 7 gün) içinde itiraz edebilirsiniz. Ancak dosya kapandıktan ve üzerinden zaman geçtikten sonra hasar tutarını düşürmek çok zordur, ancak maddi hata (yazım yanlışı) varsa düzeltilir.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'araci-sattiktan-sonra-deger-kaybi-alinir-mi-zaman-asimi-ve-yasal-haklar' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    <strong>Evet, aracı satmış olmanız, o araçla geçirdiğiniz kazadan doğan değer kaybı hakkınızı ortadan kaldırmaz.</strong> Hukuki olarak değer kaybı tazminatı, "araca" değil, kaza tarihindeki "ruhsat sahibine" (yani size) ait bir haktır. Aracınızı satarken, kaza nedeniyle piyasa fiyatının altında (değer kaybederek) sattığınız varsayıldığı için, zararınız satış anında kesinleşmiş olur. Kaza tarihinden itibaren <strong>2 yıllık zamanaşımı süresi</strong> dolmadıysa, aracı sattıktan sonra da geriye dönük tazminat başvurusunda bulunabilirsiniz.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/satilan-arac-icin-deger-kaybi-basvurusu-zaman-asimi.jpg"
+                      alt="satılan araç için değer kaybı başvurusu zamanaşımı"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Hukuk Ne Diyor? "Zarar, Kaza Anında Doğar"
+                  </h2>
+
+                  <p>
+                    Sürücüler genellikle <em>"Araba gitti, dert bitti"</em> diye düşünür. Ancak Yargıtay içtihatları ve <strong>Türk Borçlar Kanunu</strong> (TBK) açıktır:
+                  </p>
+
+                  <p>
+                    Bir haksız fiil (trafik kazası) sonucunda mal varlığınızda meydana gelen azalma, tazmin edilmelidir. Siz kaza yapan aracınızı satarken, "kazasız" emsallerine göre daha düşük bir fiyata satmak zorunda kaldınız. İşte aradaki bu fark, sigorta şirketinin size ödemesi gereken paradır.
+                  </p>
+
+                  <div className="bg-orange-50 border-l-4 border-primary-orange p-4 my-6 rounded">
+                    <p className="font-semibold text-dark-blue mb-2">Önemli Ayrım:</p>
+                    <p>
+                      Tazminat hakkı, aracı yeni alan kişiye geçmez. Çünkü yeni alıcı, aracı zaten "kazalı fiyatından" ve bilerek almıştır, bir zararı yoktur. Zarar eden (ucuza satan) sizsiniz.
+                    </p>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Satılan Araç İçin Başvuru Şartları Nelerdir?
+                  </h2>
+
+                  <p>
+                    Değer360 olarak, sattığınız araçlar için açtığımız dosyalarda şu 3 temel şarta bakarız:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-3 my-4">
+                    <li><strong>Zamanaşımı (2 Yıl):</strong> Kaza tarihinin üzerinden 2 yıl geçmemiş olması gerekir. (Örn: Bugün 2026 Ocak ayındaysak, 2024 Ocak ayından sonraki kazalar için başvurabilirsiniz).</li>
+                    <li><strong>Mülkiyet Durumu:</strong> Kaza tarihinde ruhsatın <strong>sizin adınıza</strong> olması gerekir.</li>
+                    <li><strong>Kusursuzluk:</strong> Kazada %100 kusurlu olmamalısınız.</li>
+                  </ol>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Başvuru İçin Hangi Belgeler Gerekir? (Elinizde Ruhsat Yoksa)
+                  </h2>
+
+                  <p>
+                    <em>"Aracı sattım, ruhsatı da verdim. Elimde belge yok, nasıl başvuracağım?"</em> endişesi taşımayın. Dijitalleşen sistemler sayesinde bu belgeleri bulmak çok kolaydır:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Noter Satış Sözleşmesi:</strong> Aracı sattığınız tarihi kanıtlar. (Noterden veya e-Devlet'ten temin edilebilir).</li>
+                    <li><strong>Kaza Tespit Tutanağı:</strong> e-Devlet veya SBM üzerinden geçmişe dönük alınabilir.</li>
+                    <li><strong>Hasar Fotoğrafları:</strong> Eğer telefonunuzda duruyorsa süreci hızlandırır, yoksa ekspertiz arşivinden bulunabilir.</li>
+                  </ul>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Değer360 ile "Unuttuğunuz Parayı" Geri Alın
+                  </h2>
+
+                  <p>
+                    Sattığınız araçtan gelecek para, yeni alacağınız araç için güzel bir bütçe veya beklenmedik bir nakit girişi olabilir.
+                  </p>
+
+                  <p>
+                    Süreç, elinizdeki araçla aynı şekilde işler:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-3 my-4">
+                    <li><strong>Analiz:</strong> Geçmişe dönük kazayı inceleriz.</li>
+                    <li><strong>Başvuru:</strong> Sigorta şirketine sizin adınıza talepte bulunuruz.</li>
+                    <li><strong>Ödeme:</strong> Tazminatı sizin IBAN adresinize yönlendiririz.</li>
+                  </ol>
+
+                  <p>
+                    Yine <strong>ön ödeme yok</strong>, <strong>masraf yok</strong>. Sadece kazandırırsak komisyon alıyoruz.
+                  </p>
+
+                  <p className="text-lg font-semibold text-dark-blue mt-6 mb-4">
+                    Eski aracınızdan alacaklı olup olmadığınızı 1 dakikada öğrenin:
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Satılan Araç İçin Ücretsiz Değer Kaybı Sorgulama
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular (Satılan Araçlar Hakkında)
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Aracı alan kişi benden değer kaybı talep edebilir mi?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Hayır, edemez. Aracı alan kişi, aracı mevcut hasar durumuyla ve o günkü piyasa fiyatıyla satın almıştır. Değer kaybı tazminatı, kaza anında aracın sahibi olan kişinin (sizin) hakkınızdır.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Noter satış sözleşmesini kaybettim, ne yapmalıyım?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Endişelenmeyin. Satış işlemini yaptığınız notere giderek arşivden bir suret isteyebilirsiniz. Ayrıca e-Devlet üzerinde "Adıma Tescilli Araç Sorgulama (Tüzel/Gerçek Kişi)" hizmetinden geçmiş araçlarınızın dökümüne ulaşabilirsiniz.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Parayı sigorta şirketi mi öder, aracı alan kişi mi?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Parayı kesinlikle <strong>karşı tarafın trafik sigortası</strong> öder. Aracı alan kişiyle veya sattığınız kişiyle hiçbir para alışverişiniz veya hukuki diyaloğunuz olmaz.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        2 yıl geçti ama yaralanmalı kazaydı, başvurabilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet. Eğer kazada bir yaralanma veya ölüm varsa, zamanaşımı süresi Ceza Kanunu'na göre <strong>8 yıla kadar</strong> uzayabilir. Bu durumda aracı satmış olsanız bile, 2 yıl sınırına takılmadan değer kaybı başvurusu yapabilirsiniz. Uzman görüşü almanızda fayda vardır.
                       </p>
                     </div>
                   </div>

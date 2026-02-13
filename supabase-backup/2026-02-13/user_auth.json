@@ -1,0 +1,605 @@
+[
+  {
+    "id": "b04aa22b-2126-4d6b-b968-92339543e548",
+    "customer_id": "16cb05f6-e453-48a5-add6-468db72f31d5",
+    "role": "customer",
+    "created_at": "2026-01-31T09:56:47.274185+00:00",
+    "updated_at": "2026-01-31T10:32:00.132053+00:00",
+    "name": null,
+    "password": "07edd77.atik"
+  },
+  {
+    "id": "aa151217-36d3-40a4-8701-a7bb4f942354",
+    "customer_id": "db7881a4-6df0-4556-9ecb-745e8bc11ea7",
+    "role": "customer",
+    "created_at": "2026-01-31T09:53:59.93403+00:00",
+    "updated_at": "2026-01-31T10:36:18.981394+00:00",
+    "name": null,
+    "password": "07mbj29.sidal"
+  },
+  {
+    "id": "0fffba66-d580-4496-863e-581e455173e8",
+    "customer_id": "b1526979-fee5-4207-93b6-aea089844b43",
+    "role": "customer",
+    "created_at": "2026-01-31T09:51:41.195434+00:00",
+    "updated_at": "2026-01-31T10:41:16.342103+00:00",
+    "name": null,
+    "password": "33akm33.ozgar"
+  },
+  {
+    "id": "4e88e056-297d-4671-99f6-6d0c5448a58a",
+    "customer_id": "4619ea19-24d7-44e7-bd28-2e8eb46606ec",
+    "role": "customer",
+    "created_at": "2026-01-09T14:35:11.39173+00:00",
+    "updated_at": "2026-01-09T14:35:11.39173+00:00",
+    "name": null,
+    "password": null
+  },
+  {
+    "id": "73824b3d-46ee-4964-b6f7-7911d8380db3",
+    "customer_id": "f36a2480-af01-41c1-82a9-6b4bed328b3d",
+    "role": "customer",
+    "created_at": "2026-01-31T09:49:33.731209+00:00",
+    "updated_at": "2026-01-31T10:43:55.56578+00:00",
+    "name": null,
+    "password": "07cgc240.cesur"
+  },
+  {
+    "id": "9c4e390a-06c1-48a6-ab20-77d2b1e14561",
+    "customer_id": "9192ca9b-a959-464d-a40b-3e51eee097ed",
+    "role": "customer",
+    "created_at": "2026-01-31T09:47:23.854715+00:00",
+    "updated_at": "2026-01-31T11:00:31.865888+00:00",
+    "name": null,
+    "password": "07afl185.erdem"
+  },
+  {
+    "id": "3c6fa765-5a98-4a74-81fa-786dc52587bc",
+    "customer_id": "6b6437bf-3828-4b70-afd6-817ad31b81e2",
+    "role": "customer",
+    "created_at": "2026-01-31T09:33:33.860973+00:00",
+    "updated_at": "2026-01-31T11:04:32.318865+00:00",
+    "name": null,
+    "password": "55yf002.serttas"
+  },
+  {
+    "id": "661bcb56-0e60-478f-af11-679612b99e95",
+    "customer_id": "ad0d7627-947e-4354-b91d-f62733f1cfd8",
+    "role": "customer",
+    "created_at": "2026-01-31T09:30:41.630325+00:00",
+    "updated_at": "2026-01-31T11:07:45.128944+00:00",
+    "name": null,
+    "password": "07fgy76.suloglu"
+  },
+  {
+    "id": "1a224c8f-8574-42d9-890d-f00bd617c2c7",
+    "customer_id": "51d6c450-e91e-4aec-b680-dbc5fa070123",
+    "role": "customer",
+    "created_at": "2026-02-05T15:51:49.502428+00:00",
+    "updated_at": "2026-02-05T15:57:08.635474+00:00",
+    "name": null,
+    "password": "07adk764.ozat"
+  },
+  {
+    "id": "2cba4a51-350a-4b5d-9411-6641087c48b6",
+    "customer_id": "7aef4d09-9600-4ce1-9ebd-ae63b647a9f5",
+    "role": "customer",
+    "created_at": "2026-01-31T09:15:54.1506+00:00",
+    "updated_at": "2026-01-31T11:25:46.295048+00:00",
+    "name": null,
+    "password": "07bvm887.demir"
+  },
+  {
+    "id": "41db9970-998d-429f-8d64-0a82185d561d",
+    "customer_id": "298601b2-64c7-492e-8925-3c08256fa12d",
+    "role": "customer",
+    "created_at": "2026-01-26T17:54:10.292562+00:00",
+    "updated_at": "2026-01-27T18:48:45.278008+00:00",
+    "name": null,
+    "password": "34gff840.yalcinkaya"
+  },
+  {
+    "id": "af5ead06-d9ce-42d6-9f7f-ac7a968f5234",
+    "customer_id": "06d20a02-d60e-418d-831c-6b1d5e7deab5",
+    "role": "customer",
+    "created_at": "2026-01-31T09:13:23.119006+00:00",
+    "updated_at": "2026-01-31T11:28:17.483113+00:00",
+    "name": null,
+    "password": "07ffs58.kahya"
+  },
+  {
+    "id": "db07bf4d-feb5-4d28-8d27-524f9ff3eea7",
+    "customer_id": "e729d294-eefd-4914-880e-be489362bc51",
+    "role": "customer",
+    "created_at": "2026-01-07T18:59:20.246058+00:00",
+    "updated_at": "2026-01-27T18:51:58.797909+00:00",
+    "name": null,
+    "password": "07byf290.ihr.ith.san.tic.ltd.sti."
+  },
+  {
+    "id": "26080442-300d-446e-86b2-5899045cc356",
+    "customer_id": null,
+    "role": "admin",
+    "created_at": "2026-01-09T15:29:11.877601+00:00",
+    "updated_at": "2026-01-12T12:58:32.961799+00:00",
+    "name": "Feridun KARAMAN",
+    "password": "feridundeger12"
+  },
+  {
+    "id": "3e7b5dfb-9321-453d-a3a5-f8714a377c05",
+    "customer_id": null,
+    "role": "admin",
+    "created_at": "2026-01-09T15:31:42.913809+00:00",
+    "updated_at": "2026-01-12T12:58:32.961799+00:00",
+    "name": "Burak ŞENIŞIK",
+    "password": "burakdeger0707"
+  },
+  {
+    "id": "9ab3bb9b-b6af-45fa-9905-57191bbc63d0",
+    "customer_id": "c5f06255-7c91-4d9d-95ee-4907499dd279",
+    "role": "customer",
+    "created_at": "2026-01-08T17:33:35.319601+00:00",
+    "updated_at": "2026-01-27T18:52:18.742058+00:00",
+    "name": null,
+    "password": "07ceg986.kaya"
+  },
+  {
+    "id": "ec3477aa-8af6-44b2-bf3f-f7e1d3a84ac8",
+    "customer_id": "072b0a68-7227-438c-a503-cb00cfef3857",
+    "role": "customer",
+    "created_at": "2026-01-08T18:15:35.171235+00:00",
+    "updated_at": "2026-01-27T18:52:43.493311+00:00",
+    "name": null,
+    "password": "07fnn53.gencayogullari"
+  },
+  {
+    "id": "b14cbca7-684f-4ec7-88ae-e8aaa4d2af74",
+    "customer_id": "8e0b77bf-9485-4297-bd8e-0dec0073b20b",
+    "role": "customer",
+    "created_at": "2026-01-08T18:22:03.153113+00:00",
+    "updated_at": "2026-01-27T18:53:02.404767+00:00",
+    "name": null,
+    "password": "07byj882.eroglu"
+  },
+  {
+    "id": "c045b6bb-587a-4c33-9d81-37fda528933b",
+    "customer_id": "4419a0ff-338f-45b9-b458-f13026669205",
+    "role": "customer",
+    "created_at": "2026-01-31T09:10:44.61917+00:00",
+    "updated_at": "2026-01-31T11:32:47.082419+00:00",
+    "name": null,
+    "password": "35vfy10.yildirim"
+  },
+  {
+    "id": "170ae69d-008c-44bc-8360-a334ac998831",
+    "customer_id": "a0496ded-6627-4252-973a-f33cb92626b1",
+    "role": "customer",
+    "created_at": "2026-01-09T15:52:33.50193+00:00",
+    "updated_at": "2026-01-27T18:53:31.546679+00:00",
+    "name": null,
+    "password": "07fhm85.filiz"
+  },
+  {
+    "id": "5eef56f8-58ca-4593-a5bb-eef4d2ce5718",
+    "customer_id": "9c331864-7106-4cba-bfe7-bb38678b5020",
+    "role": "customer",
+    "created_at": "2026-01-16T08:56:20.600961+00:00",
+    "updated_at": "2026-01-27T18:53:52.859483+00:00",
+    "name": null,
+    "password": "07asa828.korkmaz"
+  },
+  {
+    "id": "53040d35-6cf4-4925-abe5-53b81a2be2d3",
+    "customer_id": null,
+    "role": "lawyer",
+    "created_at": "2026-01-16T09:00:30.204836+00:00",
+    "updated_at": "2026-01-16T09:00:30.204836+00:00",
+    "name": "AV. SENA ÖZCAN",
+    "password": "Lokum.07"
+  },
+  {
+    "id": "8c295fe5-c5d2-40a4-8858-3e42d57b3455",
+    "customer_id": null,
+    "role": "acente",
+    "created_at": "2025-12-27T01:25:55.587919+00:00",
+    "updated_at": "2026-01-18T14:33:00.887405+00:00",
+    "name": "Örnek Acente",
+    "password": null
+  },
+  {
+    "id": "dbf4d1c4-062f-4e75-9cd4-8a5673cf0a49",
+    "customer_id": "51868bfb-dc91-46d7-b5b4-f56e34880764",
+    "role": "customer",
+    "created_at": "2026-02-12T15:45:43.684532+00:00",
+    "updated_at": "2026-02-12T15:45:43.684532+00:00",
+    "name": null,
+    "password": "07eth90.akar"
+  },
+  {
+    "id": "d0d0b3d1-7eef-4424-b793-abed0a343c15",
+    "customer_id": "02f34e71-b7a4-40f7-b1ff-9813c86e856a",
+    "role": "customer",
+    "created_at": "2026-01-23T08:08:24.919309+00:00",
+    "updated_at": "2026-01-27T18:54:15.990891+00:00",
+    "name": null,
+    "password": "51ada470.ercicek"
+  },
+  {
+    "id": "4fe3fb55-7f4e-4a51-9316-c0a399c67eb5",
+    "customer_id": "a273f5e2-082a-4f61-83b4-19ecad24b891",
+    "role": "customer",
+    "created_at": "2026-01-24T11:16:10.982717+00:00",
+    "updated_at": "2026-01-27T18:54:39.691077+00:00",
+    "name": null,
+    "password": "07bzv27.yildirim"
+  },
+  {
+    "id": "ede37c35-91fa-4496-b90d-761b4ed87d5b",
+    "customer_id": "26f587df-7f28-4aa8-a6d7-6d8f54c77614",
+    "role": "customer",
+    "created_at": "2026-01-24T11:22:33.820061+00:00",
+    "updated_at": "2026-01-27T18:55:03.552484+00:00",
+    "name": null,
+    "password": "07cfe068.ugurlu"
+  },
+  {
+    "id": "c652be31-6583-443c-b68b-e1922ea28539",
+    "customer_id": null,
+    "role": "lawyer",
+    "created_at": "2026-01-01T17:52:13.318143+00:00",
+    "updated_at": "2026-01-01T17:52:13.318143+00:00",
+    "name": "ciho3",
+    "password": null
+  },
+  {
+    "id": "7487c0a4-43c1-4a9f-a261-5119134b8021",
+    "customer_id": "404486f4-55d3-47ae-a1e3-d993d0896e4c",
+    "role": "customer",
+    "created_at": "2026-01-30T15:52:53.018942+00:00",
+    "updated_at": "2026-01-31T11:41:31.264104+00:00",
+    "name": null,
+    "password": "07cal889.dugan"
+  },
+  {
+    "id": "b2e8e59d-3ecd-4255-a4a4-08fb3e788c1d",
+    "customer_id": "349750ef-7448-4fdc-8794-e086a6e9dc1a",
+    "role": "customer",
+    "created_at": "2026-01-26T17:45:44.993692+00:00",
+    "updated_at": "2026-01-27T18:55:28.504621+00:00",
+    "name": null,
+    "password": "07chk503.ins.a.s."
+  },
+  {
+    "id": "6cba12bf-cdcc-4320-993e-ae7d2cbd2027",
+    "customer_id": "e0fe9502-5f0a-4e56-a39d-77b1bb97a7e1",
+    "role": "customer",
+    "created_at": "2026-01-26T17:59:31.246697+00:00",
+    "updated_at": "2026-01-27T18:55:51.780748+00:00",
+    "name": null,
+    "password": "07cek194.cetin"
+  },
+  {
+    "id": "d835092f-c051-428a-9611-b028b12199e7",
+    "customer_id": "dc58617c-e0af-4ac3-93c4-70bc0dd750a4",
+    "role": "customer",
+    "created_at": "2026-02-10T16:05:16.746773+00:00",
+    "updated_at": "2026-02-10T16:35:59.575847+00:00",
+    "name": null,
+    "password": "07aut809.putlar"
+  },
+  {
+    "id": "a853d686-80d8-4b9f-b04c-e90bd9c24c58",
+    "customer_id": "19c40d52-8628-4025-a53b-c2f11e60ea39",
+    "role": "customer",
+    "created_at": "2026-01-26T18:11:44.312991+00:00",
+    "updated_at": "2026-01-27T18:56:08.246137+00:00",
+    "name": null,
+    "password": "07t0490.nergizciler"
+  },
+  {
+    "id": "62525695-83ab-4b28-bcca-9868bd6be32f",
+    "customer_id": "9fb22382-7d4a-4ad4-bd1e-858f798b4f77",
+    "role": "customer",
+    "created_at": "2026-01-26T18:16:18.251699+00:00",
+    "updated_at": "2026-01-27T18:56:25.543005+00:00",
+    "name": null,
+    "password": "07bte566.peker"
+  },
+  {
+    "id": "f214ab6b-67eb-4c7a-895d-ba31534e7237",
+    "customer_id": "498f5dd2-3c15-4128-b030-88490dfc661f",
+    "role": "customer",
+    "created_at": "2026-01-26T18:22:15.092849+00:00",
+    "updated_at": "2026-01-27T18:56:50.145581+00:00",
+    "name": null,
+    "password": "07aem093.kalender"
+  },
+  {
+    "id": "565ca325-d6b0-402c-8ba4-74e160a6462f",
+    "customer_id": "98f720ba-1d7d-41c2-afc3-306016485ea2",
+    "role": "customer",
+    "created_at": "2026-02-05T09:21:29.218186+00:00",
+    "updated_at": "2026-02-05T10:51:31.630601+00:00",
+    "name": null,
+    "password": "07afv540.boz"
+  },
+  {
+    "id": "e09d5736-880e-4fa9-9ff9-102ad3a6bb75",
+    "customer_id": "c7e16fa9-6a1a-4001-80f1-d24b2345480c",
+    "role": "customer",
+    "created_at": "2026-01-31T09:24:37.195131+00:00",
+    "updated_at": "2026-02-01T10:26:50.913829+00:00",
+    "name": null,
+    "password": "07cdf331.agaoglu"
+  },
+  {
+    "id": "e684b81e-d2b2-43dd-94f4-ae93923d464e",
+    "customer_id": null,
+    "role": "superadmin",
+    "created_at": "2025-12-19T15:21:01.973862+00:00",
+    "updated_at": "2026-01-08T23:24:55.366047+00:00",
+    "name": "Super Admin",
+    "password": null
+  },
+  {
+    "id": "b907eab7-5100-46fa-8379-be5ddebbbcb0",
+    "customer_id": "2c3055b2-8ceb-426a-bc76-7aa4557703ee",
+    "role": "customer",
+    "created_at": "2026-02-05T15:54:35.265294+00:00",
+    "updated_at": "2026-02-07T18:29:02.309364+00:00",
+    "name": null,
+    "password": "07fth26.bodur"
+  },
+  {
+    "id": "6818025d-a0ed-4278-a03a-2260497a18cf",
+    "customer_id": "6b65eb20-9ac7-48e0-9579-5f1e5bb917cb",
+    "role": "customer",
+    "created_at": "2026-02-04T16:57:37.134409+00:00",
+    "updated_at": "2026-02-04T16:58:54.454698+00:00",
+    "name": null,
+    "password": "07bag503.kaymaz"
+  },
+  {
+    "id": "ad89fd14-dcd3-4044-970c-4c7598e72768",
+    "customer_id": "f180afc8-211f-44ce-9c59-a69deeb14795",
+    "role": "customer",
+    "created_at": "2026-02-04T17:04:47.897837+00:00",
+    "updated_at": "2026-02-04T17:05:22.886208+00:00",
+    "name": null,
+    "password": "07eba42.akkoz"
+  },
+  {
+    "id": "73cce607-1dc1-4d37-88f9-382a2657ec42",
+    "customer_id": "87e6b85d-4c70-453f-91f5-ede41f40201b",
+    "role": "customer",
+    "created_at": "2026-02-05T09:23:09.605492+00:00",
+    "updated_at": "2026-02-05T10:52:10.677377+00:00",
+    "name": null,
+    "password": "07atd034.keskil"
+  },
+  {
+    "id": "f6232801-5b73-4ee3-a243-f60b4e956340",
+    "customer_id": "be42cc06-7575-4c1c-b31f-0659fbd35dc7",
+    "role": "customer",
+    "created_at": "2026-02-05T09:26:48.744444+00:00",
+    "updated_at": "2026-02-05T10:54:22.920897+00:00",
+    "name": null,
+    "password": "07lkc99.ozyesilbas"
+  },
+  {
+    "id": "2f1ff90a-5fff-4039-be75-f0e27e7b1d89",
+    "customer_id": "a22b91aa-c881-4e14-b730-5c82cac0140e",
+    "role": "customer",
+    "created_at": "2026-02-05T09:28:13.458265+00:00",
+    "updated_at": "2026-02-05T10:56:32.848537+00:00",
+    "name": null,
+    "password": "07auk83.kayseri"
+  },
+  {
+    "id": "31b053c8-a0aa-4eed-9a4d-084dcd819465",
+    "customer_id": "c74986ca-ef2f-49ef-9f59-d1658a37a5f0",
+    "role": "customer",
+    "created_at": "2026-02-05T09:29:35.063569+00:00",
+    "updated_at": "2026-02-05T10:59:24.930305+00:00",
+    "name": null,
+    "password": "34ur2183.yilmaz"
+  },
+  {
+    "id": "7c7a57c8-7c11-4fdf-adaa-cb1fe096b16e",
+    "customer_id": "30e3a76f-43eb-47d3-a2a3-37ccf4c2a05e",
+    "role": "customer",
+    "created_at": "2026-02-05T09:31:03.56351+00:00",
+    "updated_at": "2026-02-05T11:00:41.242173+00:00",
+    "name": null,
+    "password": "16ayf509.duzerdik"
+  },
+  {
+    "id": "1cdd55a1-7665-4d0d-8ce4-96705d3b1e41",
+    "customer_id": "83829a4a-13db-4963-b184-bf48dc6a6522",
+    "role": "customer",
+    "created_at": "2026-02-05T09:32:31.864073+00:00",
+    "updated_at": "2026-02-05T11:02:32.708601+00:00",
+    "name": null,
+    "password": "07brd323.budak"
+  },
+  {
+    "id": "d3cc8164-69b7-4c04-a32b-6e0fd13b0c51",
+    "customer_id": "678bd5ed-9f84-4d65-b65a-35d245c8c38f",
+    "role": "customer",
+    "created_at": "2026-02-05T15:53:03.05673+00:00",
+    "updated_at": "2026-02-05T15:59:58.809871+00:00",
+    "name": null,
+    "password": "32sh764.ozdemir"
+  },
+  {
+    "id": "0132ecf4-40be-4b67-a43b-778062359c50",
+    "customer_id": "5e39ab24-337e-4292-9071-7471259e083d",
+    "role": "customer",
+    "created_at": "2026-02-10T16:06:19.86296+00:00",
+    "updated_at": "2026-02-10T16:38:21.474427+00:00",
+    "name": null,
+    "password": "07blg135.ersoy"
+  },
+  {
+    "id": "ee82affd-29ae-4518-ae25-cbc62ce62ad4",
+    "customer_id": "40208ffc-a7f6-4ecf-9684-17d906416815",
+    "role": "customer",
+    "created_at": "2026-02-05T10:01:24.896514+00:00",
+    "updated_at": "2026-02-05T11:19:49.622424+00:00",
+    "name": null,
+    "password": "34drc604.akbulut"
+  },
+  {
+    "id": "5f3444a2-e074-482c-9ef5-7197a548f6e5",
+    "customer_id": null,
+    "role": "acente",
+    "created_at": "2026-02-05T11:21:43.213954+00:00",
+    "updated_at": "2026-02-05T11:21:43.213954+00:00",
+    "name": "ERC SİGORTA",
+    "password": "ERCsigorta.07"
+  },
+  {
+    "id": "63cac104-9fa4-43f4-9e82-1eafe6ec0dd3",
+    "customer_id": "b6889fa5-e8e4-40ea-95ca-65d4df6df9eb",
+    "role": "customer",
+    "created_at": "2026-01-30T15:49:41.808915+00:00",
+    "updated_at": "2026-02-10T08:28:02.54857+00:00",
+    "name": null,
+    "password": "46aag234.demirbas"
+  },
+  {
+    "id": "036b837b-1469-4ad0-a4c5-9226acc07a3b",
+    "customer_id": "2cd5c3b8-2cae-44b0-b9e8-6ad3df4a074d",
+    "role": "customer",
+    "created_at": "2026-02-05T09:33:51.874027+00:00",
+    "updated_at": "2026-02-05T11:25:06.116832+00:00",
+    "name": null,
+    "password": "16kdp90.dursun"
+  },
+  {
+    "id": "0f27eaaf-f1f8-43b1-8315-87a464d024b2",
+    "customer_id": "4447fc5a-95b1-4ab9-a602-015564e9f5ef",
+    "role": "customer",
+    "created_at": "2026-01-09T00:20:53.302602+00:00",
+    "updated_at": "2026-02-07T18:16:33.694321+00:00",
+    "name": null,
+    "password": null
+  },
+  {
+    "id": "ea7d8199-70e6-42a1-91b3-90a258cbd4b9",
+    "customer_id": "c934aa35-a34c-4778-8b01-fa8c32282405",
+    "role": "customer",
+    "created_at": "2026-02-05T15:56:19.193281+00:00",
+    "updated_at": "2026-02-07T18:28:46.435357+00:00",
+    "name": null,
+    "password": "07bvf756.solak"
+  },
+  {
+    "id": "facd0026-28ad-4c79-866c-3dd59eb04a63",
+    "customer_id": "f2d77bdc-5af0-447a-8b1a-029f39b1f0ae",
+    "role": "customer",
+    "created_at": "2026-02-10T16:02:06.186589+00:00",
+    "updated_at": "2026-02-10T16:29:59.960545+00:00",
+    "name": null,
+    "password": "07bvc954.ozcelik"
+  },
+  {
+    "id": "29930eab-b768-4517-8412-0c4b9c29bfa2",
+    "customer_id": "aaa446ce-539d-47d3-9042-ac3f9b70880e",
+    "role": "customer",
+    "created_at": "2026-02-10T16:03:21.705752+00:00",
+    "updated_at": "2026-02-10T16:32:59.833362+00:00",
+    "name": null,
+    "password": "07cgf284.agan"
+  },
+  {
+    "id": "cbee2d64-d3ed-4b41-bcc2-6ac945c73f82",
+    "customer_id": "9f961c50-b0bc-4930-9c7b-bc2b65b3b577",
+    "role": "customer",
+    "created_at": "2026-02-10T16:07:41.234296+00:00",
+    "updated_at": "2026-02-10T16:41:13.414856+00:00",
+    "name": null,
+    "password": "07blp602.ersoymtr"
+  },
+  {
+    "id": "69f75a90-e1a0-47ec-9acd-a8338b055db7",
+    "customer_id": "2831f4ad-60a4-4e2f-a084-98a98b460bcb",
+    "role": "customer",
+    "created_at": "2026-02-10T16:08:40.645409+00:00",
+    "updated_at": "2026-02-10T16:44:08.767872+00:00",
+    "name": null,
+    "password": "07bya27.boyacioglu"
+  },
+  {
+    "id": "baabaa8b-d094-41b2-a0ca-2346fdb2cd1a",
+    "customer_id": "f67bb07d-923b-412c-b58b-4cf03a431062",
+    "role": "customer",
+    "created_at": "2026-02-10T16:09:36.840902+00:00",
+    "updated_at": "2026-02-10T16:46:08.915197+00:00",
+    "name": null,
+    "password": "07d4214.coban"
+  },
+  {
+    "id": "10a0b3a6-52f3-49f4-aa56-8a70341ec998",
+    "customer_id": "37e56dc6-ea4d-41bf-9b17-45fc0b60e1bb",
+    "role": "customer",
+    "created_at": "2026-02-10T16:10:31.772642+00:00",
+    "updated_at": "2026-02-10T16:50:40.101095+00:00",
+    "name": null,
+    "password": "07aza861.gulcicek"
+  },
+  {
+    "id": "ac680349-e1e4-4199-bd95-2cabb531ad88",
+    "customer_id": "db39b822-46a8-4f1c-b097-392b291fbaf8",
+    "role": "customer",
+    "created_at": "2026-02-10T16:11:24.127817+00:00",
+    "updated_at": "2026-02-10T16:53:04.692476+00:00",
+    "name": null,
+    "password": "26ajf280.ozbiler"
+  },
+  {
+    "id": "d734780e-31ca-43a5-9cfa-21781048ddb5",
+    "customer_id": "0d912ef2-47c9-4a16-b819-07b7a4aea187",
+    "role": "customer",
+    "created_at": "2026-02-12T08:29:47.658083+00:00",
+    "updated_at": "2026-02-12T08:31:03.048872+00:00",
+    "name": null,
+    "password": "06fhd08.tunc"
+  },
+  {
+    "id": "c7c2f2a5-bc95-4305-a8b5-94d043fa317f",
+    "customer_id": "8d4007de-c6eb-4441-9445-95ee93000dc8",
+    "role": "customer",
+    "created_at": "2026-02-12T08:11:54.236314+00:00",
+    "updated_at": "2026-02-12T08:13:18.418049+00:00",
+    "name": null,
+    "password": "07t1098.koksal"
+  },
+  {
+    "id": "1eb8b36f-e953-43e0-a172-e3167577b3c4",
+    "customer_id": "1dbb4138-f33b-499f-8504-09baa9105392",
+    "role": "customer",
+    "created_at": "2026-01-30T15:59:20.526239+00:00",
+    "updated_at": "2026-02-12T11:14:22.886587+00:00",
+    "name": null,
+    "password": "38gd839.gode"
+  },
+  {
+    "id": "c6e59797-adac-43f9-98e1-1b34de67eeb6",
+    "customer_id": "da16f01d-bf27-4508-abbd-d3fe49583417",
+    "role": "customer",
+    "created_at": "2026-02-12T15:46:41.190502+00:00",
+    "updated_at": "2026-02-12T15:47:57.523609+00:00",
+    "name": null,
+    "password": "07cbs314.sever"
+  },
+  {
+    "id": "b3445b35-6fe0-4cad-b911-f8d67e917d15",
+    "customer_id": "d3d20659-4585-46d0-9834-533ead62e2ad",
+    "role": "customer",
+    "created_at": "2026-02-12T15:50:02.200023+00:00",
+    "updated_at": "2026-02-13T00:07:04.299549+00:00",
+    "name": null,
+    "password": "07bgc325.filoglu"
+  }
+]

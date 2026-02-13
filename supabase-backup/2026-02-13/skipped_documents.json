@@ -1,0 +1,184 @@
+[
+  {
+    "id": "ba4c1290-553c-4439-82e0-48430b0ccaa6",
+    "case_id": "7431ceb4-5143-451e-a23c-d1805f57ef04",
+    "category": "sigortaya_gonderilen_ihtarname",
+    "created_at": "2026-02-07T16:34:57.849083+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "4715d190-f45c-40be-aa5c-9be3b37b3d98",
+    "case_id": "7431ceb4-5143-451e-a23c-d1805f57ef04",
+    "category": "hakem_karari",
+    "created_at": "2026-02-07T16:35:22.570838+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "7c867593-1386-419c-a0f8-6d692561dd8e",
+    "case_id": "7431ceb4-5143-451e-a23c-d1805f57ef04",
+    "category": "sigorta_odeme_dekontu",
+    "created_at": "2026-02-07T16:35:49.779143+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "d9a2b0b4-5f2c-4d56-8ce1-116a9a6a4688",
+    "case_id": "b1eb431a-a16a-425d-acd3-b5ca032c348e",
+    "category": "sigorta_odeme_dekontu",
+    "created_at": "2026-02-08T14:05:58.525288+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "678cd77d-9186-4514-857b-ebdceb5a586c",
+    "case_id": "8406c43c-a6bf-4939-aa9e-7870dc7062b3",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:30:33.362719+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "f9163f2e-5ed0-4b74-8305-6b7d747b2324",
+    "case_id": "8406c43c-a6bf-4939-aa9e-7870dc7062b3",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:30:59.978556+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "5b95343e-d4fe-42bd-b263-bb35c8b96a44",
+    "case_id": "06c6a835-baa1-4a9f-ba66-18a7be6bc70b",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:33:20.150011+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "b5525f85-2268-459d-9974-f403148e5497",
+    "case_id": "06c6a835-baa1-4a9f-ba66-18a7be6bc70b",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:33:41.754023+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "a1ad1382-9c87-4075-be5a-8fef6e0a77e6",
+    "case_id": "46f01ee1-ca06-4657-8ba0-fb134e728fb4",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:36:24.580558+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "e66c0828-2d68-4f9d-b195-a3ab9ee434f9",
+    "case_id": "46f01ee1-ca06-4657-8ba0-fb134e728fb4",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:36:37.181752+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "808f3afe-8432-4ed9-96c7-63518f616dfb",
+    "case_id": "bb93a6aa-da43-417f-801d-99330d758402",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:38:46.957978+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "a5ae11bc-8008-4a00-b5a6-7e5d0bab7a08",
+    "case_id": "bb93a6aa-da43-417f-801d-99330d758402",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:39:00.368512+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "23434111-b65c-4f6c-b1a1-f513a1debef5",
+    "case_id": "fe560049-fce9-43ab-bf39-db91a628513e",
+    "category": "arac_fotograflari",
+    "created_at": "2026-02-10T16:42:03.10141+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "1ab669fa-d112-4cb1-a6d7-65eaab69eeb6",
+    "case_id": "fe560049-fce9-43ab-bf39-db91a628513e",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:42:25.954349+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "a5a27252-146b-4bc6-8f1e-77dd634c74fe",
+    "case_id": "82979cc1-877b-4500-9d3d-0d7b88fd8f14",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:44:35.663779+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "8d07e2c4-c8bf-4462-b2c4-d629cc5a4f64",
+    "case_id": "7e85aa51-3730-4105-9f96-d915875d2f11",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:46:42.575779+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "cfd5ba4f-58ed-452d-bdda-8e486de3e5a4",
+    "case_id": "0fe43ff7-18b4-421a-8dc0-48a8fef4e38d",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:51:04.131377+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "d31bf319-c81b-44b9-a4ac-ed6895d37c7a",
+    "case_id": "0fe43ff7-18b4-421a-8dc0-48a8fef4e38d",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:51:23.370003+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "fa7c9cb3-d38b-472b-aa1e-2d8af19f75c8",
+    "case_id": "908a719a-090b-4eaa-9361-b466b6823cee",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-10T16:53:32.250406+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "a2769155-c0fb-40bd-b39a-c9df6c6def8b",
+    "case_id": "908a719a-090b-4eaa-9361-b466b6823cee",
+    "category": "kimlik",
+    "created_at": "2026-02-10T16:53:41.392907+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "448b29db-8447-4c50-aec4-bd08948db953",
+    "case_id": "ceeb0de2-e70a-496e-b983-d8c72423b023",
+    "category": "kimlik",
+    "created_at": "2026-02-12T08:27:40.446872+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "a21ede98-76d2-48cd-a0b6-ed79ee77d83d",
+    "case_id": "ceeb0de2-e70a-496e-b983-d8c72423b023",
+    "category": "acenteye_atilan_dekont",
+    "created_at": "2026-02-12T08:27:59.601312+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "79b9c88a-00f7-4306-ba49-a55e9f2e8c22",
+    "case_id": "ceeb0de2-e70a-496e-b983-d8c72423b023",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-12T08:28:19.175332+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "0ca866d5-4702-424b-b7b9-2d4d2ff7d23c",
+    "case_id": "4f7e0666-cd8c-43cb-8917-4b863df52c95",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-12T08:31:26.004859+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "b4dc6b9c-2f24-4312-b109-3b37c361ad8f",
+    "case_id": "7ed3d1b0-d291-4190-8c05-edd003b7de1c",
+    "category": "acenteye_atilan_dekont",
+    "created_at": "2026-02-12T15:49:02.023118+00:00",
+    "created_by": "Super Admin"
+  },
+  {
+    "id": "e077b7cd-31dc-432d-8199-d0e9ffa88ffb",
+    "case_id": "7d01cdff-bd34-4770-acb4-b2648bab0492",
+    "category": "bilir_kisi_raporu",
+    "created_at": "2026-02-12T15:51:25.126791+00:00",
+    "created_by": "Super Admin"
+  }
+]
