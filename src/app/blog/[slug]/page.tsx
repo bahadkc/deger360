@@ -102,6 +102,15 @@ const blogPosts: Record<string, {
     category: 'Rehber',
     metaDescription: 'Aracı sattıktan sonra değer kaybı alınır mı? Evet, değer kaybı tazminatı araca değil ruhsat sahibine aittir. Zamanaşımı süresi, başvuru şartları, gerekli belgeler ve yasal haklar hakkında detaylı bilgi.',
   },
+  'sigorta-sirketi-deger-kaybi-talebini-reddederse-ne-yapilmali-tahkim-basvuru-sureci': {
+    id: '10',
+    title: 'Sigorta Şirketi Değer Kaybı Talebini Reddederse Ne Yapılmalı? Tahkim Başvuru Süreci',
+    excerpt: 'Sigorta şirketi değer kaybı talebini reddederse ne yapılmalı? Sigorta Tahkim Komisyonu başvuru süreci, ret gerekçeleri, tahkim süreci adımları ve bireysel başvuru vs profesyonel yönetim karşılaştırması.',
+    slug: 'sigorta-sirketi-deger-kaybi-talebini-reddederse-ne-yapilmali-tahkim-basvuru-sureci',
+    publishedAt: '2026-02-16',
+    category: 'Rehber',
+    metaDescription: 'Sigorta şirketi değer kaybı talebini reddederse ne yapılmalı? Sigorta Tahkim Komisyonu başvuru süreci, ret gerekçeleri, tahkim süreci adımları, bireysel başvuru vs profesyonel yönetim ve itiraz süreçleri hakkında detaylı bilgi.',
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -455,6 +464,43 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Evet. Eğer kazada bir yaralanma veya ölüm varsa, zamanaşımı süresi Ceza Kanunu'na göre 8 yıla kadar uzayabilir. Bu durumda aracı satmış olsanız bile, 2 yıl sınırına takılmadan değer kaybı başvurusu yapabilirsiniz. Uzman görüşü almanızda fayda vardır."
+        }
+      }
+    ]
+  } : slug === 'sigorta-sirketi-deger-kaybi-talebini-reddederse-ne-yapilmali-tahkim-basvuru-sureci' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Sigorta şirketine başvurmadan direkt Tahkim'e gidebilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hayır, gidemezsiniz. Yasalar gereği \"Dava Şartı\" olarak önce ilgili sigorta şirketine yazılı başvuru yapılması ve 15 gün cevap süresinin beklenmesi zorunludur. Bu adımı atlamanız durumunda Tahkim başvurunuz reddedilir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Tahkim kararına sigorta şirketi itiraz edebilir mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, ancak sınırları vardır. Belirli bir tutarın (her yıl değişir, örneğin 15.000 TL altı) altındaki kararlar kesindir, itiraz edilemez. Tutar yüksekse itiraz edebilirler ancak bu süreçte dahi genellikle ödemeyi teminat olarak yatırmak zorundadırlar."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Tahkim başvurusu ne kadar sürede sonuçlanır?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yasal süre, hakem atandıktan sonra 4 aydır. Ancak dosya yoğunluğuna ve bilirkişi sürecine göre ortalama 4 ile 6 ay arasında kesin sonuç alınır. Klasik mahkemelerin 2 yıl sürdüğü düşünülürse bu çok hızlı bir süredir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kısmi ödeme yatırdılar (az para), yine de Tahkim'e gidebilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, kesinlikle. Sigorta şirketleri bazen \"sus payı\" olarak komik rakamlar (örn: 2.000 TL) yatırır. Bu parayı almanız, geri kalan hakkınızdan vazgeçtiğiniz anlamına gelmez. \"Bakiye Değer Kaybı\" için Tahkim'e başvurarak aradaki farkı talep edebiliriz."
         }
       }
     ]
@@ -2047,6 +2093,177 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       </h3>
                       <p className="text-neutral-700 leading-relaxed">
                         Evet. Eğer kazada bir yaralanma veya ölüm varsa, zamanaşımı süresi Ceza Kanunu'na göre <strong>8 yıla kadar</strong> uzayabilir. Bu durumda aracı satmış olsanız bile, 2 yıl sınırına takılmadan değer kaybı başvurusu yapabilirsiniz. Uzman görüşü almanızda fayda vardır.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İçerik Denetimi Kutusu */}
+                  <div className="my-8 not-prose bg-blue-50 border-l-4 border-primary-blue p-4 sm:p-6 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary-blue flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm sm:text-base text-dark-blue font-semibold mb-1">
+                          İçerik Denetimi
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700">
+                          Bu içerik, Değer360 Hukuk Birimi tarafından {formatDate(reviewedDateString)} tarihinde yasal mevzuata uygunluk açısından denetlenmiştir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : slug === 'sigorta-sirketi-deger-kaybi-talebini-reddederse-ne-yapilmali-tahkim-basvuru-sureci' ? (
+                <>
+                  <p className="text-xl text-neutral-700 mb-6 font-medium leading-relaxed">
+                    Sigorta şirketine değer kaybı başvurusunda bulundunuz ve cevaben <strong>"Talebiniz reddedilmiştir"</strong> veya <strong>"Dosyanız olumsuz değerlendirilmiştir"</strong> şeklinde bir yazı aldınız. Panik yapmayın; bu, hakkınızın yandığı anlamına gelmez. Aksine, sigorta şirketlerinin çoğu, sürücüleri yıldırmak veya ödemeyi geciktirmek için standart ret cevapları (matbu metinler) gönderirler.
+                  </p>
+
+                  <p>
+                    Sigorta şirketinin "Hayır" demesi son söz değildir. Hukuki olarak bir üst merci olan <strong>Sigorta Tahkim Komisyonu'na</strong> başvurarak, sigorta şirketinin kararını bozdurabilir ve hakkınız olan parayı söke söke alabilirsiniz.
+                  </p>
+
+                  {/* Görsel - SEO için alt text ile */}
+                  <div className="my-8 rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src="/images/blog/sigorta-sirketi-deger-kaybi-reddi-tahkim-basvurusu.jpg"
+                      alt="sigorta şirketi değer kaybı reddi tahkim başvurusu"
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Neden Reddettiler? (Gerçek Sebepler vs. Bahaneler)
+                  </h2>
+
+                  <p>
+                    Sigorta şirketlerinin ret gerekçeleri genellikle hukuki dayanaktan yoksundur. En sık karşılaştığımız "bahane" listesi şöyledir:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>"Aracınızda değer kaybı oluşmamıştır":</strong> (Hiçbir teknik inceleme yapmadan söylerler).</li>
+                    <li><strong>"Parça onarımı yapıldığı için ödeme yapılamaz":</strong> (Yasal olarak yanlıştır, onarım da değer kaybı yaratır).</li>
+                    <li><strong>"KM sınırını aştınız":</strong> (Anayasa Mahkemesi kararıyla bu sınır esnetilmiştir).</li>
+                    <li><strong>"Basit onarım kapsamında kalmaktadır":</strong> (Tampon vb. diyerek geçiştirirler ama detaylı inceleme gerekir).</li>
+                  </ul>
+
+                  <p>
+                    Bu cevaplar sizi korkutmasın. Sigorta şirketi kendi çıkarını korur, biz ise sizin hakkınızı.
+                  </p>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Çözüm Yolu: Sigorta Tahkim Komisyonu Nedir?
+                  </h2>
+
+                  <p>
+                    Sigorta Tahkim Komisyonu, sigorta ettirenler (siz) ile sigorta şirketleri arasındaki uyuşmazlıkları çözmek için kurulmuş, mahkeme yetkisine sahip bağımsız bir kurumdur.
+                  </p>
+
+                  <p>
+                    Buraya yapılan başvurular, sigorta şirketinin inisiyatifinde değildir. <strong>Bağımsız hakemler</strong> ve <strong>tarafsız bilirkişiler</strong> dosyanızı inceler. Eğer haklıysanız, sigorta şirketi istese de istemese de ödemeyi yapmak zorundadır.
+                  </p>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-dark-blue mt-6 mb-3">
+                    Tahkim Süreci Nasıl İşler?
+                  </h3>
+
+                  <p>
+                    Değer360 olarak yönettiğimiz süreci adım adım özetleyelim:
+                  </p>
+
+                  <ol className="list-decimal list-inside space-y-3 my-4">
+                    <li><strong>Ret Yazısının Alınması:</strong> Sigorta şirketine ilk başvuruyu yaparız. 15 gün içinde ret cevabı gelir veya hiç cevap gelmezse "zımni ret" sayılır. Bu belge, Tahkim'e gitmek için "vize" niteliğindedir.</li>
+                    <li><strong>Komisyona Başvuru:</strong> Gerekli evraklar (ekspertiz raporu, kaza tutanağı, ruhsat vb.) ve başvuru harcı ile Tahkim Komisyonu'na online veya fiziksel başvuru yaparız.</li>
+                    <li><strong>Bilirkişi Ataması:</strong> Komisyon, dosyaya bağımsız bir bilirkişi atar. Bu bilirkişi sigorta şirketinin çalışanı değildir; devletin atadığı uzmandır.</li>
+                    <li><strong>Rapor ve Karar:</strong> Bilirkişi gerçek değer kaybını hesaplar. Hakem heyeti bu rapora göre karar verir. Bu karar <strong>mahkeme ilamı (kararı)</strong> hükmündedir. İcra yoluyla tahsil edilebilir.</li>
+                  </ol>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Bireysel Başvuru vs. Değer360 ile Profesyonel Yönetim
+                  </h2>
+
+                  <p>
+                    Tahkim Komisyonu'na bireysel başvuru yapabilirsiniz ancak bu teknik ve riskli bir süreçtir.
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Başvuru Harçları:</strong> Bireysel başvuruda başvuru harcını ve bilirkişi ücretini (toplamda 2.000 - 5.000 TL arası değişebilir) <strong>peşin ödemeniz gerekir.</strong></li>
+                    <li><strong>Usul Hataları:</strong> Yanlış bir form doldurmak veya süreyi kaçırmak, dosyanızın "Usulden Red" edilmesine ve hakkınızı tamamen kaybetmenize neden olabilir.</li>
+                  </ul>
+
+                  <p className="font-semibold text-dark-blue mb-2">
+                    Değer360 ile Çalışmanın Farkı:
+                  </p>
+
+                  <ul className="list-disc list-inside space-y-2 my-4">
+                    <li><strong>Maliyet Yok:</strong> Başvuru harçlarını ve bilirkişi ücretlerini <strong>biz finanse ediyoruz.</strong></li>
+                    <li><strong>Risk Yok:</strong> Eğer Tahkim'den ret kararı çıkarsa (ki %97 çıkmaz), ödediğimiz masrafları sizden istemiyoruz. Zararı biz üstleniyoruz.</li>
+                    <li><strong>Uzmanlık:</strong> Hangi ret gerekçesine hangi Yargıtay kararıyla itiraz edileceğini 20 yıllık tecrübemizle biliyoruz.</li>
+                  </ul>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sigorta Şirketinin "Hayır" Cevabını Kabul Etmeyin
+                  </h2>
+
+                  <p>
+                    Size gönderilen o olumsuz mail, yolun sonu değil; sadece prosedürün bir parçasıdır. Hakkınız olan tazminatı almak için hukuki yolları kullanmaktan çekinmeyin.
+                  </p>
+
+                  <p className="text-lg font-semibold text-dark-blue mt-6 mb-4">
+                    Elinizde bir ret yazısı mı var? Veya henüz başvuru yapmadınız mı?<br />
+                    Gelin dosyanızı ücretsiz inceleyelim, Tahkim sürecini sizin adınıza biz başlatalım.
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="my-8 text-center not-prose">
+                    <Link
+                      href="/teklif"
+                      className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
+                    >
+                      👉 Ücretsiz Dosya Analizi ve Tahkim Başvurusu
+                    </Link>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-bold text-dark-blue mt-8 mb-4">
+                    Sıkça Sorulan Sorular (Tahkim ve Ret Süreci Hakkında)
+                  </h2>
+
+                  <div className="space-y-6 mt-6">
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Sigorta şirketine başvurmadan direkt Tahkim'e gidebilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Hayır, gidemezsiniz. Yasalar gereği "Dava Şartı" olarak önce ilgili sigorta şirketine yazılı başvuru yapılması ve 15 gün cevap süresinin beklenmesi zorunludur. Bu adımı atlamanız durumunda Tahkim başvurunuz reddedilir.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Tahkim kararına sigorta şirketi itiraz edebilir mi?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet, ancak sınırları vardır. Belirli bir tutarın (her yıl değişir, örneğin 15.000 TL altı) altındaki kararlar <strong>kesindir</strong>, itiraz edilemez. Tutar yüksekse itiraz edebilirler ancak bu süreçte dahi genellikle ödemeyi teminat olarak yatırmak zorundadırlar.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Tahkim başvurusu ne kadar sürede sonuçlanır?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Yasal süre, hakem atandıktan sonra 4 aydır. Ancak dosya yoğunluğuna ve bilirkişi sürecine göre ortalama <strong>4 ile 6 ay</strong> arasında kesin sonuç alınır. Klasik mahkemelerin 2 yıl sürdüğü düşünülürse bu çok hızlı bir süredir.
+                      </p>
+                    </div>
+
+                    <div className="bg-neutral-50 p-5 sm:p-6 rounded-lg border-l-4 border-primary-orange">
+                      <h3 className="text-lg sm:text-xl font-bold text-dark-blue mb-3">
+                        Kısmi ödeme yatırdılar (az para), yine de Tahkim'e gidebilir miyim?
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        Evet, kesinlikle. Sigorta şirketleri bazen "sus payı" olarak komik rakamlar (örn: 2.000 TL) yatırır. Bu parayı almanız, geri kalan hakkınızdan vazgeçtiğiniz anlamına gelmez. <strong>"Bakiye Değer Kaybı"</strong> için Tahkim'e başvurarak aradaki farkı talep edebiliriz.
                       </p>
                     </div>
                   </div>

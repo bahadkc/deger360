@@ -91,6 +91,12 @@ export async function GET() {
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>${baseUrl}/blog/sigorta-sirketi-deger-kaybi-talebini-reddederse-ne-yapilmali-tahkim-basvuru-sureci</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/iletisim</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>

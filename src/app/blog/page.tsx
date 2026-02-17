@@ -101,6 +101,15 @@ const samplePosts: BlogPost[] = [
     category: 'Rehber',
     imageUrl: '/images/blog/satilan-arac-icin-deger-kaybi-basvurusu-zaman-asimi.jpg',
   },
+  {
+    id: '10',
+    title: 'Sigorta Şirketi Değer Kaybı Talebini Reddederse Ne Yapılmalı? Tahkim Başvuru Süreci',
+    excerpt: 'Sigorta şirketi değer kaybı talebini reddederse ne yapılmalı? Sigorta Tahkim Komisyonu başvuru süreci, ret gerekçeleri, tahkim süreci adımları ve bireysel başvuru vs profesyonel yönetim karşılaştırması.',
+    slug: 'sigorta-sirketi-deger-kaybi-talebini-reddederse-ne-yapilmali-tahkim-basvuru-sureci',
+    publishedAt: '2026-02-16',
+    category: 'Rehber',
+    imageUrl: '/images/blog/sigorta-sirketi-deger-kaybi-reddi-tahkim-basvurusu.jpg',
+  },
 ];
 
 export default function BlogPage() {
